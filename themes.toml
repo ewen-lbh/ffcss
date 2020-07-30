@@ -1,0 +1,25 @@
+[materialfox]
+repository = "https://github.com/muckSponge/MaterialFox"
+files = ["chrome/**"]
+[materialfox.config]
+"toolkit.legacyUserProfileCustomizations.stylesheets" = true
+"svg.context-properties.content.enabled" = true
+"browser.tabs.tabClipWidth" = 83
+"materialFox.reduceTabOverflow" = true
+"security.insecure_connection_text.enabled" = true
+
+[simplerentfox]
+repository = "https://github.com/MiguelRAvila/SimplerentFox"
+[simplerentfox.files]
+linux = [
+    "Linux/userChrome__WithURLBar.css",
+    "Linux/userContent.cs"
+]
+windows = [
+    "Windows/userChrome__WithURLBar.css",
+    "Windows/userContent.css"
+]
+[simplerentfox.config]
+"layers.acceleration.force-enabled" = true
+"gfx.webrender.all" = true
+"svg.context-properties.content.enabled" = true
