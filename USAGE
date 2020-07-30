@@ -1,0 +1,12 @@
+ffcss - Apply and configure FirefoxCSS themes
+
+Usage:
+    ffcss configure KEY [VALUE]
+    ffcss use THEME_NAME
+    ffcss reapply
+    ffcss init [FORMAT]
+
+Where:
+    KEY         a setting key (see firefox's about:config)
+    THEME_NAME  a theme name or URL (see README.md)
+    FORMAT      one of "json", "yaml" or "toml"
