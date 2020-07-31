@@ -4,6 +4,8 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"path"
+	"path/filepath"
 	"regexp"
 	"strings"
 
@@ -35,9 +37,12 @@ func ResolveThemeName(themeName string) string {
 	protocolLessURL := regexp.MustCompile(`\w+\.\w+/.*`)
 
 	// First test to see if the folder exists
-	info, err := os.Stat("~/.config/ffcss/" + themeName)
+	info, err := os.Stat(filepath.Join(GetConfigDir(), themeName))
 	if !os.IsNotExist(err) && info.IsDir() {
-		return "~/.config/ffcss/" + themeName
+		abspath, err := filepath.Abs(filepath.Join(GetConfigDir(), themeName))
+		if err != nil {
+			return abspath
+		}
 	}
 
 	// Try OWNER/REPO

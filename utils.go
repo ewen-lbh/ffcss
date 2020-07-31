@@ -4,7 +4,10 @@ import (
 	"io/ioutil"
 	"net/url"
 	"os"
+	"os/user"
+	"path/filepath"
 	"testing"
+	"strings"
 
 	"github.com/pelletier/go-toml"
 )
@@ -57,4 +60,24 @@ func Assert(t *testing.T, got interface{}, expected interface{}) {
 	if got != expected {
 		t.Errorf("expected: %s\ngot: %s", expected, got)
 	}
+}
+
+// ExpandHomeDir expands the "~/" part of a path to the current user's home directory
+func ExpandHomeDir(path string) string {
+	usr, _ := user.Current()
+	homedir := usr.HomeDir
+	if path == "~" {
+		// In case of "~", which won't be caught by the "else if"
+		path = homedir
+	} else if strings.HasPrefix(path, "~/") {
+		// Use strings.HasPrefix so we don't match paths like
+		// "/something/~/something/"
+		path = filepath.Join(homedir, path[2:])
+	}
+	return path
+}
+
+// GetConfigDir returns the absolute path of ffcss's configuration directory
+func GetConfigDir() string {
+	return ExpandHomeDir("~/.config/ffcss")
 }
