@@ -79,6 +79,7 @@ Synopsis: `ffcss init [FORMAT]`
 Creates a [`ffcss` manifest file](#creating-a-firefoxcss-theme) in the current directory, either `ffcss.json`, `ffcss.yaml` or `ffcss.toml` (dependeding on the value of `FORMAT`, which defaults to `yaml`.)
 
 See where the arguments are placed:
+
 ```yaml
 manifest_version: 1
 files:
