@@ -1,6 +1,6 @@
 [materialfox]
 repository = "https://github.com/muckSponge/MaterialFox"
-files = ["chrome/**"]
+files = { all = ["chrome/**"] }
 [materialfox.config]
 "toolkit.legacyUserProfileCustomizations.stylesheets" = true
 "svg.context-properties.content.enabled" = true
