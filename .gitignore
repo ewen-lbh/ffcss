@@ -30,3 +30,6 @@
 
 # dotENV file
 .env
+
+# vscode
+.vscode/
