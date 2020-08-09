@@ -57,7 +57,7 @@ func ResolveThemeName(themeName string) string {
 	} else {
 		themes := ReadThemesList()
 		if theme, ok := themes[themeName]; ok {
-			return theme.repository
+			return theme.Repository
 		}
 		return ""
 	}

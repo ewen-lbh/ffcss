@@ -44,9 +44,9 @@ func isValidUrl(toTest string) bool {
 }
 
 type ThemesList map[string]struct {
-	repository string
-	files      map[string][]string
-	config     map[string]interface{}
+	Repository string
+	Files      map[string][]string
+	Config     map[string]interface{}
 }
 
 func ReadThemesList() ThemesList {
