@@ -1,6 +1,8 @@
 package main
 
-import "testing"
+import (
+	"testing"
+)
 
 func TestResolveThemeName(t *testing.T) {
 	Assert(t,

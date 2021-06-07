@@ -1,13 +1,15 @@
 package main
 
 import (
+	"fmt"
 	"io/ioutil"
 	"net/url"
 	"os"
 	"os/user"
 	"path/filepath"
-	"testing"
+	"regexp"
 	"strings"
+	"testing"
 
 	"github.com/pelletier/go-toml"
 )
@@ -28,8 +30,8 @@ func ReadFile(filepath string) string {
 	return string(ReadFileBytes(filepath))
 }
 
-// isValidUrl tests a string to determine if it is a well-structured url or not.
-func isValidUrl(toTest string) bool {
+// isValidURL tests a string to determine if it is a well-structured url or not.
+func isValidURL(toTest string) bool {
 	_, err := url.ParseRequestURI(toTest)
 	if err != nil {
 		return false
@@ -43,11 +45,13 @@ func isValidUrl(toTest string) bool {
 	return true
 }
 
-type ThemesList map[string]struct {
+type Theme struct {
 	Repository string
 	Files      map[string][]string
 	Config     map[string]interface{}
 }
+
+type ThemesList map[string]Theme
 
 func ReadThemesList() ThemesList {
 	themesList := ThemesList{}
@@ -58,7 +62,7 @@ func ReadThemesList() ThemesList {
 
 func Assert(t *testing.T, got interface{}, expected interface{}) {
 	if got != expected {
-		t.Errorf("expected: %s\ngot: %s", expected, got)
+		t.Errorf("\nexpected: \n%s\n\ngot: \n%s", expected, got)
 	}
 }
 
@@ -80,4 +84,33 @@ func ExpandHomeDir(path string) string {
 // GetConfigDir returns the absolute path of ffcss's configuration directory
 func GetConfigDir() string {
 	return ExpandHomeDir("~/.config/ffcss")
+}
+
+// GetTempDir returns the temporary path for cloned repos and other stuff
+func GetTempDir() string {
+	return ExpandHomeDir("~/.cache/ffcss/")
+}
+
+// GetManifestPath returns the path of a theme's ffcss.{json;toml,yaml}
+func GetManifestPath(extension string) string {
+	return "ffcss." + extension
+}
+
+// ReadManifest reads a manifest file given its filepath and returns a Theme struct
+// func ReadManifest
+
+// GetMozillaReleasesPaths returns an array of release directories from ~/.mozilla.
+func GetMozillaReleasesPaths() ([]string, error) {
+	directories, err := os.ReadDir(ExpandHomeDir("~/.mozilla/firefox/"))
+	releasesPaths := make([]string, 0)
+	patternReleaseID := regexp.MustCompile(`[a-z0-9]{8}\.default(-\w+)?`)
+	if err != nil {
+		return []string{}, fmt.Errorf("couldn't read ~/.mozilla/firefox: %s", err.Error())
+	}
+	for _, releasePath := range directories {
+		if patternReleaseID.MatchString(releasePath.Name()) {
+			releasesPaths = append(releasesPaths, ExpandHomeDir("~/.mozilla/firefox/")+"/"+releasePath.Name())
+		}
+	}
+	return releasesPaths, nil
 }
