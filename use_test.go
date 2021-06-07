@@ -1,6 +1,7 @@
 package main
 
 import (
+	"net/url"
 	"testing"
 )
 
@@ -24,5 +25,17 @@ func TestResolveThemeName(t *testing.T) {
 	Assert(t,
 		ResolveThemeName("unknownone"),
 		"",
+	)
+}
+
+func TestDownloadRepository(t *testing.T) {
+	URL, _ := url.Parse("https://github.com/muckSponge/MaterialFox")
+	clonedTo, err := DownloadRepository(*URL)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+	Assert(t,
+		clonedTo,
+		"/home/ewen/.config/ffcss/themes/@muckSponge/MaterialFox",
 	)
 }
