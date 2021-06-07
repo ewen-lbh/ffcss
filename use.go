@@ -77,10 +77,11 @@ func ResolveThemeName(themeName string) string {
 // DownloadRepository downloads the repository at URL and returns the saved path
 // TODO: clone repo to temp dir, copy necessary files only to .config/ffcss
 func DownloadRepository(URL url.URL) (cloneTo string, err error) {
+	cloneTo = GetConfigDir() + "/themes/"
 	if URL.Host == "github.com" {
-		cloneTo = cloneTo + "@" + URL.Path
+		cloneTo = cloneTo + "@" + strings.TrimPrefix(URL.Path, "/")
 		os.MkdirAll(cloneTo, 0777)
-		err = exec.Command("git", "clone", URL.String(), cloneTo).Run()
+		err = exec.Command("git", "clone", URL.String(), cloneTo, "--depth 1").Run()
 		if err != nil {
 			return "", err
 		}
