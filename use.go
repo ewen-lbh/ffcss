@@ -8,11 +8,9 @@ import (
 	"net/url"
 	"os"
 	"os/exec"
-	"path"
 	"path/filepath"
 	"regexp"
 	"strings"
-	"url"
 
 	"github.com/docopt/docopt-go"
 )
@@ -23,7 +21,7 @@ import (
 // # read it
 // # move required files to ~/.config/ffcss/themes/...
 //   where ... is either ./@OWNER/REPO (for github themes)
-//   or ./THEME_NAME (for themes.toml themes)
+//   or ./THEME_NAME (for themes.yaml themes)
 //   or ./-DOMAIN.TLD/THEME_NAME
 //
 
@@ -66,7 +64,7 @@ func ResolveThemeName(themeName string) string {
 		// Try URL
 	} else if isValidURL(themeName) {
 		return themeName
-		// Try to get URL from themes.toml
+		// Try to get URL from themes.yaml
 	} else {
 		themes := ReadThemesList()
 		if theme, ok := themes[themeName]; ok {
@@ -77,6 +75,7 @@ func ResolveThemeName(themeName string) string {
 }
 
 // DownloadRepository downloads the repository at URL and returns the saved path
+// TODO: clone repo to temp dir, copy necessary files only to .config/ffcss
 func DownloadRepository(URL url.URL) (cloneTo string, err error) {
 	if URL.Host == "github.com" {
 		cloneTo = cloneTo + "@" + URL.Path
@@ -92,30 +91,21 @@ func DownloadRepository(URL url.URL) (cloneTo string, err error) {
 		if err != nil {
 			return "", err
 		}
-		// XXX: assuming TOML text.
 		responseText, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
 			return "", err
 		}
 		defer resp.Body.Close()
-		os.WriteFile(cloneTo+"/ffcss.toml", responseText, 0777)
+		os.WriteFile(cloneTo+"/ffcss.yaml", responseText, 0777)
 	}
 	return cloneTo, nil
 }
 
 // GetManifest returns the path of the manifest file given the cloned repo's root path
 func GetManifest(themeRoot string) (string, error) {
-	jsonFilepath := path.Join(themeRoot, GetManifestPath("json"))
-	tomlFilepath := path.Join(themeRoot, GetManifestPath("toml"))
-	yamlFilepath := path.Join(themeRoot, GetManifestPath("yaml"))
-
-	if _, err := os.Stat(jsonFilepath); os.IsExist(err) {
-		return jsonFilepath, nil
-	} else if _, err := os.Stat(tomlFilepath); os.IsExist(err) {
-		return tomlFilepath, nil
-	} else if _, err := os.Stat(yamlFilepath); os.IsExist(err) {
-		return yamlFilepath, nil
+	if _, err := os.Stat(GetManifestPath(themeRoot)); os.IsExist(err) {
+		return GetManifestPath(themeRoot), nil
 	} else {
-		return "", errors.New("The project has no manifest file")
+		return "", errors.New("the project has no manifest file")
 	}
 }

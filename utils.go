@@ -6,12 +6,13 @@ import (
 	"net/url"
 	"os"
 	"os/user"
+	"path"
 	"path/filepath"
 	"regexp"
 	"strings"
 	"testing"
 
-	"github.com/pelletier/go-toml"
+	"gopkg.in/yaml.v2"
 )
 
 // ReadFileBytes reads the content of ``filepath`` and returns the contents as a byte array
@@ -55,8 +56,8 @@ type ThemesList map[string]Theme
 
 func ReadThemesList() ThemesList {
 	themesList := ThemesList{}
-	doc := ReadFileBytes("themes.toml")
-	toml.Unmarshal(doc, &themesList)
+	doc := ReadFileBytes("themes.yaml")
+	yaml.Unmarshal(doc, &themesList)
 	return themesList
 }
 
@@ -91,9 +92,9 @@ func GetTempDir() string {
 	return ExpandHomeDir("~/.cache/ffcss/")
 }
 
-// GetManifestPath returns the path of a theme's ffcss.{json;toml,yaml}
-func GetManifestPath(extension string) string {
-	return "ffcss." + extension
+// GetManifestPath returns the path of a theme's manifest file
+func GetManifestPath(themeRoot string) string {
+	return path.Join(themeRoot, "ffcss.yaml")
 }
 
 // ReadManifest reads a manifest file given its filepath and returns a Theme struct

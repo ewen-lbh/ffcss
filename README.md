@@ -28,12 +28,11 @@ Usage:
     ffcss configure KEY [VALUE]
     ffcss use THEME_NAME
     ffcss reapply
-    ffcss init [FORMAT]
+    ffcss init 
 
 Where:
     KEY         a setting key (see firefox's about:config)
     THEME_NAME  a theme name or URL (see README.md)
-    FORMAT      one of "json", "yaml" or "toml"
 ```
 
 #### The `use` command
@@ -52,19 +51,19 @@ If `THEME_NAME` is of the form `DOMAIN.TLD/PATH`:
   
 If `THEME_NAME` is of the form `NAME`:
 
-- It'll download the zip file at the URL found in this repo's `themes.toml`  file
+- It'll download the zip file at the URL found in this repo's `themes.yaml`  file
 
 And if `THEME_NAME` is an URL:
 
 - It'll download the zip file at `THEME_NAME`
 
-Some config keys need to be changed before applying a theme. `toolkit.legacyUserProfileCustomizations.stylesheets` must be set to `true` for _all_ themes, but most require their own extra config keys. Thos can be set in the project's `ffcss.json`, but, don't worry, if the theme you use do not include a `ffcss.json` file, it might be in this repository's `themes.toml`,
+Some config keys need to be changed before applying a theme. `toolkit.legacyUserProfileCustomizations.stylesheets` must be set to `true` for _all_ themes, but most require their own extra config keys. Those can be set in the project's `ffcss.yaml`, but, don't worry, if the theme you use do not include a `ffcss.yaml` file, it might be in this repository's `themes.yaml`,
 
 ### The `config` command
 
 Synopsis: `ffcss config KEY [VALUE]`
 
-Much simpler than the `use` command, this one just adds convinience to set `about:config` keys. If `VALUE` is not provided, ffcss will output the specified `KEY`'s current value.
+Much simpler than the `use` command, this one just adds convenience to set `about:config` keys. If `VALUE` is not provided, ffcss will output the specified `KEY`'s current value.
 
 ### The `reapply` command
 
@@ -74,84 +73,75 @@ This is the same as doing `ffcss use` with the current theme, useful when firefo
 
 ### The `init` command
 
-Synopsis: `ffcss init [FORMAT]`
+Synopsis: `ffcss init`
 
-Creates a [`ffcss` manifest file](#creating-a-firefoxcss-theme) in the current directory, either `ffcss.json`, `ffcss.yaml` or `ffcss.toml` (dependeding on the value of `FORMAT`, which defaults to `yaml`.)
-
-See where the arguments are placed:
-
-```yaml
-manifest_version: 1
-files:
-    # Declare what files to copy over...
-    - chrome/**
-config:
-    # Add your configuration keys here...
-```
+Creates a [`ffcss` manifest file](#creating-a-firefoxcss-theme) in the current directory
 
 ## Creating a FirefoxCSS theme
 
-So that your users can benefit from the simple installation process provided by ffcss, you can add a `ffcss.json`, `ffcss.yaml` or `ffcss.toml` file in the root of your project and declare additional configuration you might need. Note that `toolkit.legacyUserProfileCustomizations.stylesheets` is set to `true` automatically, no need to declare it.
+So that your users can benefit from the simple installation process provided by ffcss, you can add a `ffcss.yaml` file in the root of your project and declare additional configuration you might need. 
 
-By default, all files from your respository's `chrome` folder are copied over to the user's profile directory. If you want to only copy certain files, you can set `files`, an array of [glob patterns](https://globster.xyz/). `files` can also be an object where the keys are operating systems (`windows`, `linux` or `macos`) and the values are arrays of glob patterns.
+Note that `toolkit.legacyUserProfileCustomizations.stylesheets` is set to `true` automatically, no need to declare it.
+
+### Config
+
+An object mapping `about:config` configuration keys to their values:
+
+```yaml
+config:
+    svg.context-properties.content.enabled: true
+    security.insecure_connection_text.enabled: true
+```
+
+### Files
+
+By default, all files from your repository's `chrome` folder are copied over to the user's profile directory.
+
+If you want to only copy certain files, you can set `files`, an array of [glob patterns](https://globster.xyz/). 
+
+`files` can also be an object where the keys are operating systems (`windows`, `linux` or `macos`) and the values are arrays of glob patterns:
+
+```yaml
+files:
+    - userContent.css
+    windows:
+    - windows/userChrome.css
+    linux:
+    - linux/userChrome.css
+    macos:
+    - macos/userChrome.css
+```
+
+If your project is somewhat structured, you can use `{{ os }}`, which will get replaced with one of `windows`, `linux` or `macos`. 
+
+```yaml
+files:
+    - userContent.css
+    - '{{ os }}/userContent.css' # quotes needed if your string starts with {
+```
+
+### Variants
+
+Some themes allow users to choose between different variations. Declare the available variants' names in `variants`, an array of strings or objects mapping the name to its description.
+
+Then, in `files`, reference the variant's name with `{{ variant }}`.
 
 A configuration file example for [@MiguelRAvila](https://github.com/MiguelRAvila)'s [SimplerentFox](https://github.com/MiguelRAvila/SimplerentFox):
 
-```json
-{
-    "manifest_version": 1,
-    "files": {
-        "linux": [
-            "Linux/userChrome__WithURLBar.comp.css",
-            "Linux/userContent.css"
-        ],
-        "windows": [
-            "Windows/userChrome__WithURLBar.css",
-            "Windows/userContent.css"
-        ]
-    },
-    "config": {
-        "layers.acceleration.force-enabled": true,
-        "gfx.webrender.all": true,
-        "svg.context-properties.content.enabled": true,
-    }
-}
-```
-
-The same file using YAML syntax:
-
 ```yaml
-manifest_version: 1
-files:
-    linux:
-        - Linux/userChrome__WithURLBar.comp.css
-        - Linux/userContent.css
-    windows:
-        - Windows/userChrome__WithURLBar.css
-        - Windows/userContent.css
+ffcss: 1
+
 config:
     layers.acceleration.force-enabled: true
     gfx.webrender.all: true
     svg.context-properties.content.enabled: true
-```
 
-And using TOML syntax:
+variants:
+    - WithoutURLBar
+    - WithURLBar 
+    - OneLine: Merged tab & address bars
 
-```toml
-manifest_version = 1
-
-[files]
-linux = [
-    "Linux/userChrome__WithURLBar.comp.css",
-    "Linux/userContent.cs"
-]
-windows = [
-    "Windows/userChrome__WithURLBar.css",
-    "Windows/userContent.css"
-]
-
-[config]
-"layers.acceleration.force-enabled" = true
-"gfx.webrender.all" = true
-"svg.context-properties.content.enabled" = true
+files:
+    - ./{{ os }}/userContent.css
+    - ./{{ os }}/userChrome__{{ variant }}.css
 ```

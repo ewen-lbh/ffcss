@@ -1,0 +1,48 @@
+materialfox:
+  repository: https://github.com/muckSponge/MaterialFox
+  config:
+    svg.context-properties.content.enabled: true
+    browser.tabs.tabClipWidth: 83
+    materialFox.reduceTabOverflow: true
+    security.insecure_connection_text.enabled: true
+
+simplerentfox:
+  repository: https://github.com/MiguelRAvila/SimplerentFox
+  config:
+    layers.acceleration.force-enabled: true
+    gfx.webrender.all: true
+    svg.context-properties.content.enabled: true
+  variants:
+    - WithoutURLBar: optional description
+    - WithURLBar
+    - OneLine
+  files:
+    - ./{{ os }}/userContent.css
+    - ./{{ os }}/userChrome__{{ variant }}.css
+
+  # without {{ variables }}:
+  # files:
+  #  windows:
+  #  - Windows/userContent.css
+  #  linux:
+  #  - Linux/userContent.css
+  #
+  # variants:
+  #   WithURLBar:
+  #     files:
+  #       windows:
+  #       - Windows/userChrome__WithURLBar.css
+  #       linux:
+  #       - Linux/userChrome__WithURLBar.css
+  #   WithoutURLBar:
+  #     files:
+  #       windows:
+  #       - Windows/userChrome__WithoutURLBar.css
+  #       linux:
+  #       - Linux/userChrome__WithoutURLBar.css
+  #   OneLine:
+  #     files:
+  #       windows:
+  #       - Windows/userChrome__WithURLBar.css
+  #       linux:
+  #       - Linux/userChrome__OneLWithURLBar
