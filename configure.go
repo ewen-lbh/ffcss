@@ -8,5 +8,5 @@ import (
 
 // RunCommandConfigure runs the command "configure"
 func RunCommandConfigure(args docopt.Opts) error {
-	return errors.New("Not implemented")
+	return errors.New("not implemented")
 }

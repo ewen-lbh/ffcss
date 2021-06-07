@@ -8,5 +8,5 @@ import (
 
 // RunCommandReapply runs the command "reapply"
 func RunCommandReapply(args docopt.Opts) error {
-	return errors.New("Not implemented")
+	return errors.New("not implemented")
 }

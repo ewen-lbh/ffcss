@@ -8,5 +8,5 @@ import (
 
 // RunCommandInit runs the command "init"
 func RunCommandInit(args docopt.Opts) error {
-	return errors.New("Not implemented")
+	return errors.New("not implemented")
 }
