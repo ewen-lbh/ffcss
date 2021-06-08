@@ -68,18 +68,18 @@ func Assert(t *testing.T, got interface{}, expected interface{}) {
 }
 
 // ExpandHomeDir expands the "~/" part of a path to the current user's home directory
-func ExpandHomeDir(path string) string {
+func ExpandHomeDir(p string) string {
 	usr, _ := user.Current()
 	homedir := usr.HomeDir
-	if path == "~" {
+	if p == "~" {
 		// In case of "~", which won't be caught by the "else if"
-		path = homedir
-	} else if strings.HasPrefix(path, "~/") {
+		p = homedir
+	} else if strings.HasPrefix(p, "~/") {
 		// Use strings.HasPrefix so we don't match paths like
 		// "/something/~/something/"
-		path = filepath.Join(homedir, path[2:])
+		p = filepath.Join(homedir, p[2:])
 	}
-	return path
+	return p
 }
 
 // GetConfigDir returns the absolute path of ffcss's configuration directory
