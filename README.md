@@ -51,13 +51,13 @@ If `THEME_NAME` is of the form `DOMAIN.TLD/PATH`:
   
 If `THEME_NAME` is of the form `NAME`:
 
-- It'll download the zip file at the URL found in this repo's `themes.yaml`  file
+- It'll download the zip file at the URL found in this repo's `themes/*.yaml`  files
 
 And if `THEME_NAME` is an URL:
 
 - It'll download the zip file at `THEME_NAME`
 
-Some config keys need to be changed before applying a theme. `toolkit.legacyUserProfileCustomizations.stylesheets` must be set to `true` for _all_ themes, but most require their own extra config keys. Those can be set in the project's `ffcss.yaml`, but, don't worry, if the theme you use do not include a `ffcss.yaml` file, it might be in this repository's `themes.yaml`,
+Some config keys need to be changed before applying a theme. `toolkit.legacyUserProfileCustomizations.stylesheets` must be set to `true` for _all_ themes, but most require their own extra config keys. Those can be set in the project's `ffcss.yaml`, but, don't worry, if the theme you use do not include a `ffcss.yaml` file, it might be in this repository's `themes/*.yaml` files
 
 ### The `config` command
 
@@ -122,7 +122,7 @@ files:
 
 ### Variants
 
-Some themes allow users to choose between different variations. Declare the available variants' names in `variants`, an array of strings or objects mapping the name to its description.
+Some themes allow users to choose between different variations. Declare the available variants' names in `variants`, an array of strings ~~or objects mapping the name to its description~~.
 
 Then, in `files`, reference the variant's name with `{{ variant }}`.
 
@@ -139,7 +139,7 @@ config:
 variants:
     - WithoutURLBar
     - WithURLBar 
-    - OneLine: Merged tab & address bars
+    - OneLine #: Merged tab & address bars (descriptions not supported yet)
 
 files:
     - ./{{ os }}/userContent.css

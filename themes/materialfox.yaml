@@ -1,0 +1,8 @@
+ffcss: 0
+
+repository: https://github.com/muckSponge/MaterialFox
+config:
+  svg.context-properties.content.enabled: true
+  browser.tabs.tabClipWidth: 83
+  materialFox.reduceTabOverflow: true
+  security.insecure_connection_text.enabled: true

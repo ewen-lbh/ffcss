@@ -11,8 +11,6 @@ import (
 	"regexp"
 	"strings"
 	"testing"
-
-	"gopkg.in/yaml.v2"
 )
 
 // ReadFileBytes reads the content of ``filepath`` and returns the contents as a byte array
@@ -44,21 +42,6 @@ func isValidURL(toTest string) bool {
 	}
 
 	return true
-}
-
-type Theme struct {
-	Repository string
-	Files      map[string][]string
-	Config     map[string]interface{}
-}
-
-type ThemesList map[string]Theme
-
-func ReadThemesList() ThemesList {
-	themesList := ThemesList{}
-	doc := ReadFileBytes("themes.yaml")
-	yaml.Unmarshal(doc, &themesList)
-	return themesList
 }
 
 func Assert(t *testing.T, got interface{}, expected interface{}) {

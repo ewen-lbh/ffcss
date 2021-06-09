@@ -8,7 +8,6 @@ import (
 	"net/url"
 	"os"
 	"os/exec"
-	"path/filepath"
 	"regexp"
 	"strings"
 
@@ -21,20 +20,27 @@ import (
 // # read it
 // # move required files to ~/.config/ffcss/themes/...
 //   where ... is either ./@OWNER/REPO (for github themes)
-//   or ./THEME_NAME (for themes.yaml themes)
+//   or ./THEME_NAME (for built-in themes)
 //   or ./-DOMAIN.TLD/THEME_NAME
 //
 
 // RunCommandUse runs the command "use"
 func RunCommandUse(args docopt.Opts) error {
 	themeName, _ := args.String("THEME_NAME")
-	urlOrFolder := ResolveThemeName(themeName)
-	downloaded := strings.HasPrefix(urlOrFolder, "~/.config/ffcss/")
-	if !downloaded {
-		if urlOrFolder == "" {
-			return errors.New(themeName + " is not a known theme. Try specifying a github repository directly.")
+	uri, typ := ResolveThemeName(themeName)
+	switch typ {
+	case "local":
+		// do nothing
+	case "github":
+		URL, err := url.Parse(uri)
+		if err != nil {
+			return err
 		}
-		fmt.Printf("%s was not found or is not a folder: downloading from %s ...\n", themeName, urlOrFolder)
+		DownloadRepository(*URL)
+	case "website":
+		// TODO
+	default:
+		return errors.New("invalid theme name")
 	}
 	fmt.Println("--- work in progress ---")
 	return nil
@@ -42,35 +48,29 @@ func RunCommandUse(args docopt.Opts) error {
 
 // ResolveThemeName resolves the THEME_NAME given to ffcss use to either:
 // - a URL to download
-// - a local folder to pull the theme from
-func ResolveThemeName(themeName string) string {
+// - a git repo URL to clone
+func ResolveThemeName(themeName string) (name string, typ string) {
 	protocolLessURL := regexp.MustCompile(`\w+\.\w+/.*`)
-
-	// First test to see if the folder exists
-	info, err := os.Stat(filepath.Join(GetConfigDir(), themeName))
-	if !os.IsNotExist(err) && info.IsDir() {
-		abspath, err := filepath.Abs(filepath.Join(GetConfigDir(), themeName))
-		if err != nil {
-			return abspath
-		}
-	}
 
 	// Try OWNER/REPO
 	if len(strings.Split(themeName, "/")) == 2 {
-		return "https://github.com/" + themeName
+		return "https://github.com/" + themeName, "github"
 		// Try DOMAIN.TLD/PATH
 	} else if protocolLessURL.MatchString(themeName) {
-		return "https://" + themeName
+		return "https://" + themeName, "website"
 		// Try URL
 	} else if isValidURL(themeName) {
-		return themeName
+		return themeName, "website"
 		// Try to get URL from themes.yaml
 	} else {
-		themes := ReadThemesList()
-		if theme, ok := themes[themeName]; ok {
-			return theme.Repository
+		themes, err := LoadThemeStore(GetConfigDir() + "/themes")
+		if err != nil {
+			panic(err)
 		}
-		return ""
+		if theme, ok := themes[themeName]; ok {
+			return theme.Repository, "github"
+		}
+		return "", ""
 	}
 }
 
@@ -102,11 +102,11 @@ func DownloadRepository(URL url.URL) (cloneTo string, err error) {
 	return cloneTo, nil
 }
 
-// GetManifest returns the path of the manifest file given the cloned repo's root path
-func GetManifest(themeRoot string) (string, error) {
+// GetManifest returns a Manifest from the manifest file of themeRoot
+func GetManifest(themeRoot string) (Manifest, error) {
 	if _, err := os.Stat(GetManifestPath(themeRoot)); os.IsExist(err) {
-		return GetManifestPath(themeRoot), nil
+		return LoadManifest(GetManifestPath(themeRoot))
 	} else {
-		return "", errors.New("the project has no manifest file")
+		return Manifest{}, errors.New("the project has no manifest file")
 	}
 }
