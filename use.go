@@ -81,10 +81,13 @@ func DownloadRepository(URL url.URL) (cloneTo string, err error) {
 	if URL.Host == "github.com" {
 		cloneTo = cloneTo + "@" + strings.TrimPrefix(URL.Path, "/")
 		os.MkdirAll(cloneTo, 0777)
-		err = exec.Command("git", "clone", URL.String(), cloneTo, "--depth 1").Run()
+		process := exec.Command("git", "clone", URL.String(), cloneTo, "--depth=1")
+		//TODO print this in verbose mode: fmt.Printf("DEBUG $ %s\n", process.String())
+		output, err := process.CombinedOutput()
 		if err != nil {
-			return "", err
+			return "",  fmt.Errorf("%s: %s", err.Error(), output)
 		}
+		
 	} else {
 		cloneTo = cloneTo + URL.Host + "/" + URL.Path
 		os.MkdirAll(cloneTo, 0777)
