@@ -8,6 +8,7 @@ import (
 	"net/url"
 	"os"
 	"os/exec"
+	"path"
 	"regexp"
 	"strings"
 
@@ -31,7 +32,7 @@ func RunCommandUse(args docopt.Opts) error {
 	switch typ {
 	case "local":
 		// do nothing
-	case "github":
+	case "git":
 		URL, err := url.Parse(uri)
 		if err != nil {
 			return err
@@ -54,7 +55,7 @@ func ResolveThemeName(themeName string) (name string, typ string) {
 
 	// Try OWNER/REPO
 	if len(strings.Split(themeName, "/")) == 2 {
-		return "https://github.com/" + themeName, "github"
+		return "https://github.com/" + themeName, "git"
 		// Try DOMAIN.TLD/PATH
 	} else if protocolLessURL.MatchString(themeName) {
 		return "https://" + themeName, "website"
@@ -68,7 +69,7 @@ func ResolveThemeName(themeName string) (name string, typ string) {
 			panic(err)
 		}
 		if theme, ok := themes[themeName]; ok {
-			return theme.Repository, "github"
+			return theme.Repository, "git"
 		}
 		return "", ""
 	}
@@ -77,20 +78,21 @@ func ResolveThemeName(themeName string) (name string, typ string) {
 // DownloadRepository downloads the repository at URL and returns the saved path
 // TODO: clone repo to temp dir, copy necessary files only to .config/ffcss
 func DownloadRepository(URL url.URL) (cloneTo string, err error) {
-	cloneTo = GetConfigDir() + "/themes/"
-	if URL.Host == "github.com" {
-		cloneTo = cloneTo + "@" + strings.TrimPrefix(URL.Path, "/")
-		os.MkdirAll(cloneTo, 0777)
+	clonable, err := IsURLClonable(URL)
+	if err != nil {
+		return "", fmt.Errorf("while determining clonability of %s: %s", URL.String(), err.Error())
+	}
+	cloneTo = GetThemeDownloadPath(URL)
+	os.MkdirAll(cloneTo, 0777)
+	if clonable {
 		process := exec.Command("git", "clone", URL.String(), cloneTo, "--depth=1")
 		//TODO print this in verbose mode: fmt.Printf("DEBUG $ %s\n", process.String())
 		output, err := process.CombinedOutput()
 		if err != nil {
-			return "",  fmt.Errorf("%s: %s", err.Error(), output)
+			return "", fmt.Errorf("%s: %s", err.Error(), output)
 		}
-		
+
 	} else {
-		cloneTo = cloneTo + URL.Host + "/" + URL.Path
-		os.MkdirAll(cloneTo, 0777)
 		resp, err := http.Get(URL.String())
 		if err != nil {
 			return "", err
@@ -103,6 +105,36 @@ func DownloadRepository(URL url.URL) (cloneTo string, err error) {
 		os.WriteFile(cloneTo+"/ffcss.yaml", responseText, 0777)
 	}
 	return cloneTo, nil
+}
+
+// IsURLClonable determines if the given URL points to a git repository
+func IsURLClonable(URL url.URL) (clonable bool, err error) {
+	output, err := exec.Command("git", "ls-remote", URL.String()).CombinedOutput()
+	if err == nil {
+		return true, nil
+	}
+	switch err.(type) {
+	case *exec.ExitError:
+		if err.(*exec.ExitError).ExitCode() == 128 {
+			return false, nil
+		}
+	}
+	return false, fmt.Errorf("while running git-ls-remote: %s: %s", err.Error(), output)
+}
+
+// GetThemeDownloadPath determines where to download a theme
+func GetThemeDownloadPath(URL url.URL) (directory string) {
+	directory = path.Join(GetConfigDir(), "themes")
+	clonable, _ := IsURLClonable(URL)
+	if URL.Host == "github.com" && clonable {
+		repo := strings.Split(strings.TrimPrefix(strings.TrimSuffix(URL.Path, ".git"), "/"), "/")
+		if len(repo) != 2 {
+			goto fallback
+		}
+		return path.Join(directory, "@" + repo[0], repo[1])
+	}
+	fallback:
+		return path.Join(directory, "-"+URL.Host, URL.Path)
 }
 
 // GetManifest returns a Manifest from the manifest file of themeRoot

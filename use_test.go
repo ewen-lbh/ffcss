@@ -7,10 +7,10 @@ import (
 
 func TestResolveThemeName(t *testing.T) {
 	name, typ := ResolveThemeName("ewen-lbh/ffcss")
-	if "https://github.com/ewen-lbh/ffcss" != name || typ != "github" {
+	if "https://github.com/ewen-lbh/ffcss" != name || typ != "git" {
 		t.Errorf(`ewen-lbh/ffcss
 want: (%s, %s)
-got:  (%s, %s)`, "https://github.com/ewen-lbh/ffcss", "github", name, typ)
+got:  (%s, %s)`, "https://github.com/ewen-lbh/ffcss", "git", name, typ)
 	}
 
 	name, typ = ResolveThemeName("bitbucket.io/guaca/mole")
@@ -28,10 +28,10 @@ got:  (%s, %s)`, "http://localhost:8080/", "website", name, typ)
 	}
 
 	name, typ = ResolveThemeName("materialfox")
-	if "https://github.com/muckSponge/MaterialFox" != name || typ != "github" {
+	if "https://github.com/muckSponge/MaterialFox" != name || typ != "git" {
 		t.Errorf(`materialfox
 want: (%s, %s)
-got:  (%s, %s)`, "https://github.com/muckSponge/MaterialFox", "github", name, typ)
+got:  (%s, %s)`, "https://github.com/muckSponge/MaterialFox", "git", name, typ)
 	}
 
 	name, typ = ResolveThemeName("unknownone")
