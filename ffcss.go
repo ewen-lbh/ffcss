@@ -8,8 +8,6 @@ func main() {
 	usage := ReadFile("./USAGE")
 	args, _ := docopt.ParseDoc(usage)
 
-	println(args)
-
 	if err := dispatchCommand(args); err != nil {
 		panic(err)
 	}
