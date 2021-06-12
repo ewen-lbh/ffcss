@@ -1,5 +1,6 @@
 build:
 	@cp -v themes/*.yaml ~/.config/ffcss/themes/
+	go mod tidy
 	go build
 
 test:
@@ -8,3 +9,5 @@ test:
 install:
 	@cp -v ffcss ~/.local/bin/ffcss
 
+format:
+	gofmt -s -w **.go
