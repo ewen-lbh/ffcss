@@ -13,6 +13,7 @@ import (
 	"strings"
 
 	"github.com/docopt/docopt-go"
+	"github.com/evilsocket/islazy/zip"
 )
 
 //
@@ -25,6 +26,10 @@ import (
 //   or ./-DOMAIN.TLD/THEME_NAME
 //
 
+var (
+	PatternManifestBasename = regexp.MustCompile(`^ffcss.ya?ml$`)
+)
+
 // RunCommandUse runs the command "use"
 func RunCommandUse(args docopt.Opts) error {
 	themeName, _ := args.String("THEME_NAME")
@@ -33,19 +38,22 @@ func RunCommandUse(args docopt.Opts) error {
 		return fmt.Errorf("couldn't create data directories: %s\n", err.Error())
 	}
 	uri, typ := ResolveThemeName(themeName)
+	URL, err := url.Parse(uri)
+	if err != nil && typ != "local" {
+		return err
+	}
 	switch typ {
 	case "local":
 		// do nothing
 	case "git":
-		URL, err := url.Parse(uri)
-		if err != nil {
-			return err
-		}
-		DownloadRepository(*URL)
+		_, err = DownloadRepository(*URL)
 	case "website":
-		// TODO
+		err = DownloadFromZip(*URL, GetThemeDownloadPath(*URL))
 	default:
 		return errors.New("invalid theme name")
+	}
+	if err != nil {
+		return err
 	}
 	fmt.Println("--- work in progress ---")
 	return nil
@@ -109,6 +117,49 @@ func DownloadRepository(URL url.URL) (cloneTo string, err error) {
 		os.WriteFile(cloneTo+"/ffcss.yaml", responseText, 0777)
 	}
 	return cloneTo, nil
+}
+
+// DownloadFromZip downloads a ffcss manifest files along with its resources from the given URL.
+// The URL must point to a zip file that contains a ffcss.yaml in its root.
+func DownloadFromZip(URL url.URL, downloadTo string) error {
+	downloadTo = downloadTo + "/theme.zip"
+
+	// Check if file exists, has the right Content-Type, etc.
+	head, err := http.Head(URL.String())
+	if err != nil {
+		return fmt.Errorf("couldn't check remote file: %s", err.Error())
+	}
+	if head.StatusCode >= 400 {
+		return fmt.Errorf("couldn't check remote file: server returned %s", head.Status)
+	}
+	if head.Header.Get("Content-Type") != "application/zip" {
+		return fmt.Errorf("expected a zip file (application/zip), got a %s", head.Header.Get("Content-Type"))
+	}
+
+	// Download it
+	process := exec.Command("wget", URL.String(), "-O", downloadTo)
+	output, err := process.CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("couldn't download zip file: %s: %s", err.Error(), output)
+	}
+
+	// Unzip it, check contents
+	unzipped, err := zip.Unzip(downloadTo, path.Dir(downloadTo))
+	var hasAManifest bool
+	for _, file := range unzipped {
+		if PatternManifestBasename.MatchString(path.Base(file)) {
+			hasAManifest = true
+			break
+		}
+	}
+	if !hasAManifest {
+		os.RemoveAll(path.Dir(downloadTo))
+		return errors.New("downloaded zip file has no manifest file (ffcss.yaml)")
+	}
+
+	// Remove zip file, only the output folder is interesting
+	os.Remove(downloadTo)
+	return nil
 }
 
 // IsURLClonable determines if the given URL points to a git repository
