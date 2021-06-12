@@ -28,6 +28,10 @@ import (
 // RunCommandUse runs the command "use"
 func RunCommandUse(args docopt.Opts) error {
 	themeName, _ := args.String("THEME_NAME")
+	err := os.MkdirAll(path.Join(GetConfigDir(), "themes"), 0777)
+	if err != nil {
+		return fmt.Errorf("couldn't create data directories: %s\n", err.Error())
+	}
 	uri, typ := ResolveThemeName(themeName)
 	switch typ {
 	case "local":
