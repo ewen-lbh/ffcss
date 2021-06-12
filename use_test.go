@@ -2,9 +2,19 @@ package main
 
 import (
 	"net/url"
+	"os"
 	"testing"
+
 	"github.com/stretchr/testify/assert"
 )
+
+func urlOf(urlrepr string) url.URL {
+	URL, err := url.Parse(urlrepr)
+	if err != nil {
+		panic(err)
+	}
+	return *URL
+}
 
 func TestResolveThemeName(t *testing.T) {
 	name, typ := ResolveThemeName("ewen-lbh/ffcss")
@@ -55,9 +65,21 @@ func TestIsURLClonable(t *testing.T) {
 	assert.Nil(t, err)
 }
 
+func TestDownloadFromZip(t *testing.T) {
+	dl := func(s string) error {
+		tempDir, err := os.MkdirTemp("testarea", "*")
+		if err != nil {
+			panic(err)
+		}
+		return DownloadFromZip(urlOf(s), tempDir)
 	}
-	Assert(t,
-		clonedTo,
-		"/home/ewen/.config/ffcss/themes/@muckSponge/MaterialFox",
-	)
+
+	assert.EqualError(t, dl("https://ewen.works/girehigerhiugrehigerhi"), "couldn't check remote file: server returned 404 Not Found")
+	assert.EqualError(t, dl("https://ewen.works/"), "expected a zip file (application/zip), got a text/html")
+	// TODO: don't. use local files. this is horrible. Spinning up a localhost webserver might be required here, since file:// is not supported by wget
+	// TODO: check for absence of unzipped folder
+	assert.EqualError(t, dl("https://media.ewen.works/ffcss/mocks/themeWithNoManifest.zip"), "downloaded zip file has no manifest file (ffcss.yaml)")
+	// TODO: check for presence of unzipped folder
+	assert.Nil(t, dl("https://media.ewen.works/ffcss/mocks/materialfox.zip"))
+	// TODO: check for absence of zip file, in both cases
 }
