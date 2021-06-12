@@ -186,10 +186,10 @@ func GetThemeDownloadPath(URL url.URL) (directory string) {
 		if len(repo) != 2 {
 			goto fallback
 		}
-		return path.Join(directory, "@" + repo[0], repo[1])
+		return path.Join(directory, "@"+repo[0], repo[1])
 	}
-	fallback:
-		return path.Join(directory, "-"+URL.Host, URL.Path)
+fallback:
+	return path.Join(directory, "-"+URL.Host, URL.Path)
 }
 
 // GetManifest returns a Manifest from the manifest file of themeRoot
