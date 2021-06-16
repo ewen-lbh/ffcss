@@ -3,7 +3,9 @@ build:
 	go build
 
 test:
+	mkdir testarea
 	go test -race -coverprofile=coverage.txt -covermode=atomic
+	rm -rf testarea
 
 install:
 	@cp -v themes/*.yaml ~/.config/ffcss/themes/
