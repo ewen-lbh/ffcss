@@ -4,9 +4,23 @@ import (
 	"github.com/docopt/docopt-go"
 )
 
+const (
+	Usage = `ffcss - Apply and configure FirefoxCSS themes
+
+Usage:
+    ffcss configure KEY [VALUE]
+    ffcss use THEME_NAME
+    ffcss reapply
+    ffcss init [FORMAT]
+
+Where:
+    KEY         a setting key (see firefox's about:config)
+    THEME_NAME  a theme name or URL (see README.md)
+	`
+)
+
 func main() {
-	usage := ReadFile("./USAGE")
-	args, _ := docopt.ParseDoc(usage)
+	args, _ := docopt.ParseDoc(Usage)
 
 	if err := dispatchCommand(args); err != nil {
 		panic(err)
