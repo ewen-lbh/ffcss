@@ -10,13 +10,25 @@ A CLI interface to apply and configure [Firefox CSS themes](https://reddit.com/r
 
 ## Installation
 
-```shell
+### Pre-compiled binary 
+
+```sh
 # Install the latest release by downloading the binary on Github
 curl -LO https://github.com/ewen-lbh/ffcss/releases/latest/download/ffcss
 # Make sure the file is marked as executable
 chmod a+x ffcss
 # Move it to a folder that's in your path (so you can type `ffcss` anywhere), eg.
 mv ffcss ~/.local/bin/ffcss
+```
+
+### Compile it yourself
+
+```sh
+git clone https://github.com/ewen-lbh/ffcss
+cd ffcss
+make 
+make tests # optional, to make sure everything works
+make install
 ```
 
 ## Usage
