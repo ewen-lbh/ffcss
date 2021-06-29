@@ -37,7 +37,7 @@ func TestGetThemeDownloadPath(t *testing.T) {
 	URL, _ := url.Parse("https://github.com/muckSponge/MaterialFox")
 	assert.Equal(t, GetConfigDir()+"/themes/@muckSponge/MaterialFox", GetThemeDownloadPath(*URL))
 
-	URL, _ = url.Parse("https://github.com/users/schoolsyst", GetThemeDownloadPath(*URL))
+	URL, _ = url.Parse("https://github.com/users/schoolsyst")
 	assert.Equal(t, GetConfigDir()+"/themes/-github.com/users/schoolsyst", GetThemeDownloadPath(*URL))
 
 	URL, _ = url.Parse("https://ewen.works/")
