@@ -3,6 +3,7 @@ package main
 import (
 	"errors"
 	"fmt"
+	"net/url"
 	"os"
 	"path"
 	"reflect"
@@ -22,6 +23,7 @@ type ManifestRawFiles struct {
 
 type Manifest struct {
 	Repository   string
+	Name string
 	FfcssVersion int `yaml:"ffcss"`
 	Config       Config
 	Variants     []string
@@ -94,6 +96,11 @@ func (m ManifestRawFiles) Resolve() (manifest Manifest, err error) {
 		err = errors.New("files should be an array or an object of arrays")
 	}
 	return
+}
+
+func (m Manifest) URL() url.URL {
+	uri, typ := ResolveThemeName(m.Name)
+	URL, err := url.Parse(uri)
 }
 
 // LoadManifest loads a ffcss.yaml file into a Manifest object.

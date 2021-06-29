@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"runtime"
 	"github.com/hoisie/mustache"
+	"github.com/bmatcuk/doublestar"
 )
 
 type UserChoices struct {
@@ -51,4 +52,12 @@ func ResolveFilenames(files []File, choices UserChoices) (resolved []string, err
 		resolved = append(resolved, output)
 	}
 	return
+}
+
+func CopyOver(config Config, files []string, toDirs []string, theme Manifest) {
+	for _, glob := range files {
+		for _, file := range doublestar.Glob(GetThemeDownloadPath() glob) {
+
+		}
+	}
 }
