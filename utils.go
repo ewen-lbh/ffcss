@@ -82,19 +82,3 @@ func GetManifestPath(themeRoot string) string {
 
 // ReadManifest reads a manifest file given its filepath and returns a Theme struct
 // func ReadManifest
-
-// GetMozillaReleasesPaths returns an array of release directories from ~/.mozilla.
-func GetMozillaReleasesPaths() ([]string, error) {
-	directories, err := os.ReadDir(ExpandHomeDir("~/.mozilla/firefox/"))
-	releasesPaths := make([]string, 0)
-	patternReleaseID := regexp.MustCompile(`[a-z0-9]{8}\.default(-\w+)?`)
-	if err != nil {
-		return []string{}, fmt.Errorf("couldn't read ~/.mozilla/firefox: %s", err.Error())
-	}
-	for _, releasePath := range directories {
-		if patternReleaseID.MatchString(releasePath.Name()) {
-			releasesPaths = append(releasesPaths, ExpandHomeDir("~/.mozilla/firefox/")+"/"+releasePath.Name())
-		}
-	}
-	return releasesPaths, nil
-}
