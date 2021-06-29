@@ -25,13 +25,11 @@ mv ffcss ~/.local/bin/ffcss
 ffcss - Apply and configure FirefoxCSS themes
 
 Usage:
-    ffcss configure KEY [VALUE]
     ffcss use THEME_NAME
     ffcss reapply
     ffcss init 
 
 Where:
-    KEY         a setting key (see firefox's about:config)
     THEME_NAME  a theme name or URL (see README.md)
 ```
 
@@ -59,11 +57,11 @@ And if `THEME_NAME` is an URL:
 
 Some config keys need to be changed before applying a theme. `toolkit.legacyUserProfileCustomizations.stylesheets` must be set to `true` for _all_ themes, but most require their own extra config keys. Those can be set in the project's `ffcss.yaml`, but, don't worry, if the theme you use do not include a `ffcss.yaml` file, it might be in this repository's `themes/*.yaml` files
 
-### The `config` command
+<!-- ### The `config` command
 
 Synopsis: `ffcss config KEY [VALUE]`
 
-Much simpler than the `use` command, this one just adds convenience to set `about:config` keys. If `VALUE` is not provided, ffcss will output the specified `KEY`'s current value.
+Much simpler than the `use` command, this one just adds convenience to set `about:config` keys. If `VALUE` is not provided, ffcss will output the specified `KEY`'s current value. -->
 
 ### The `reapply` command
 
