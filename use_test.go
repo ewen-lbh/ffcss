@@ -18,33 +18,33 @@ func urlOf(urlrepr string) url.URL {
 
 func TestResolveThemeName(t *testing.T) {
 	name, typ := ResolveThemeName("ewen-lbh/ffcss")
-	assert.Equal(t, []string{name, typ}, []string{"https://github.com/ewen-lbh/ffcss", "git"})
+	assert.Equal(t, []string{"https://github.com/ewen-lbh/ffcss", "git"}, []string{name, typ})
 
 	name, typ = ResolveThemeName("bitbucket.io/guaca/mole")
-	assert.Equal(t, []string{name, typ}, []string{"https://bitbucket.io/guaca/mole", "website"})
+	assert.Equal(t, []string{"https://bitbucket.io/guaca/mole", "website"}, []string{name, typ})
 
 	name, typ = ResolveThemeName("http://localhost:8080/")
-	assert.Equal(t, []string{name, typ}, []string{"http://localhost:8080/", "website"})
+	assert.Equal(t, []string{"http://localhost:8080/", "website"}, []string{name, typ})
 
 	name, typ = ResolveThemeName("materialfox")
-	assert.Equal(t, []string{name, typ}, []string{"https://github.com/muckSponge/MaterialFox", "git"})
+	assert.Equal(t, []string{"https://github.com/muckSponge/MaterialFox", "git"}, []string{name, typ})
 
 	name, typ = ResolveThemeName("unknownone")
-	assert.Equal(t, []string{name, typ}, []string{"", ""})
+	assert.Equal(t, []string{"", ""}, []string{name, typ})
 }
 
 func TestGetThemeDownloadPath(t *testing.T) {
 	URL, _ := url.Parse("https://github.com/muckSponge/MaterialFox")
-	assert.Equal(t, GetThemeDownloadPath(*URL), GetConfigDir()+"/themes/@muckSponge/MaterialFox")
+	assert.Equal(t, GetConfigDir()+"/themes/@muckSponge/MaterialFox", GetThemeDownloadPath(*URL))
 
-	URL, _ = url.Parse("https://github.com/users/schoolsyst")
-	assert.Equal(t, GetThemeDownloadPath(*URL), GetConfigDir()+"/themes/-github.com/users/schoolsyst")
+	URL, _ = url.Parse("https://github.com/users/schoolsyst", GetThemeDownloadPath(*URL))
+	assert.Equal(t, GetConfigDir()+"/themes/-github.com/users/schoolsyst", GetThemeDownloadPath(*URL))
 
 	URL, _ = url.Parse("https://ewen.works/")
-	assert.Equal(t, GetThemeDownloadPath(*URL), GetConfigDir()+"/themes/-ewen.works")
+	assert.Equal(t, GetConfigDir()+"/themes/-ewen.works", GetThemeDownloadPath(*URL))
 
 	URL, _ = url.Parse("http://localhost:8080")
-	assert.Equal(t, GetThemeDownloadPath(*URL), GetConfigDir()+"/themes/-localhost:8080")
+	assert.Equal(t, GetConfigDir()+"/themes/-localhost:8080", GetThemeDownloadPath(*URL))
 
 }
 
@@ -53,15 +53,15 @@ func TestIsURLClonable(t *testing.T) {
 	var err error
 
 	actual, err = IsURLClonable(urlOf("https://github.com/ewen-lbh/ffcss/"))
-	assert.Equal(t, actual, true)
+	assert.Equal(t, true, actual)
 	assert.Nil(t, err)
 
 	actual, err = IsURLClonable(urlOf("https://github.com/users/schoolsyst"))
-	assert.Equal(t, actual, false)
+	assert.Equal(t, false, actual)
 	assert.Nil(t, err)
 
 	actual, err = IsURLClonable(urlOf("https://ewen.works/"))
-	assert.Equal(t, actual, false)
+	assert.Equal(t, false, actual)
 	assert.Nil(t, err)
 }
 
@@ -83,3 +83,18 @@ func TestDownloadFromZip(t *testing.T) {
 	assert.Nil(t, dl("https://media.ewen.works/ffcss/mocks/materialfox.zip"))
 	// TODO: check for absence of zip file, in both cases
 }
+
+// func TestSelectVariant(t *testing.T) {
+// 	theme := Manifest{
+// 		Repository: "https://example.net",
+// 		FfcssVersion: "0.1.0",
+// 		Config: Config{
+// 			"layers.acceleration.force-enabled": true,
+// 			"gfx.webrender.all": true,
+// 		},
+// 		Files: {
+
+// 		},
+// 	}
+// 	assert.Equal()
+// }
