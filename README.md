@@ -105,7 +105,7 @@ config:
 
 ### Files
 
-You can use `userChrome`, `userContent` and `user.js` keys to specify where those files are in your repo. They support [glob patterns][globster]
+You can use `userChrome`, `userContent` and `user.js` keys to specify where those files are in your repo. You can use **case-insensitive** [glob patterns][globster]
 
 If not specified, their default values are either `userChrome.css` (or `userContent.css`, or `user.js`) or `null` when the default file is not found.
 
