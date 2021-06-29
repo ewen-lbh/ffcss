@@ -115,7 +115,23 @@ You can also declare other files in `assets`, an array of [glob patterns][globst
 
 You can use `{{ os }}`, which will get replaced with one of `windows`, `linux` or `macos`, and `{{ variant }}`, which will get replaced by the variant the user has chosen.
 
-All files will get copied to the user's session(s) folder(s)
+All files will get copied to `<user's session folder>/chrome/`. You can change the destination folder (relative to `<user's session folder>`) with `copy to`:
+
+```yaml
+ffcss: 0
+
+repository: https://github.com/muckSponge/MaterialFox
+config:
+  svg.context-properties.content.enabled: true
+  browser.tabs.tabClipWidth: 83
+  materialFox.reduceTabOverflow: true
+  security.insecure_connection_text.enabled: true
+
+assets: chrome/**
+copy to: ./ # relative to user's session folder
+```
+
+without the `copy to`, files would get copied to `<user's session folder>/chrome/chrome/...`, as `chrome/` will be a part of the file names.
 
 ### Variants
 
@@ -128,7 +144,7 @@ ffcss: 1 # signals that the manifest works with ffcss versions 1.X.X
 
 config:
     one.property: yes
-    another.property: hmmmmmm
+    another.property: buckaroo
 
 variants:
     blue:
@@ -140,7 +156,7 @@ choosing the variant "blue" will apply the following config:
 
 ```yaml
 one.property: false
-another.property: hmmmmmmmmmmmm
+another.property: buckaroo
 ```
 
 ### Example
