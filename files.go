@@ -2,9 +2,12 @@ package main
 
 import (
 	"fmt"
+	"io/ioutil"
+	"path"
 	"runtime"
-	"github.com/hoisie/mustache"
+
 	"github.com/bmatcuk/doublestar"
+	"github.com/hoisie/mustache"
 )
 
 type UserChoices struct {
@@ -32,22 +35,19 @@ func GOOStoOS(GOOS string) string {
 
 // ResolveFilenames resolves the file names using choices made by the user (variant selected, current OS).
 // It does not resolve glob patterns though.
-func ResolveFilenames(files []File, choices UserChoices) (resolved []string, err error) {
+func ResolveFilenames(files []FileTemplate, choices UserChoices) (resolved []string, err error) {
 	for _, file := range files {
-		if file.OS != "" && file.OS != choices.OS {
-			continue
-		}
 		var output string
-		templ, err := mustache.ParseString(file.Name)
+		templ, err := mustache.ParseString(file)
 		if err != nil {
-			return resolved, fmt.Errorf("could not parse %q: %s", file.Name, err.Error())
+			return resolved, fmt.Errorf("could not parse %q: %s", file, err.Error())
 		}
 		output = templ.Render(map[string]string{
 			"os": choices.OS,
 			"variant": choices.Variant.Name,
 		})
 		if err != nil {
-			return resolved, fmt.Errorf("could not render %q: %s", file.Name, err.Error())
+			return resolved, fmt.Errorf("could not render %q: %s", file, err.Error())
 		}
 		resolved = append(resolved, output)
 	}

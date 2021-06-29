@@ -95,36 +95,45 @@ config:
 
 ### Files
 
-By default, all files from your repository's `chrome` folder are copied over to the user's profile directory.
+You can use `userChrome`, `userContent` and `user.js` keys to specify where those files are in your repo. They support [glob patterns][globster]
 
-If you want to only copy certain files, you can set `files`, an array of [glob patterns](https://globster.xyz/). 
+If not specified, their default values are either `userChrome.css` (or `userContent.css`, or `user.js`) or `null` when the default file is not found.
 
-`files` can also be an object where the keys are operating systems (`windows`, `linux` or `macos`) and the values are arrays of glob patterns:
+Note that keys declared in `config` will be appended to the copied `user.js`.
 
-```yaml
-files:
-    - userContent.css
-    windows:
-    - windows/userChrome.css
-    linux:
-    - linux/userChrome.css
-    macos:
-    - macos/userChrome.css
-```
+You can also declare other files in `assets`, an array of [glob patterns][globster]. They take precedence over the others keys, since they get copied last.
 
-If your project is somewhat structured, you can use `{{ os }}`, which will get replaced with one of `windows`, `linux` or `macos`. 
+You can use `{{ os }}`, which will get replaced with one of `windows`, `linux` or `macos`, and `{{ variant }}`, which will get replaced by the variant the user has chosen.
 
-```yaml
-files:
-    - userContent.css
-    - '{{ os }}/userContent.css' # quotes needed if your string starts with {
-```
+All files will get copied to the user's session(s) folder(s)
 
 ### Variants
 
-Some themes allow users to choose between different variations. Declare the available variants' names in `variants`, an array of strings ~~or objects mapping the name to its description~~.
+Some themes allow users to choose between different variations. To declare them, add an object with key `variants`, that maps variant names to a configuration object, overriding `config`, `userContent`, etc. for that variation. An additional `description` key is available and will be shown to users when selecting a variant.
 
-Then, in `files`, reference the variant's name with `{{ variant }}`.
+Note that overriding `config` only overrides values set, it does not remove configuration keys that have been set globally: with the following manifest:
+
+```yaml
+ffcss: 1 # signals that the manifest works with ffcss versions 1.X.X
+
+config:
+    one.property: yes
+    another.property: hmmmmmm
+
+variants:
+    blue:
+        config:
+            one.property: false
+```
+
+choosing the variant "blue" will apply the following config:
+
+```yaml
+one.property: false
+another.property: hmmmmmmmmmmmm
+```
+
+### Example
 
 A configuration file example for [@MiguelRAvila](https://github.com/MiguelRAvila)'s [SimplerentFox](https://github.com/MiguelRAvila/SimplerentFox):
 
@@ -136,12 +145,59 @@ config:
     gfx.webrender.all: true
     svg.context-properties.content.enabled: true
 
-variants:
-    - WithoutURLBar
-    - WithURLBar 
-    - OneLine #: Merged tab & address bars (descriptions not supported yet)
+userContent: ./{{ os }}/userContent.css
 
-files:
-    - ./{{ os }}/userContent.css
-    - ./{{ os }}/userChrome__{{ variant }}.css
+variants:
+    OneLine:
+        description: Puts everything onto a single line
+        userChrome:
+            ./{{ os }}/userChrome__OneLine.css
+    WithURLBar:
+        description: Include the URL bar
+        userChrome:
+            ./{{ os }}/userChrome__WithURLBar.css
+    WithoutURLBar:
+        description: Do not include a URL bar
+        userChrome:
+            ./{{ os }}/userChrome__WithoutURLBar.css
 ```
+
+#### Using {{ variant }}
+
+The above manifest could be simplified to:
+
+
+```yaml
+ffcss: 1
+
+config:
+    layers.acceleration.force-enabled: true
+    gfx.webrender.all: true
+    svg.context-properties.content.enabled: true
+
+userContent: ./{{ os }}/userContent.css
+userChrome: ./{{ os }}/userChrome__{{ variant }}.css
+
+variants:
+    OneLine:
+        description: Puts everything onto a single line
+    WithURLBar:
+        description: Include the URL bar
+    WithoutURLBar:
+        description: Do not include a URL bar
+```
+
+If you don't want to write descriptions for variants and don't need to override anything, use `{}` as the variant's value:
+
+```yaml
+ffcss: 1
+
+userChrome: ./userChrome--{{ variant }}.css
+
+variants:
+    blue: {}
+    yellow: {}
+    red: {}
+```
+
+[globster]: https://globster.xyz/

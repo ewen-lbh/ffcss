@@ -8,9 +8,9 @@ import (
 	"strings"
 )
 
-// ToUserJS returns a string of JS source code that represents config.
+// ToUserJSFile returns a string of JS source code that represents config.
 // It can be used directly to write a .mozilla/firefox/*.default-*/user.js file
-func ToUserJS(config map[string]interface{}) (string, error) {
+func ToUserJSFile(config map[string]interface{}) (string, error) {
 	lines := make([]string, 0)
 	for name, value := range config {
 		valueJSON, err := json.Marshal(value)
@@ -37,4 +37,8 @@ func GetMozillaReleasesPaths() ([]string, error) {
 		}
 	}
 	return releasesPaths, nil
+}
+
+func (m Manifest) UserJSFileContent() (string, error) {
+	return ToUserJSFile(m.Config)
 }

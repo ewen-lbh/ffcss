@@ -3,8 +3,8 @@ package main
 import "testing"
 
 func TestRender(t *testing.T) {
-	Assert(t, File{Name: "userChrome.css"}.Render("linux", Variant{}), "userChrome.css")
-	Assert(t, File{Name: "linux.css", OS: "linux"}.Render("linux", Variant{}), "linux.css")
-	Assert(t, File{Name: "linux.css", OS: "linux"}.Render("windows", Variant{}), "")
-	Assert(t, File{Name: "./{{ os }}/{{variant}}.css"}.Render("macos", Variant{Name: "rainbow"}), "./macos/rainbow.css")
+	Assert(t, RenderFileTemplate("userChrome.css", "linux", Variant{}), "userChrome.css")
+	Assert(t, RenderFileTemplate("linux.css", "linux", Variant{}), "linux.css")
+	Assert(t, RenderFileTemplate("linux.css", "windows", Variant{}), "")
+	Assert(t, RenderFileTemplate("./{{ os }}/{{variant}}.css", "macos", Variant{Name: "rainbow"}), "./macos/rainbow.css")
 }

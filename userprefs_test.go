@@ -7,7 +7,7 @@ import (
 )
 
 func TestToUserJS(t *testing.T) {
-	value, err := ToUserJS(map[string]interface{}{
+	value, err := ToUserJSFile(map[string]interface{}{
 		"browser.tabs.tabClipWidth":              90,
 		"svg.context-properties.content.enabled": true,
 	})

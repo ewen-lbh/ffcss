@@ -1,33 +1,26 @@
 package main
 
 import (
-	"errors"
 	"fmt"
 	"net/url"
 	"os"
 	"path"
-	"reflect"
 	"regexp"
 
 	"github.com/hoisie/mustache"
 	"gopkg.in/yaml.v2"
 )
 
-type ManifestRawFiles struct {
-	Repository   string
-	FfcssVersion int `yaml:"ffcss"`
-	Config       Config
-	Variants     []string
-	Files        interface{}
-}
-
 type Manifest struct {
 	Repository   string
-	Name string
+	Name         string
 	FfcssVersion int `yaml:"ffcss"`
 	Config       Config
 	Variants     []string
-	Files        []File
+	UserChrome   []FileTemplate `yaml:"userChrome"`
+	UserContent  []FileTemplate `yaml:"userContent"`
+	UserJS       []FileTemplate `yaml:"user.js"`
+	Assets       []FileTemplate
 }
 
 type Config map[string]interface{}
@@ -37,16 +30,10 @@ type Variant struct {
 	Description string
 }
 
-type File struct {
-	Name string
-	OS   string
-}
+type FileTemplate = string
 
-func (f File) Render(os string, variant Variant) string {
-	if os != f.OS && f.OS != "" {
-		return ""
-	}
-	return mustache.Render(f.Name, map[string]string{
+func RenderFileTemplate(f FileTemplate, os string, variant Variant) string {
+	return mustache.Render(f, map[string]string{
 		"os":      os,
 		"variant": variant.Name,
 	})
@@ -57,50 +44,21 @@ func NewManifest() Manifest {
 		Config: Config{
 			"toolkit.legacyUserProfileCustomizations.stylesheets": true,
 		},
-		Files: []File{{Name: "config/**"}},
+		Assets: []FileTemplate{"config/**"},
 	}
-}
-
-func newManifestFromManifestRawFiles(m ManifestRawFiles) Manifest {
-	manifest := NewManifest()
-	manifest.Config = m.Config
-	manifest.FfcssVersion = m.FfcssVersion
-	manifest.Repository = m.Repository
-	manifest.Variants = m.Variants
-	return manifest
-}
-
-// Resolve resolves the two different forms of files into a []File
-func (m ManifestRawFiles) Resolve() (manifest Manifest, err error) {
-	manifest = newManifestFromManifestRawFiles(m)
-	if reflect.TypeOf(m.Files) == nil {
-		return
-	}
-	switch reflect.TypeOf(m.Files).Kind() {
-	case reflect.Array, reflect.Slice:
-		// Remove default files
-		manifest.Files = make([]File, 0)
-		for _, elem := range m.Files.([]interface{}) {
-			manifest.Files = append(manifest.Files, File{Name: fmt.Sprint(elem)})
-		}
-	case reflect.Map:
-		for os, filesArray := range m.Files.(map[string][]interface{}) {
-			for _, elem := range filesArray {
-				filesArray = append(filesArray, File{
-					Name: fmt.Sprint(elem),
-					OS:   os,
-				})
-			}
-		}
-	default:
-		err = errors.New("files should be an array or an object of arrays")
-	}
-	return
 }
 
 func (m Manifest) URL() url.URL {
-	uri, typ := ResolveThemeName(m.Name)
+	uri, _ := ResolveThemeName(m.Name)
 	URL, err := url.Parse(uri)
+	if err != nil {
+		panic(err)
+	}
+	return *URL
+}
+
+func (m Manifest) DownloadPath() string {
+	return GetThemeDownloadPath(m.URL())
 }
 
 // LoadManifest loads a ffcss.yaml file into a Manifest object.
@@ -110,15 +68,10 @@ func LoadManifest(manifestPath string) (manifest Manifest, err error) {
 		err = fmt.Errorf("while reading manifest %s: %s", manifestPath, err.Error())
 		return
 	}
-	loaded := ManifestRawFiles{}
+	loaded := NewManifest()
 	err = yaml.Unmarshal(raw, &loaded)
 	if err != nil {
 		err = fmt.Errorf("while parsing manifest %s: %s", manifestPath, err.Error())
-		return
-	}
-	manifest, err = loaded.Resolve()
-	if err != nil {
-		err = fmt.Errorf("while parsing files in manifest %s: %s", manifestPath, err.Error())
 		return
 	}
 	return
