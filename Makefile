@@ -3,6 +3,8 @@ build:
 	go build
 
 test:
+	rm -rf testarea
+	make install
 	mkdir testarea
 	go test -race -coverprofile=coverage.txt -covermode=atomic
 	rm -rf testarea
