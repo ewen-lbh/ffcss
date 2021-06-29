@@ -1,14 +1,12 @@
 package main
 
 import (
-	"fmt"
 	"io/ioutil"
 	"net/url"
 	"os"
 	"os/user"
 	"path"
 	"path/filepath"
-	"regexp"
 	"strings"
 	"testing"
 )
@@ -79,6 +77,3 @@ func GetTempDir() string {
 func GetManifestPath(themeRoot string) string {
 	return path.Join(themeRoot, "ffcss.yaml")
 }
-
-// ReadManifest reads a manifest file given its filepath and returns a Theme struct
-// func ReadManifest
