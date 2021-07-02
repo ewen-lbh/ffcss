@@ -26,6 +26,7 @@ func TestResolveFilenames(t *testing.T) {
 	assert.Equal(t,
 		[]string{
 			"linux/chrome-rainbow.css",
+			"userChrome.css",
 		},
 		result,
 	)
