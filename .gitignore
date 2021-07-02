@@ -38,3 +38,6 @@ coverage.txt
 
 ffcss
 commit-types-distribution.png
+
+# coverage
+profile.out
