@@ -9,6 +9,8 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 // ReadFileBytes reads the content of ``filepath`` and returns the contents as a byte array
@@ -43,9 +45,7 @@ func isValidURL(toTest string) bool {
 }
 
 func Assert(t *testing.T, got interface{}, expected interface{}) {
-	if got != expected {
-		t.Errorf("\nexpected: \n%s\n\ngot: \n%s", expected, got)
-	}
+	assert.Equal(t, expected, got)
 }
 
 // ExpandHomeDir expands the "~/" part of a path to the current user's home directory
