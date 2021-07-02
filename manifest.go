@@ -68,8 +68,8 @@ func LoadManifest(manifestPath string) (manifest Manifest, err error) {
 		err = fmt.Errorf("while reading manifest %s: %s", manifestPath, err.Error())
 		return
 	}
-	loaded := NewManifest()
-	err = yaml.Unmarshal(raw, &loaded)
+	manifest = NewManifest()
+	err = yaml.Unmarshal(raw, &manifest)
 	if err != nil {
 		err = fmt.Errorf("while parsing manifest %s: %s", manifestPath, err.Error())
 		return
@@ -98,7 +98,7 @@ func LoadThemeStore(storeDirectory string) (themes ThemeStore, err error) {
 		themeName := themeNamePattern.FindStringSubmatch(manifest.Name())[1]
 		theme, err := LoadManifest(path.Join(storeDirectory, manifest.Name()))
 		if err != nil {
-			return themes, err
+			return nil, err
 		}
 		themes[themeName] = theme
 	}
