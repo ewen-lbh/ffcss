@@ -1,14 +1,20 @@
 package main
 
 import (
-	"fmt"
+	"os"
+	"path"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestGetMozillaReleasesPaths(t *testing.T) {
-	paths, err := GetMozillaReleasesPaths()
+	cwd, _ := os.Getwd()
+	mockedHomedir := path.Join(cwd, "mocks", "homedir")
+
+	paths, err := GetMozillaReleasesPaths(path.Join(mockedHomedir, ".mozilla"))
 	if err != nil {
 		panic(err)
 	}
-	Assert(t, fmt.Sprintf("%#v", paths), `[]string{"/home/ewen/.mozilla/firefox/hhkjqjta.default", "/home/ewen/.mozilla/firefox/vv6f899j.default-release", "/home/ewen/.mozilla/firefox/yhzcf3nm.default-nightly"}`)
+	assert.Equal(t, []string{path.Join(mockedHomedir, ".mozilla", "firefox", "667ekipp.default-release")}, paths)
 }

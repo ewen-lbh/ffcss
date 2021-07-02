@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"path"
 	"regexp"
 	"strings"
 )
@@ -24,8 +25,23 @@ func ToUserJSFile(config map[string]interface{}) (string, error) {
 
 
 // GetMozillaReleasesPaths returns an array of release directories from ~/.mozilla.
-func GetMozillaReleasesPaths() ([]string, error) {
-	directories, err := os.ReadDir(ExpandHomeDir("~/.mozilla/firefox/"))
+// 0 arguments: the .mozilla folder is assumed to be ~/.mozilla.
+// 1 argument: use the given .mozilla folder
+// more arguments: panic.
+func GetMozillaReleasesPaths(dotMozilla... string) ([]string, error) {
+	var mozillaFolder string
+	if len(dotMozilla) == 0 {
+		homedir, err := os.UserHomeDir()
+		if err != nil {
+			return []string{}, fmt.Errorf("couldn't get the current user's home directory: %s. Try to use --mozilla-dir", err)
+		}
+		mozillaFolder = path.Join(homedir, ".mozilla")
+	} else if len(dotMozilla) == 1 {
+		mozillaFolder = dotMozilla[0]
+	} else {
+		panic(fmt.Sprintf("received %d arguments, expected 0 or 1", len(dotMozilla)))
+	}
+	directories, err := os.ReadDir(path.Join(mozillaFolder, "firefox"))
 	releasesPaths := make([]string, 0)
 	patternReleaseID := regexp.MustCompile(`[a-z0-9]{8}\.default(-\w+)?`)
 	if err != nil {
@@ -33,7 +49,7 @@ func GetMozillaReleasesPaths() ([]string, error) {
 	}
 	for _, releasePath := range directories {
 		if patternReleaseID.MatchString(releasePath.Name()) {
-			releasesPaths = append(releasesPaths, ExpandHomeDir("~/.mozilla/firefox/")+"/"+releasePath.Name())
+			releasesPaths = append(releasesPaths, path.Join(mozillaFolder, "firefox", releasePath.Name()))
 		}
 	}
 	return releasesPaths, nil
