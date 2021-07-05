@@ -9,7 +9,7 @@ const (
 
 Usage:
     ffcss configure KEY [VALUE]
-    ffcss use THEME_NAME
+    ffcss use THEME_NAME [VARIANT]
     ffcss reapply
     ffcss init [FORMAT]
 

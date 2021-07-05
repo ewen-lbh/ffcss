@@ -40,24 +40,39 @@ func ResolveFilenames(files []FileTemplate, choices UserChoices) (resolved []str
 		var output string
 		templ, err := mustache.ParseString(file)
 		if err != nil {
-			return resolved, fmt.Errorf("could not parse %q: %s", file, err.Error())
+			return resolved, fmt.Errorf("could not parse %q: %w", file, err)
 		}
 		output = templ.Render(map[string]string{
-			"os": choices.OS,
+			"os":      choices.OS,
 			"variant": choices.Variant.Name,
 		})
 		if err != nil {
-			return resolved, fmt.Errorf("could not render %q: %s", file, err.Error())
+			return resolved, fmt.Errorf("could not render %q: %w", file, err)
 		}
 		resolved = append(resolved, output)
 	}
 	return
 }
 
-func CopyOver(config Config, files []string, toDirs []string, theme Manifest) {
+// CopyOver copies over files from files to each directory in toDirs
+func CopyOver(files []string, toDirs []string) (err error) {
 	for _, glob := range files {
-		for _, file := range doublestar.Glob(GetThemeDownloadPath() glob) {
-
+		matches, err := doublestar.Glob(glob)
+		if err != nil {
+			return fmt.Errorf("while scanning for %s: %w", glob, err)
+		}
+		for _, file := range matches {
+			content, err := ioutil.ReadFile(file)
+			if err != nil {
+				return fmt.Errorf("while reading %s: %w", file, err)
+			}
+			for _, toDir := range toDirs {
+				err = ioutil.WriteFile(path.Join(toDir, file), content, 0700)
+				if err != nil {
+					return fmt.Errorf("while writing to %s: %w", path.Join(toDir, file), err)
+				}
+			}
 		}
 	}
+	return nil
 }

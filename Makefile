@@ -1,13 +1,16 @@
+.PHONY: mocks
+
 build:
 	go mod tidy
 	go build
 
 test:
-	rm -rf testarea
-	make install
-	mkdir testarea
+	@rm -rf testarea
+	@make install
+	@mkdir testarea
+	@make mocks
 	go test -race -coverprofile=coverage.txt -covermode=atomic
-	rm -rf testarea
+	@rm -rf testarea
 
 install:
 	@cp -v themes/*.yaml ~/.config/ffcss/themes/
@@ -15,3 +18,6 @@ install:
 
 format:
 	gofmt -s -w **.go
+
+mocks:
+	mkdir -p mocks/{zip-dropoff,cache-directory}

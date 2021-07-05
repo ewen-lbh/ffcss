@@ -8,37 +8,36 @@ config:
   svg.context-properties.content.enabled: true
 
 variants:
-  - WithoutURLBar
-  - WithURLBar
-  - OneLine
+  WithoutURLBar: {}
+  WithURLBar: {}
+  OneLine: {}
 
-files:
-  - ./{{ os }}/userContent.css
-  - ./{{ os }}/userChrome__{{ variant }}.css
+userContent: ./{{ os }}/userContent.css
+userChrome: ./{{ os }}/userChrome__{{ variant }}.css
 
-  # without {{ variables }}:
-  # files:
-  #  windows:
-  #  - Windows/userContent.css
-  #  linux:
-  #  - Linux/userContent.css
-  #
-  # variants:
-  #   WithURLBar:
-  #     files:
-  #       windows:
-  #       - Windows/userChrome__WithURLBar.css
-  #       linux:
-  #       - Linux/userChrome__WithURLBar.css
-  #   WithoutURLBar:
-  #     files:
-  #       windows:
-  #       - Windows/userChrome__WithoutURLBar.css
-  #       linux:
-  #       - Linux/userChrome__WithoutURLBar.css
-  #   OneLine:
-  #     files:
-  #       windows:
-  #       - Windows/userChrome__WithURLBar.css
-  #       linux:
-  #       - Linux/userChrome__OneLWithURLBar
+# without {{ variables }}:
+# files:
+#  windows:
+#  - Windows/userContent.css
+#  linux:
+#  - Linux/userContent.css
+#
+# variants:
+#   WithURLBar:
+#     files:
+#       windows:
+#       - Windows/userChrome__WithURLBar.css
+#       linux:
+#       - Linux/userChrome__WithURLBar.css
+#   WithoutURLBar:
+#     files:
+#       windows:
+#       - Windows/userChrome__WithoutURLBar.css
+#       linux:
+#       - Linux/userChrome__WithoutURLBar.css
+#   OneLine:
+#     files:
+#       windows:
+#       - Windows/userChrome__WithURLBar.css
+#       linux:
+#       - Linux/userChrome__OneLWithURLBar

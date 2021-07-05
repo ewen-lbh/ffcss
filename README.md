@@ -118,7 +118,7 @@ You can use `{{ os }}`, which will get replaced with one of `windows`, `linux` o
 All files will get copied to `<user's session folder>/chrome/`. You can change the destination folder (relative to `<user's session folder>`) with `copy to`:
 
 ```yaml
-ffcss: 0
+ffcss: 0 # signals that no compatibility is ensured (since 0.X.X versions can contain breaking changes, see semver)
 
 repository: https://github.com/muckSponge/MaterialFox
 config:

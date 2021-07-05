@@ -12,7 +12,7 @@ func TestGetMozillaReleasesPaths(t *testing.T) {
 	cwd, _ := os.Getwd()
 	mockedHomedir := path.Join(cwd, "mocks", "homedir")
 
-	paths, err := GetMozillaReleasesPaths(path.Join(mockedHomedir, ".mozilla"))
+	paths, err := ProfileDirsPaths(path.Join(mockedHomedir, ".mozilla"))
 	if err != nil {
 		panic(err)
 	}

@@ -1,12 +1,14 @@
 package main
 
 import (
+	"fmt"
 	"io/ioutil"
 	"net/url"
 	"os"
 	"os/user"
 	"path"
 	"path/filepath"
+	"regexp"
 	"strings"
 	"testing"
 
@@ -68,12 +70,61 @@ func GetConfigDir() string {
 	return ExpandHomeDir("~/.config/ffcss")
 }
 
-// GetTempDir returns the temporary path for cloned repos and other stuff
-func GetTempDir() string {
+// GetCacheDir returns the temporary path for cloned repos and other stuff
+func GetCacheDir() string {
 	return ExpandHomeDir("~/.cache/ffcss/")
+}
+
+// CacheDir joins the cache directory with the given path segments
+func CacheDir(pathSegments ...string) string {
+	return path.Join(GetCacheDir(), path.Join(pathSegments...))
+}
+
+// ConfigDir joins the config directory with the given path segments
+func ConfigDir(pathSegments ...string) string {
+	return path.Join(GetConfigDir(), path.Join(pathSegments...))
 }
 
 // GetManifestPath returns the path of a theme's manifest file
 func GetManifestPath(themeRoot string) string {
 	return path.Join(themeRoot, "ffcss.yaml")
+}
+
+// ProfileDirsPaths returns an array of profile directories from ~/.mozilla.
+// 0 arguments: the .mozilla folder is assumed to be ~/.mozilla.
+// 1 argument: use the given .mozilla folder
+// more arguments: panic.
+func ProfileDirsPaths(dotMozilla ...string) ([]string, error) {
+	var mozillaFolder string
+	if len(dotMozilla) == 0 {
+		homedir, err := os.UserHomeDir()
+		if err != nil {
+			return []string{}, fmt.Errorf("couldn't get the current user's home directory: %s. Try to use --mozilla-dir", err)
+		}
+		mozillaFolder = path.Join(homedir, ".mozilla")
+	} else if len(dotMozilla) == 1 {
+		mozillaFolder = dotMozilla[0]
+	} else {
+		panic(fmt.Sprintf("received %d arguments, expected 0 or 1", len(dotMozilla)))
+	}
+	directories, err := os.ReadDir(path.Join(mozillaFolder, "firefox"))
+	releasesPaths := make([]string, 0)
+	patternReleaseID := regexp.MustCompile(`[a-z0-9]{8}\.default(-\w+)?`)
+	if err != nil {
+		return []string{}, fmt.Errorf("couldn't read ~/.mozilla/firefox: %w", err)
+	}
+	for _, releasePath := range directories {
+		if patternReleaseID.MatchString(releasePath.Name()) {
+			releasesPaths = append(releasesPaths, path.Join(mozillaFolder, "firefox", releasePath.Name()))
+		}
+	}
+	return releasesPaths, nil
+}
+
+func cwd() string {
+	wd, err := os.Getwd()
+	if err != nil {
+		panic(err)
+	}
+	return wd
 }
