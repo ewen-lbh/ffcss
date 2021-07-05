@@ -15,7 +15,8 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-// ReadFileBytes reads the content of ``filepath`` and returns the contents as a byte array
+// ReadFileBytes reads the content of ``filepath`` and returns the contents as a byte array.
+// It panics on any error.
 func ReadFileBytes(filepath string) []byte {
 	file, err := os.Open(filepath)
 	if err != nil {
@@ -23,10 +24,13 @@ func ReadFileBytes(filepath string) []byte {
 	}
 	defer file.Close()
 	b, err := ioutil.ReadAll(file)
+	if err != nil {
+		panic(err)
+	}
 	return b
 }
 
-// ReadFile reads the content of ``filepath`` and returns the contents as a string
+// ReadFile reads the content of ``filepath`` and returns the contents as a string.
 func ReadFile(filepath string) string {
 	return string(ReadFileBytes(filepath))
 }

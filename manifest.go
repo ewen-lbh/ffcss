@@ -35,11 +35,11 @@ type Manifest struct {
 
 func (m Manifest) Name() string {
 	if m.ExplicitName != "" {
-		return m.ExplicitName
+		return strings.ToLower(m.ExplicitName)
 	}
 	if strings.HasPrefix(m.Repository, "https://github.com") {
 		fragments := strings.Split(m.Repository, "/")
-		return fragments[len(fragments)-1]
+		return strings.ToLower(fragments[len(fragments)-1])
 	}
 	return ""
 }
@@ -135,7 +135,7 @@ type ThemeStore = map[string]Manifest
 // Keys are theme names (files' basenames with the .yaml removed).
 func LoadThemeCatalog(storeDirectory string) (themes ThemeStore, err error) {
 	themeNamePattern := regexp.MustCompile(`^(.+)\.ya?ml$`)
-	themes = make(ThemeStore, 0)
+	themes = make(ThemeStore)
 	manifests, err := os.ReadDir(storeDirectory)
 	if err != nil {
 		return
