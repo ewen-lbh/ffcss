@@ -41,3 +41,5 @@ commit-types-distribution.png
 
 # coverage
 profile.out
+
+coverage/lcov.info
