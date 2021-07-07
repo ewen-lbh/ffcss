@@ -5,11 +5,9 @@ import (
 	"net/url"
 	"os"
 	"path"
-	"path/filepath"
 	"regexp"
 	"strings"
 
-	"github.com/hoisie/mustache"
 	"gopkg.in/yaml.v2"
 )
 
@@ -26,6 +24,7 @@ type Manifest struct {
 	ExplicitName string `yaml:"name"`
 	FfcssVersion int    `yaml:"ffcss"`
 	Variants     map[string]Theme
+	CopyFrom     string `yaml:"copy from"`
 	Config       Config
 	UserChrome   FileTemplate `yaml:"userChrome"`
 	UserContent  FileTemplate `yaml:"userContent"`
@@ -44,32 +43,6 @@ func (m Manifest) Name() string {
 	return ""
 }
 
-// AllFileTemplates concatenates all file templates, in copy order (last in array should be copied over last)
-func (m Manifest) AllFileTemplates() []FileTemplate {
-	return append(
-		[]FileTemplate{
-			m.UserChrome,
-			m.UserContent,
-			m.UserJS,
-		},
-		m.Assets...,
-	)
-}
-
-// AllFiles returns all of the file paths (relative to the repository's root)
-func (m Manifest) AllFiles(os string, variant Variant) ([]string, error) {
-	resolvedFiles := make([]string, 0)
-	for _, template := range m.AllFileTemplates() {
-		glob := RenderFileTemplate(template, os, variant)
-		resolved, err := filepath.Glob(path.Join(m.DownloadPath(), glob))
-		if err != nil {
-			return []string{}, fmt.Errorf("malformed glob pattern %q: %w", glob, err)
-		}
-		resolvedFiles = append(resolvedFiles, resolved...)
-	}
-	return resolvedFiles, nil
-}
-
 func (m Manifest) DownloadPath() string {
 	return CacheDir(m.Name())
 }
@@ -83,13 +56,6 @@ type Variant struct {
 
 type FileTemplate = string
 
-func RenderFileTemplate(f FileTemplate, os string, variant Variant) string {
-	return mustache.Render(f, map[string]string{
-		"os":      os,
-		"variant": variant.Name,
-	})
-}
-
 func NewManifest() Manifest {
 	return Manifest{
 		Config: Config{
@@ -98,6 +64,8 @@ func NewManifest() Manifest {
 		UserChrome:  "userChrome.css",
 		UserContent: "userContent.css",
 		UserJS:      "user.js",
+		Variants:    map[string]Theme{},
+		Assets:      []FileTemplate{},
 	}
 }
 
@@ -126,8 +94,6 @@ func LoadManifest(manifestPath string) (manifest Manifest, err error) {
 	return
 }
 
-// TODO: code generation for explicit keys from themes.toml?
-
 // ThemeStore represents a collection of themes
 type ThemeStore = map[string]Manifest
 
@@ -152,4 +118,13 @@ func LoadThemeCatalog(storeDirectory string) (themes ThemeStore, err error) {
 		themes[themeName] = theme
 	}
 	return
+}
+
+// AvailableVariants lists the possible variant names to choose from
+func (m Manifest) AvailableVariants() []string {
+	names := make([]string, 0, len(m.Variants))
+	for name := range m.Variants {
+		names = append(names, name)
+	}
+	return names
 }

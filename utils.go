@@ -2,9 +2,9 @@ package main
 
 import (
 	"fmt"
-	"io/ioutil"
 	"net/url"
 	"os"
+	"os/exec"
 	"os/user"
 	"path"
 	"path/filepath"
@@ -14,26 +14,6 @@ import (
 
 	"github.com/stretchr/testify/assert"
 )
-
-// ReadFileBytes reads the content of ``filepath`` and returns the contents as a byte array.
-// It panics on any error.
-func ReadFileBytes(filepath string) []byte {
-	file, err := os.Open(filepath)
-	if err != nil {
-		panic(err)
-	}
-	defer file.Close()
-	b, err := ioutil.ReadAll(file)
-	if err != nil {
-		panic(err)
-	}
-	return b
-}
-
-// ReadFile reads the content of ``filepath`` and returns the contents as a string.
-func ReadFile(filepath string) string {
-	return string(ReadFileBytes(filepath))
-}
 
 // isValidURL tests a string to determine if it is a well-structured url or not.
 func isValidURL(toTest string) bool {
@@ -54,8 +34,8 @@ func Assert(t *testing.T, got interface{}, expected interface{}) {
 	assert.Equal(t, expected, got)
 }
 
-// ExpandHomeDir expands the "~/" part of a path to the current user's home directory
-func ExpandHomeDir(p string) string {
+// expandHomeDir expands the "~/" part of a path to the current user's home directory
+func expandHomeDir(p string) string {
 	usr, _ := user.Current()
 	homedir := usr.HomeDir
 	if p == "~" {
@@ -71,12 +51,12 @@ func ExpandHomeDir(p string) string {
 
 // GetConfigDir returns the absolute path of ffcss's configuration directory
 func GetConfigDir() string {
-	return ExpandHomeDir("~/.config/ffcss")
+	return expandHomeDir("~/.config/ffcss")
 }
 
 // GetCacheDir returns the temporary path for cloned repos and other stuff
 func GetCacheDir() string {
-	return ExpandHomeDir("~/.cache/ffcss/")
+	return expandHomeDir("~/.cache/ffcss/")
 }
 
 // CacheDir joins the cache directory with the given path segments
@@ -113,13 +93,17 @@ func ProfileDirsPaths(dotMozilla ...string) ([]string, error) {
 	}
 	directories, err := os.ReadDir(path.Join(mozillaFolder, "firefox"))
 	releasesPaths := make([]string, 0)
-	patternReleaseID := regexp.MustCompile(`[a-z0-9]{8}\.default(-\w+)?`)
+	patternReleaseID := regexp.MustCompile(`[a-z0-9]{8}\.\w+`)
 	if err != nil {
 		return []string{}, fmt.Errorf("couldn't read ~/.mozilla/firefox: %w", err)
 	}
 	for _, releasePath := range directories {
 		if patternReleaseID.MatchString(releasePath.Name()) {
-			releasesPaths = append(releasesPaths, path.Join(mozillaFolder, "firefox", releasePath.Name()))
+			stat, err := os.Stat(path.Join(mozillaFolder, "firefox", releasePath.Name()))
+			if err != nil { continue }
+			if stat.IsDir() {
+				releasesPaths = append(releasesPaths, path.Join(mozillaFolder, "firefox", releasePath.Name()))
+			}
 		}
 	}
 	return releasesPaths, nil
@@ -131,4 +115,34 @@ func cwd() string {
 		panic(err)
 	}
 	return wd
+}
+
+// isURLClonable determines if the given URL points to a git repository
+func isURLClonable(URL string) (clonable bool, err error) {
+	output, err := exec.Command("git", "ls-remote", URL).CombinedOutput()
+	if err == nil {
+		return true, nil
+	}
+	switch err.(type) {
+	case *exec.ExitError:
+		if err.(*exec.ExitError).ExitCode() == 128 {
+			return false, nil
+		}
+	}
+	return false, fmt.Errorf("while running git-ls-remote: %w: %s", err, output)
+}
+
+// RenameIfExists renames from to to if from exists. If it doesn't, don't attempt renaming.
+func RenameIfExists(from string, to string) error {
+	if _, err := os.Stat(from); os.IsNotExist(err) {
+		return nil
+	}
+	if _, err := os.Stat(to); os.IsNotExist(err) {
+		return os.Rename(from, to)
+	}
+	err := os.RemoveAll(to)
+	if err != nil {
+		return err
+	}
+	return os.Rename(from, to)
 }

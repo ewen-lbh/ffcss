@@ -3,24 +3,14 @@ package main
 import (
 	"fmt"
 	"io/ioutil"
+	"os"
 	"path"
-	"runtime"
+	"path/filepath"
+	"strings"
 
 	"github.com/bmatcuk/doublestar"
 	"github.com/hoisie/mustache"
 )
-
-type UserChoices struct {
-	Variant Variant
-	OS      string
-}
-
-func NewUserChoices() UserChoices {
-	return UserChoices{
-		Variant: Variant{},
-		OS:      GOOStoOS(runtime.GOOS),
-	}
-}
 
 func GOOStoOS(GOOS string) string {
 	switch GOOS {
@@ -33,46 +23,165 @@ func GOOStoOS(GOOS string) string {
 	}
 }
 
-// ResolveFilenames resolves the file names using choices made by the user (variant selected, current OS).
-// It does not resolve glob patterns though.
-func ResolveFilenames(files []FileTemplate, choices UserChoices) (resolved []string, err error) {
-	for _, file := range files {
-		var output string
-		templ, err := mustache.ParseString(file)
-		if err != nil {
-			return resolved, fmt.Errorf("could not parse %q: %w", file, err)
-		}
-		output = templ.Render(map[string]string{
-			"os":      choices.OS,
-			"variant": choices.Variant.Name,
-		})
-		if err != nil {
-			return resolved, fmt.Errorf("could not render %q: %w", file, err)
-		}
-		resolved = append(resolved, output)
+// InstallAssets installs the assets in the specified profile directory
+func (m Manifest) InstallAssets(operatingSystem string, variant Variant, profileDir string) (err error) {
+	files, err := m.AssetsPaths(operatingSystem, variant, profileDir)
+	if err != nil {
+		return fmt.Errorf("while gathering assets: %w", err)
 	}
-	return
-}
 
-// CopyOver copies over files from files to each directory in toDirs
-func CopyOver(files []string, toDirs []string) (err error) {
-	for _, glob := range files {
-		matches, err := doublestar.Glob(glob)
+	for _, file := range files {
+		stat, err := os.Stat(file)
 		if err != nil {
-			return fmt.Errorf("while scanning for %s: %w", glob, err)
+			return fmt.Errorf("couldn't check file %s: %w", file, err)
 		}
-		for _, file := range matches {
-			content, err := ioutil.ReadFile(file)
-			if err != nil {
-				return fmt.Errorf("while reading %s: %w", file, err)
-			}
-			for _, toDir := range toDirs {
-				err = ioutil.WriteFile(path.Join(toDir, file), content, 0700)
-				if err != nil {
-					return fmt.Errorf("while writing to %s: %w", path.Join(toDir, file), err)
-				}
-			}
+
+		if stat.IsDir() {
+			continue
 		}
+
+		content, err := ioutil.ReadFile(file)
+		if err != nil {
+			return fmt.Errorf("while reading %s: %w", file, err)
+		}
+
+		destPath, err := m.DestinationPathOfAsset(file, profileDir, operatingSystem, variant)
+		if err != nil {
+			println(err.Error())
+			continue
+		}
+
+		err = os.MkdirAll(path.Dir(destPath), 0700)
+		if err != nil {
+			return fmt.Errorf("couldn't create parent directories for %s: %w", destPath, err)
+		}
+
+		err = ioutil.WriteFile(destPath, content, 0700)
+		if err != nil {
+			return fmt.Errorf("while writing to %s: %w", destPath, err)
+		}
+
 	}
 	return nil
+}
+
+// AssetsPaths returns the individual file paths of all assets
+func (m Manifest) AssetsPaths(os string, variant Variant, profileDirectory string) ([]string, error) {
+	resolvedFiles := make([]string, 0)
+	for _, template := range m.Assets {
+		glob := RenderFileTemplate(template, os, variant)
+		glob = path.Clean(path.Join(m.DownloadPath(), glob))
+		files, err := doublestar.Glob(glob)
+		if err != nil {
+			return resolvedFiles, fmt.Errorf("while getting all matches of glob %s: %w", glob, err)
+		}
+		// If no matches
+		if len(files) < 1 {
+			// If it's _really_ a glob pattern
+			if strings.Contains(glob, "*") {
+				return resolvedFiles, fmt.Errorf("glob pattern %s matches no files", glob)
+				// If it's just a regular file (that was treated as a glob pattern)
+			} else {
+				return resolvedFiles, fmt.Errorf("file %s not found", glob)
+			}
+		}
+		// For each match of the glob pattern
+		resolvedFiles = append(resolvedFiles, files...)
+	}
+	return resolvedFiles, nil
+}
+
+// InstallUserJS installs the content of user.js and the config entries to {{profileDir}}/user.js
+func (m Manifest) InstallUserJS(operatingSystem string, variant Variant, profileDir string) error {
+	if m.UserJS == "" {
+		return nil
+	}
+	file := path.Join(m.DownloadPath(), RenderFileTemplate(m.UserJS, operatingSystem, variant))
+	content, err := ioutil.ReadFile(file)
+	if err != nil {
+		return fmt.Errorf("while reading %s: %w", file, err)
+	}
+
+	err = RenameIfExists(path.Join(profileDir, "user.js"), path.Join(profileDir, "user.js.bak"))
+	if err != nil {
+		return fmt.Errorf("while creating backup of %s: %w", path.Join(profileDir, "user.js"), err)
+	}
+
+	additionalContent, err := m.UserJSFileContent()
+	if err != nil {
+		return fmt.Errorf("while translating config entries to javascript: %w", err)
+	}
+
+	content = []byte(string(content) + "\n" + additionalContent)
+	err = ioutil.WriteFile(path.Join(profileDir, "user.js"), content, 0700)
+	if err != nil {
+		return  fmt.Errorf("while writing: %w",  err)
+	}
+
+	return nil
+}
+
+// InstallUserChrome writes the content of userChrome to {{profileDir}}/chrome/userChrome.css
+func (m Manifest) InstallUserChrome(os string, variant Variant, profileDir string) error {
+	if m.UserChrome == "" {
+		return nil
+	}
+	file := path.Join(m.DownloadPath(), RenderFileTemplate(m.UserChrome, os, variant))
+	content, err := ioutil.ReadFile(file)
+	if err != nil {
+		return fmt.Errorf("while reading %s: %w", file, err)
+	}
+
+	err = ioutil.WriteFile(path.Join(profileDir, "chrome", "userChrome.css"), content, 0700)
+	if err != nil {
+		return  fmt.Errorf("while writing: %w",  err)
+	}
+
+	return nil
+}
+
+// InstallUserContent writes the content of userContent to {{profileDir}}/chrome/userContent.css
+func (m Manifest) InstallUserContent(os string, variant Variant, profileDir string) error {
+	if m.UserContent == "" {
+		return nil
+	}
+	file := path.Join(m.DownloadPath(), RenderFileTemplate(m.UserContent, os, variant))
+	content, err := ioutil.ReadFile(file)
+	if err != nil {
+		return fmt.Errorf("while reading %s: %w", file, err)
+	}
+
+	err = ioutil.WriteFile(path.Join(profileDir, "chrome", "userContent.css"), content, 0700)
+	if err != nil {
+		return  fmt.Errorf("while writing: %w",  err)
+	}
+
+	return nil
+}
+
+// DestinationPathOfAsset computes the destination path of some asset from its path and the destination profile directory
+// It is assumed that assetPath is absolute.
+func (m Manifest) DestinationPathOfAsset(assetPath string, profileDir string, operatingSystem string, variant Variant) (string, error) {
+	if !strings.HasPrefix(assetPath, m.DownloadPath()) {
+		return "", fmt.Errorf("asset %q is outside of the theme's root %q", assetPath, m.DownloadPath())
+	}
+
+	relativeTo := path.Clean(path.Join(m.DownloadPath(), filepath.Clean(RenderFileTemplate(m.CopyFrom, operatingSystem, variant))))
+	if !strings.HasPrefix(relativeTo, m.DownloadPath()) {
+		return "", fmt.Errorf("copy from %q is outside of the theme's root %q", relativeTo, m.DownloadPath())
+	}
+
+	relativised, err := filepath.Rel(relativeTo, assetPath)
+	if err != nil {
+		return "", fmt.Errorf("couldn't make %s relative to %s: %w", assetPath, path.Join(m.DownloadPath(), filepath.Clean(m.CopyFrom)), err)
+	}
+
+	return path.Join(profileDir, "chrome", relativised), nil
+}
+
+func RenderFileTemplate(f FileTemplate, os string, variant Variant) string {
+	return mustache.Render(f, map[string]string{
+		"os":      os,
+		"variant": variant.Name,
+	})
 }

@@ -95,7 +95,7 @@ func DownloadRepository(URL string, tempCloneTo string, cloneTo string, themeMan
 	if hasManifest {
 		manifest = themeManifest[0]
 	}
-	clonable, err := IsURLClonable(URL)
+	clonable, err := isURLClonable(URL)
 	if err != nil {
 		return manifest, fmt.Errorf("while determining clonability: %w", err)
 	}

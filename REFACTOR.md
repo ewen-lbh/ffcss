@@ -12,7 +12,7 @@
     1. [`(Manifest).Resolve`] Resolve a `Manifest` to a `Theme`
 3. [`userprefs.go`] Generate a `user.js` from `config`
 4. [`copy.go`] Resolve manifest into "copy over" instructions
-    1. Concatenate userChrome, userContent, user.js and assets
     1. [`RenderFileTemplate`] Replace `{{ os }}` and `{{ variant }}`
-    1. [`os.Glob`] Glob every item of the list
-    1. [`DestinationPathOf`] Take their path relative to `.cache/ffcss/<themeName>` (not including `<themeName>`), and prepend firefox session directory to the relative path
+    1. [`InstallUserChrome`, `InstallUserContent`, `InstallUserJS`] Copy over userChrome, userContent and user.js
+    1. [`doublestar.Glob`] Glob every item of the list
+    1. [`DestinationPathOf`] Take their path relative to `.cache/ffcss/<themeName>` (not including `<themeName>`), and prepend firefox profile directory to the relative path

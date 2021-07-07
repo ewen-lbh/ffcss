@@ -1,13 +1,12 @@
 package main
 
 import (
-	"errors"
 	"fmt"
 	"os"
-	"os/exec"
 	"path"
 	"runtime"
 
+	"github.com/AlecAivazis/survey/v2"
 	"github.com/docopt/docopt-go"
 )
 
@@ -24,58 +23,63 @@ func RunCommandUse(args docopt.Opts) error {
 	if err != nil {
 		return err
 	}
-	// TODO choose the profile directory, could have a smart default (based on {{profileDirectory}}/times.json:firstUse)
+	// Get all profile directories
 	profileDirs, err := ProfileDirsPaths()
 	if err != nil {
 		return fmt.Errorf("couldn't get mozilla profile directories: %w", err)
 	}
-	// Create missing chrome folder
-	if _, err := os.Stat(path.Join(profileDirs[0], "chrome")); os.IsNotExist(err) {
-		err := os.Mkdir(profileDirs[0], 0700)
+	// Choose profiles
+	// TODO smart default (based on {{profileDirectory}}/times.json:firstUse)
+	selectedProfileDirs := make([]string, 0)
+	selectProfileDirs := &survey.MultiSelect{
+		Message: "On which profiles to install this?",
+		Options: profileDirs,
+	}
+	survey.AskOne(selectProfileDirs, &selectedProfileDirs)
+	// Choose variant
+	variantName, _ := args.String("VARIANT")
+	if len(manifest.AvailableVariants()) > 0 && variantName == "" {
+		variantPrompt := &survey.Select{
+			Message: "Choose the variant",
+			Options: manifest.AvailableVariants(),
+		}
+		survey.AskOne(variantPrompt, &variantName)
+	}
+	variant := Variant{Name: variantName}
+	// Detect OS
+	operatingSystem := GOOStoOS(runtime.GOOS)
+	// For each profile directory...
+	for _, profileDir := range selectedProfileDirs {
+		err = RenameIfExists(path.Join(profileDir, "chrome"), path.Join(profileDir, "chrome.bak"))
+		if err != nil {
+			return fmt.Errorf("while backing up chrome directory: %w", err)
+		}
+
+		err := os.Mkdir(path.Join(profileDir, "chrome"), 0700)
 		if err != nil {
 			return err
 		}
-	}
-	// TODO: prompt
-	variant := Variant{Name: "blue"}
-	os := GOOStoOS(runtime.GOOS)
-	// Copy into it
-	allFiles, err := manifest.AllFiles(os, variant)
-	if err != nil {
-		return fmt.Errorf("couldn't resolve files list: %w", err)
-	}
-	chromeDirs := make([]string, 0)
-	for _, profileDir := range profileDirs {
-		chromeDirs = append(chromeDirs, path.Join(profileDir, "chrome"))
-	}
-	err = CopyOver(allFiles, chromeDirs)
-	if err != nil {
-		return fmt.Errorf("couldn't copy to firefox profile directories: %w", err)
-	}
-	CleanDownloadArea()
-	return nil
-}
 
-// IsURLClonable determines if the given URL points to a git repository
-func IsURLClonable(URL string) (clonable bool, err error) {
-	output, err := exec.Command("git", "ls-remote", URL).CombinedOutput()
-	if err == nil {
-		return true, nil
-	}
-	switch err.(type) {
-	case *exec.ExitError:
-		if err.(*exec.ExitError).ExitCode() == 128 {
-			return false, nil
+		// Install stuff
+		err = manifest.InstallUserChrome(operatingSystem, variant, profileDir)
+		if err != nil {
+			return fmt.Errorf("couldn't install userChrome.css: %w", err)
+		}
+
+		err = manifest.InstallUserContent(operatingSystem, variant, profileDir)
+		if err != nil {
+			return fmt.Errorf("couldn't install userContent.css: %w", err)
+		}
+
+		err = manifest.InstallUserJS(operatingSystem, variant, profileDir)
+		if err != nil {
+			return fmt.Errorf("couldn't install user.js: %w", err)
+		}
+
+		err = manifest.InstallAssets(operatingSystem, variant, profileDir)
+		if err != nil {
+			return fmt.Errorf("couldn't install assets: %w", err)
 		}
 	}
-	return false, fmt.Errorf("while running git-ls-remote: %w: %s", err, output)
-}
-
-// GetManifest returns a Manifest from the manifest file of themeRoot
-func GetManifest(themeRoot string) (Manifest, error) {
-	if _, err := os.Stat(GetManifestPath(themeRoot)); os.IsExist(err) {
-		return LoadManifest(GetManifestPath(themeRoot))
-	} else {
-		return Manifest{}, errors.New("the project has no manifest file")
-	}
+	return nil
 }

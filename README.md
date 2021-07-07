@@ -115,7 +115,7 @@ You can also declare other files in `assets`, an array of [glob patterns][globst
 
 You can use `{{ os }}`, which will get replaced with one of `windows`, `linux` or `macos`, and `{{ variant }}`, which will get replaced by the variant the user has chosen.
 
-All files will get copied to `<user's session folder>/chrome/`. You can change the destination folder (relative to `<user's session folder>`) with `copy to`:
+All files will get copied to `<user's profile folder>/chrome/`. You can change the destination folder (relative to `<user's profile folder>`) with `copy to`:
 
 ```yaml
 ffcss: 0 # signals that no compatibility is ensured (since 0.X.X versions can contain breaking changes, see semver)
@@ -128,10 +128,10 @@ config:
   security.insecure_connection_text.enabled: true
 
 assets: chrome/**
-copy to: ./ # relative to user's session folder
+copy to: ./ # relative to user's profile folder
 ```
 
-without the `copy to`, files would get copied to `<user's session folder>/chrome/chrome/...`, as `chrome/` will be a part of the file names.
+without the `copy to`, files would get copied to `<user's profile folder>/chrome/chrome/...`, as `chrome/` will be a part of the file names.
 
 ### Variants
 
