@@ -6,9 +6,10 @@ go:
 
 before_install:
   - make
+  - make test-setup
 
 script:
-  - make test
+  - go test -race -coverprofile=coverage.txt -covermode=atomic -v
 
 after_success:
   - bash <(curl -s https://codecov.io/bash)
