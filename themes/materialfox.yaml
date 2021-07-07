@@ -6,3 +6,12 @@ config:
   browser.tabs.tabClipWidth: 83
   materialFox.reduceTabOverflow: true
   security.insecure_connection_text.enabled: true
+
+userChrome: chrome/userChrome.css
+userContent: null
+user.js: user.js
+assets:
+  - chrome/**
+  - chrome/../../../../todo
+
+copy from: chrome/

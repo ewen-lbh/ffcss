@@ -12,6 +12,11 @@ variants:
   WithURLBar: {}
   OneLine: {}
 
+os:
+  linux: Linux
+  macos: Linux
+  windows: Windows
+
 userContent: ./{{ os }}/userContent.css
 userChrome: ./{{ os }}/userChrome__{{ variant }}.css
 
