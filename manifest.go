@@ -86,7 +86,9 @@ func LoadManifest(manifestPath string) (manifest Manifest, err error) {
 	manifest = NewManifest()
 	err = yaml.Unmarshal(raw, &manifest)
 	for name, variant := range manifest.Variants {
-		variant.Name = name
+		variantWithName := variant
+		variantWithName.Name = name
+		manifest.Variants[name] = variantWithName
 	}
 	if err != nil {
 		err = fmt.Errorf("while parsing manifest %s: %w", manifestPath, err)
