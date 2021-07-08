@@ -59,9 +59,9 @@ func NewManifest() Manifest {
 		Config: Config{
 			"toolkit.legacyUserProfileCustomizations.stylesheets": true,
 		},
-		UserChrome:  "userChrome.css",
-		UserContent: "userContent.css",
-		UserJS:      "user.js",
+		UserChrome:  "",
+		UserContent: "",
+		UserJS:      "",
 		Variants:    map[string]Variant{},
 		Assets:      []FileTemplate{},
 	}
