@@ -11,6 +11,7 @@ const (
 Usage:
     ffcss [--mozilla-dir=DIRECTORY] configure KEY [VALUE]
     ffcss [--mozilla-dir=DIRECTORY] use THEME_NAME [VARIANT]
+    ffcss reapply
     ffcss init [FORMAT]
 
 Where:
@@ -42,6 +43,10 @@ func dispatchCommand(args docopt.Opts) error {
 	}
 	if val, _ := args.Bool("use"); val {
 		err := RunCommandUse(args)
+		return err
+	}
+	if val, _ := args.Bool("reapply"); val {
+		err := RunCommandReapply(args)
 		return err
 	}
 	if val, _ := args.Bool("init"); val {
