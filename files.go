@@ -115,7 +115,7 @@ func (m Manifest) InstallUserJS(operatingSystem string, variant Variant, profile
 	content = []byte(string(content) + "\n" + additionalContent)
 	err = ioutil.WriteFile(path.Join(profileDir, "user.js"), content, 0700)
 	if err != nil {
-		return  fmt.Errorf("while writing: %w",  err)
+		return fmt.Errorf("while writing: %w", err)
 	}
 
 	return nil
@@ -134,7 +134,7 @@ func (m Manifest) InstallUserChrome(os string, variant Variant, profileDir strin
 
 	err = ioutil.WriteFile(path.Join(profileDir, "chrome", "userChrome.css"), content, 0700)
 	if err != nil {
-		return  fmt.Errorf("while writing: %w",  err)
+		return fmt.Errorf("while writing: %w", err)
 	}
 
 	return nil
@@ -153,7 +153,7 @@ func (m Manifest) InstallUserContent(os string, variant Variant, profileDir stri
 
 	err = ioutil.WriteFile(path.Join(profileDir, "chrome", "userContent.css"), content, 0700)
 	if err != nil {
-		return  fmt.Errorf("while writing: %w",  err)
+		return fmt.Errorf("while writing: %w", err)
 	}
 
 	return nil

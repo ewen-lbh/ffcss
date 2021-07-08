@@ -100,7 +100,9 @@ func ProfileDirsPaths(dotMozilla ...string) ([]string, error) {
 	for _, releasePath := range directories {
 		if patternReleaseID.MatchString(releasePath.Name()) {
 			stat, err := os.Stat(path.Join(mozillaFolder, "firefox", releasePath.Name()))
-			if err != nil { continue }
+			if err != nil {
+				continue
+			}
 			if stat.IsDir() {
 				releasesPaths = append(releasesPaths, path.Join(mozillaFolder, "firefox", releasePath.Name()))
 			}
