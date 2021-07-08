@@ -10,10 +10,41 @@ import (
 var testarea = filepath.Join(cwd(), "testarea")
 
 func TestRenderFileTemplate(t *testing.T) {
-	Assert(t, RenderFileTemplate("userChrome.css", "linux", Variant{}), "userChrome.css")
-	Assert(t, RenderFileTemplate("linux.css", "linux", Variant{}), "linux.css")
-	Assert(t, RenderFileTemplate("linux.css", "windows", Variant{}), "linux.css")
-	Assert(t, RenderFileTemplate("./{{ os }}/{{variant}}.css", "macos", Variant{Name: "rainbow"}), "./macos/rainbow.css")
+	Assert(t, RenderFileTemplate(
+		"userChrome.css",
+		"linux",
+		Variant{},
+		map[string]string{},
+	), "userChrome.css")
+
+	Assert(t, RenderFileTemplate(
+		"linux.css",
+		"linux",
+		Variant{},
+		map[string]string{"linux": "Linux"},
+	), "linux.css")
+
+	Assert(t, RenderFileTemplate(
+		"{{os}}.css",
+		"linux",
+		Variant{},
+		map[string]string{"linux": "GNU/Linux"},
+	), "GNU/Linux.css")
+
+	Assert(t, RenderFileTemplate(
+		"linux.css",
+		"windows",
+		Variant{},
+		map[string]string{},
+	), "linux.css")
+
+	Assert(t, RenderFileTemplate(
+		"./{{ os }}/{{variant}}.css",
+		"macos",
+		Variant{Name: "rainbow"},
+		map[string]string{},
+	), "./macos/rainbow.css")
+
 }
 
 func TestAssetsPaths(t *testing.T) {
@@ -24,8 +55,12 @@ func TestAssetsPaths(t *testing.T) {
 			"OneLine":       {},
 		},
 		Assets: []string{"./{{ os }}/userChrome__{{ variant }}.css"}, // for the purposes of testing
+		OSNames: map[string]string{
+			"linux": "Linux",
+			"macos": "Linux",
+			"windows": "Windows",
+		},
 	}
-	println("setup done")
 
 	files, err := simplerentfox.AssetsPaths("linux", Variant{Name: "blue"}, testarea)
 	assert.Regexp(t, "file .+ not found", err.Error())
@@ -33,7 +68,7 @@ func TestAssetsPaths(t *testing.T) {
 
 	files, err = simplerentfox.AssetsPaths("linux", Variant{Name: "OneLine"}, testarea)
 	assert.NoError(t, err)
-	assert.Equal(t, []string{CacheDir("simplerentfox/linux/userChrome__OneLine.css")}, files)
+	assert.Equal(t, []string{CacheDir("simplerentfox/Linux/userChrome__OneLine.css")}, files)
 }
 
 func TestDestinationPathOf(t *testing.T) {

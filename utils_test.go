@@ -26,7 +26,7 @@ func TestProfileDirsPaths(t *testing.T) {
 	cwd, _ := os.Getwd()
 	mockedHomedir := filepath.Join(cwd, "mocks", "homedir")
 
-	paths, err := ProfileDirsPaths("linux", filepath.Join(mockedHomedir, ".mozilla"))
+	paths, err := ProfileDirsPaths("linux", filepath.Join(mockedHomedir, ".mozilla", "firefox"))
 	if err != nil {
 		panic(err)
 	}
