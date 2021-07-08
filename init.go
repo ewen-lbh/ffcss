@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/exec"
 	"path"
+	"strings"
 
 	"github.com/MakeNowJust/heredoc"
 	"github.com/docopt/docopt-go"
@@ -17,6 +18,21 @@ func RunCommandInit(args docopt.Opts) error {
 	workingDir, err := os.Getwd()
 	if err != nil {
 		return fmt.Errorf("could not get working directory: %w", err)
+	}
+
+	remote := getCurrentRepoRemote()
+
+	// Compute repository name: special case for github
+	var name string
+	if strings.Contains(remote, "https://github.com") {
+		name = remote[strings.LastIndex(remote, "/")+1:]
+	} else {
+		name = path.Dir(workingDir)
+	}
+
+	// For the manifest's content
+	if remote == "" {
+		remote = "# TODO"
 	}
 
 	// TODO: set user{Chrome,Content,.js} by finding their path
@@ -32,15 +48,18 @@ func RunCommandInit(args docopt.Opts) error {
 		user.js: user.js
 		assets:
 			- chrome/**
-	`), VersionMajor, path.Dir(workingDir), getCurrentRepoRemote())
+	`), VersionMajor, name, remote)
 
 	err = ioutil.WriteFile(path.Join(workingDir, "ffcss.yaml"), []byte(content), 0700)
+	if err != nil {
+		return fmt.Errorf("while writing the manifest: %w", err)
+	}
 
 	return nil
 }
 
 // getCurrentRepoRemote returns the git repo's origin remote URL
-// if any error occured while getting the URL, "# TODO" is returned
+// if any error occured while getting the URL, the empty string is returned.
 func getCurrentRepoRemote() string {
 	var out bytes.Buffer
 	command := exec.Command("git", "config", "--get", "remote.origin.url")
@@ -49,7 +68,7 @@ func getCurrentRepoRemote() string {
 	err := command.Run()
 	if err != nil {
 		fmt.Printf("WARNING: Could not get the current git remote origin's URL. Leaving repository entry blank.\n")
-		return "# TODO"
+		return ""
 	}
 	return out.String()
 }
