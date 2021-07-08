@@ -93,19 +93,21 @@ func (m Manifest) AssetsPaths(os string, variant Variant, profileDirectory strin
 
 // InstallUserJS installs the content of user.js and the config entries to {{profileDir}}/user.js
 func (m Manifest) InstallUserJS(operatingSystem string, variant Variant, profileDir string) error {
+	err := RenameIfExists(filepath.Join(profileDir, "user.js"), filepath.Join(profileDir, "user.js.bak"))
+	if err != nil {
+		return fmt.Errorf("while creating backup of %s: %w", filepath.Join(profileDir, "user.js"), err)
+	}
+
 	if m.UserJS == "" {
 		return nil
 	}
+
 	file := filepath.Join(m.DownloadPath(), RenderFileTemplate(m.UserJS, operatingSystem, variant, m.OSNames))
 	content, err := ioutil.ReadFile(file)
 	if err != nil {
 		return fmt.Errorf("while reading %s: %w", file, err)
 	}
 
-	err = RenameIfExists(filepath.Join(profileDir, "user.js"), filepath.Join(profileDir, "user.js.bak"))
-	if err != nil {
-		return fmt.Errorf("while creating backup of %s: %w", filepath.Join(profileDir, "user.js"), err)
-	}
 	additionalContent, err := m.UserJSFileContent()
 	if err != nil {
 		return fmt.Errorf("while translating config entries to javascript: %w", err)
