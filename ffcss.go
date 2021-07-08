@@ -9,8 +9,8 @@ const (
 	Usage = `ffcss - Apply and configure FirefoxCSS themes
 
 Usage:
-    ffcss configure KEY [VALUE]
-    ffcss use THEME_NAME [VARIANT]
+    ffcss [--mozilla-dir=DIRECTORY] configure KEY [VALUE]
+    ffcss [--mozilla-dir=DIRECTORY] use THEME_NAME [VARIANT]
     ffcss init [FORMAT]
 
 Where:

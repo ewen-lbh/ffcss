@@ -75,17 +75,18 @@ func GetManifestPath(themeRoot string) string {
 }
 
 // ProfileDirsPaths returns an array of profile directories from ~/.mozilla.
-// 0 arguments: the .mozilla folder is assumed to be ~/.mozilla.
+// 0 arguments: the .mozilla folder is assumed to be the current OS's default.
 // 1 argument: use the given .mozilla folder
 // more arguments: panic.
 func ProfileDirsPaths(dotMozilla ...string) ([]string, error) {
 	var mozillaFolder string
 	if len(dotMozilla) == 0 {
-		homedir, err := os.UserHomeDir()
+		// XXX: Weird golang thing, if I assign to mozillaFolder directly, it tells me the variable is unused
+		_mozillaFolder, err := DefaultProfilesDir(GOOStoOS(sys.GOOS))
+		mozillaFolder = _mozillaFolder
 		if err != nil {
-			return []string{}, fmt.Errorf("couldn't get the current user's home directory: %s. Try to use --mozilla-dir", err)
+			return []string{}, fmt.Errorf("couldn't get the mozilla directory: %w. Try to use --mozilla-dir", err)
 		}
-		mozillaFolder = path.Join(homedir, ".mozilla")
 	} else if len(dotMozilla) == 1 {
 		mozillaFolder = dotMozilla[0]
 	} else {
@@ -95,7 +96,7 @@ func ProfileDirsPaths(dotMozilla ...string) ([]string, error) {
 	releasesPaths := make([]string, 0)
 	patternReleaseID := regexp.MustCompile(`[a-z0-9]{8}\.\w+`)
 	if err != nil {
-		return []string{}, fmt.Errorf("couldn't read ~/.mozilla/firefox: %w", err)
+		return []string{}, fmt.Errorf("couldn't read %s: %w", mozillaFolder, err)
 	}
 	for _, releasePath := range directories {
 		if patternReleaseID.MatchString(releasePath.Name()) {
@@ -109,6 +110,32 @@ func ProfileDirsPaths(dotMozilla ...string) ([]string, error) {
 		}
 	}
 	return releasesPaths, nil
+}
+
+func DefaultProfilesDir(operatingSystem string) (string, error) {
+	switch operatingSystem {
+	case "linux":
+		homedir, err := os.UserHomeDir()
+		if err != nil {
+			return "", err
+		}
+		return path.Join(homedir, ".mozilla", "firefox"), nil
+	case "macos":
+		user, err := user.Current()
+		if err != nil {
+			return "", fmt.Errorf("couldn't get the current user: %w",  err)
+		}
+
+		return path.Join("Users", user.Username, "Library", "Application Support", "Firefox", "Profiles"), nil
+	case "windows":
+		homedir, err := os.UserHomeDir()
+		if err != nil {
+			return "", err
+		}
+
+		return path.Join(homedir, "AppData", "Roaming", "Mozilla", "Firefox", "Profiles"), nil
+	}
+	return "", fmt.Errorf("unknown operating system %s", operatingSystem)
 }
 
 func cwd() string {

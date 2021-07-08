@@ -24,7 +24,8 @@ func RunCommandUse(args docopt.Opts) error {
 		return err
 	}
 	// Get all profile directories
-	profileDirs, err := ProfileDirsPaths()
+	dotMozilla, _ := args.String("--mozilla-dir")
+	profileDirs, err := ProfileDirsPaths(dotMozilla)
 	if err != nil {
 		return fmt.Errorf("couldn't get mozilla profile directories: %w", err)
 	}
