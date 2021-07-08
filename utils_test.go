@@ -1,22 +1,43 @@
 package main
 
 import (
+	"fmt"
 	"os"
-	"path"
+	"os/user"
+	"path/filepath"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
 
-func TestGetMozillaReleasesPaths(t *testing.T) {
-	cwd, _ := os.Getwd()
-	mockedHomedir := path.Join(cwd, "mocks", "homedir")
+var currentUser user.User
 
-	paths, err := ProfileDirsPaths(path.Join(mockedHomedir, ".mozilla"))
+func init() {
+	usr, _ := user.Current()
+	currentUser = *usr
+}
+
+// withUser Replaces %s with currentUser.Username in s
+func withuser(s string) string {
+	return fmt.Sprintf(s, currentUser.Username)
+}
+
+func TestProfileDirsPaths(t *testing.T) {
+	cwd, _ := os.Getwd()
+	mockedHomedir := filepath.Join(cwd, "mocks", "homedir")
+
+	paths, err := ProfileDirsPaths("linux", filepath.Join(mockedHomedir, ".mozilla"))
 	if err != nil {
 		panic(err)
 	}
-	assert.Equal(t, []string{path.Join(mockedHomedir, ".mozilla", "firefox", "667ekipp.default-release")}, paths)
+	assert.Equal(t, []string{filepath.Join(mockedHomedir, ".mozilla", "firefox", "667ekipp.default-release")}, paths)
+
+	// FIXME needs firefox installed with default profiles location (~/.mozilla/firefox/)
+	paths, err = ProfileDirsPaths("linux")
+	assert.GreaterOrEqual(t, len(paths), 1)
+	if len(paths) >= 1 {
+		assert.Regexp(t, withuser(`/home/%s/.mozilla/firefox/[a-z0-9]{8}\.\w+`), paths[0])
+	}
 }
 
 func TestIsURLClonable(t *testing.T) {
@@ -34,4 +55,10 @@ func TestIsURLClonable(t *testing.T) {
 	actual, err = isURLClonable("https://ewen.works/")
 	assert.Equal(t, false, actual)
 	assert.Nil(t, err)
+}
+
+func TestDefaultProfilesDir(t *testing.T) {
+	actual, err := DefaultProfilesDir("TempleOS")
+	assert.EqualError(t, err, "unknown operating system TempleOS")
+	assert.Equal(t, "", actual)
 }

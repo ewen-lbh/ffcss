@@ -73,29 +73,29 @@ func GetManifestPath(themeRoot string) string {
 	return filepath.Join(themeRoot, "ffcss.yaml")
 }
 
-// ProfileDirsPaths returns an array of profile directories from ~/.mozilla.
-// 0 arguments: the .mozilla folder is assumed to be the current OS's default.
-// 1 argument: use the given .mozilla folder
+// ProfileDirsPaths returns an array of profile directories from the profile folder.
+// 1 arguments: the profiles folder is assumed to be the current OS's default.
+// 2 argument: use the given profiles folder
 // more arguments: panic.
-func ProfileDirsPaths(dotMozilla ...string) ([]string, error) {
-	var mozillaFolder string
-	if len(dotMozilla) == 0 {
-		// XXX: Weird golang thing, if I assign to mozillaFolder directly, it tells me the variable is unused
-		_mozillaFolder, err := DefaultProfilesDir(GOOStoOS(runtime.GOOS))
-		mozillaFolder = _mozillaFolder
+func ProfileDirsPaths(operatingSystem string, optionalProfilesDir ...string) ([]string, error) {
+	var profilesFolder string
+	if len(optionalProfilesDir) == 0 {
+		// XXX: Weird golang thing, if I assign to profilesFolder directly, it tells me the variable is unused
+		_profilesFolder, err := DefaultProfilesDir(operatingSystem)
+		profilesFolder = _profilesFolder
 		if err != nil {
-			return []string{}, fmt.Errorf("couldn't get the mozilla directory: %w. Try to use --mozilla-dir", err)
+			return []string{}, fmt.Errorf("couldn't get the profiles folder: %w. Try to use --profiles-dir", err)
 		}
-	} else if len(dotMozilla) == 1 {
-		mozillaFolder = dotMozilla[0]
+	} else if len(optionalProfilesDir) == 1 {
+		profilesFolder = optionalProfilesDir[0]
 	} else {
-		panic(fmt.Sprintf("received %d arguments, expected 0 or 1", len(dotMozilla)))
+		panic(fmt.Sprintf("received %d arguments, expected 1 or 2", len(optionalProfilesDir)+1))
 	}
-	directories, err := os.ReadDir(path.Join(mozillaFolder, "firefox"))
+	directories, err := os.ReadDir(profilesFolder)
 	releasesPaths := make([]string, 0)
 	patternReleaseID := regexp.MustCompile(`[a-z0-9]{8}\.\w+`)
 	if err != nil {
-		return []string{}, fmt.Errorf("couldn't read %s: %w", mozillaFolder, err)
+		return []string{}, fmt.Errorf("couldn't read %s: %w", profilesFolder, err)
 	}
 	for _, releasePath := range directories {
 		if patternReleaseID.MatchString(releasePath.Name()) {

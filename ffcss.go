@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+
 	"github.com/docopt/docopt-go"
 )
 
@@ -9,8 +10,8 @@ const (
 	Usage = `ffcss - Apply and configure FirefoxCSS themes
 
 Usage:
-    ffcss [--mozilla-dir=DIRECTORY] configure KEY [VALUE]
-    ffcss [--mozilla-dir=DIRECTORY] use THEME_NAME [VARIANT]
+    ffcss [--profiles-dir=DIRECTORY] configure KEY [VALUE]
+    ffcss [--profiles-dir=DIRECTORY] [--all-profiles] use THEME_NAME [VARIANT]
     ffcss reapply
     ffcss init [FORMAT]
 

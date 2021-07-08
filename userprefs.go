@@ -8,7 +8,7 @@ import (
 )
 
 // ToUserJSFile returns a string of JS source code that represents config.
-// It can be used directly to write a .mozilla/firefox/*.default-*/user.js file
+// It can be used directly to write a user.js file
 func ToUserJSFile(config map[string]interface{}) (string, error) {
 	lines := make([]string, 0)
 	for name, value := range config {

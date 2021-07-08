@@ -23,11 +23,18 @@ func RunCommandUse(args docopt.Opts) error {
 	if err != nil {
 		return err
 	}
+	// Detect OS
+	operatingSystem := GOOStoOS(runtime.GOOS)
 	// Get all profile directories
-	dotMozilla, _ := args.String("--mozilla-dir")
-	profileDirs, err := ProfileDirsPaths(dotMozilla)
+	profilesDir, _ := args.String("--profiles-dir")
+	var profileDirs []string
+	if profilesDir != "" {
+		profileDirs, err = ProfileDirsPaths(operatingSystem, profilesDir)
+	} else {
+		profileDirs, err = ProfileDirsPaths(operatingSystem)
+	}
 	if err != nil {
-		return fmt.Errorf("couldn't get mozilla profile directories: %w", err)
+		return fmt.Errorf("couldn't get profile directories: %w", err)
 	}
 	// Choose profiles
 	// TODO smart default (based on {{profileDirectory}}/times.json:firstUse)
@@ -48,8 +55,6 @@ func RunCommandUse(args docopt.Opts) error {
 	}
 	variant := manifest.Variants[variantName]
 	manifest = manifest.WithVariant(variant)
-	// Detect OS
-	operatingSystem := GOOStoOS(runtime.GOOS)
 	// For each profile directory...
 	for _, profileDir := range selectedProfileDirs {
 		err = RenameIfExists(filepath.Join(profileDir, "chrome"), filepath.Join(profileDir, "chrome.bak"))
