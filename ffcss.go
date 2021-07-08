@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"github.com/docopt/docopt-go"
 )
 
@@ -17,6 +18,14 @@ Where:
     KEY         a setting key (see firefox's about:config)
     THEME_NAME  a theme name or URL (see README.md)
 	`
+
+	VersionMajor = 0
+	VersionMinor = 1
+	VersionPatch = 0
+)
+
+var (
+	VersionString = fmt.Sprintf("%d.%d.%d", VersionMajor, VersionMinor, VersionPatch)
 )
 
 func main() {
