@@ -11,6 +11,7 @@ import (
 	"regexp"
 	"strings"
 	"testing"
+	"runtime"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -82,7 +83,7 @@ func ProfileDirsPaths(dotMozilla ...string) ([]string, error) {
 	var mozillaFolder string
 	if len(dotMozilla) == 0 {
 		// XXX: Weird golang thing, if I assign to mozillaFolder directly, it tells me the variable is unused
-		_mozillaFolder, err := DefaultProfilesDir(GOOStoOS(sys.GOOS))
+		_mozillaFolder, err := DefaultProfilesDir(GOOStoOS(runtime.GOOS))
 		mozillaFolder = _mozillaFolder
 		if err != nil {
 			return []string{}, fmt.Errorf("couldn't get the mozilla directory: %w. Try to use --mozilla-dir", err)
