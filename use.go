@@ -39,11 +39,16 @@ func RunCommandUse(args docopt.Opts) error {
 	// Choose profiles
 	// TODO smart default (based on {{profileDirectory}}/times.json:firstUse)
 	selectedProfileDirs := make([]string, 0)
-	selectProfileDirs := &survey.MultiSelect{
-		Message: "On which profiles to install this?",
-		Options: profileDirs,
+	selectAllProfileDirs, _ := args.Bool("--all-profiles")
+	if selectAllProfileDirs {
+		selectedProfileDirs = profileDirs
+	} else {
+		selectProfileDirs := &survey.MultiSelect{
+			Message: "On which profiles to install this?",
+			Options: profileDirs,
+		}
+		survey.AskOne(selectProfileDirs, &selectedProfileDirs)
 	}
-	survey.AskOne(selectProfileDirs, &selectedProfileDirs)
 	// Choose variant
 	variantName, _ := args.String("VARIANT")
 	if len(manifest.AvailableVariants()) > 0 && variantName == "" {
