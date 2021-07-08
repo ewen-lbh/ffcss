@@ -48,6 +48,10 @@ func RunCommandUse(args docopt.Opts) error {
 			Options: profileDirs,
 		}
 		survey.AskOne(selectProfileDirs, &selectedProfileDirs)
+		// User Ctrl-C'd
+		if len(selectedProfileDirs) == 0 {
+			return nil
+		}
 	}
 	// Choose variant
 	variantName, _ := args.String("VARIANT")
@@ -57,6 +61,10 @@ func RunCommandUse(args docopt.Opts) error {
 			Options: manifest.AvailableVariants(),
 		}
 		survey.AskOne(variantPrompt, &variantName)
+		// user Ctrl-C'd
+		if variantName == "" {
+			return nil
+		}
 	}
 	variant := manifest.Variants[variantName]
 	manifest = manifest.WithVariant(variant)
