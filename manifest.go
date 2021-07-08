@@ -11,19 +11,21 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-type Theme struct {
+type Variant struct {
 	Config      Config
 	UserChrome  FileTemplate `yaml:"userChrome"`
 	UserContent FileTemplate `yaml:"userContent"`
 	UserJS      FileTemplate `yaml:"user.js"`
 	Assets      []FileTemplate
+	Description string
+	Name		string
 }
 
 type Manifest struct {
 	Repository   string
 	ExplicitName string `yaml:"name"`
 	FfcssVersion int    `yaml:"ffcss"`
-	Variants     map[string]Theme
+	Variants     map[string]Variant
 	CopyFrom     string `yaml:"copy from"`
 	Config       Config
 	UserChrome   FileTemplate `yaml:"userChrome"`
@@ -49,11 +51,6 @@ func (m Manifest) DownloadPath() string {
 
 type Config map[string]interface{}
 
-type Variant struct {
-	Name        string
-	Description string
-}
-
 type FileTemplate = string
 
 func NewManifest() Manifest {
@@ -64,7 +61,7 @@ func NewManifest() Manifest {
 		UserChrome:  "userChrome.css",
 		UserContent: "userContent.css",
 		UserJS:      "user.js",
-		Variants:    map[string]Theme{},
+		Variants:    map[string]Variant{},
 		Assets:      []FileTemplate{},
 	}
 }
@@ -87,11 +84,46 @@ func LoadManifest(manifestPath string) (manifest Manifest, err error) {
 	}
 	manifest = NewManifest()
 	err = yaml.Unmarshal(raw, &manifest)
+	for name, variant := range manifest.Variants {
+		variant.Name = name
+	}
 	if err != nil {
 		err = fmt.Errorf("while parsing manifest %s: %w", manifestPath, err)
 		return
 	}
 	return
+}
+
+func (m Manifest) VariantsSlice() []Variant {
+	variantsSlice := make([]Variant, 0, len(m.Variants))
+	for _, variant := range m.Variants {
+		variantsSlice = append(variantsSlice, variant)
+	}
+	return variantsSlice
+}
+
+// WithVariant returns a Manifest representing the theme if the selected variant
+// was used as the "root values".
+// i.e. the values of UserJS, UserContent, UserChrome, Assets are replaced with their variant's, if set,
+// and the value of Config is combined with the variant's.
+func (m Manifest) WithVariant(variant Variant) Manifest {
+	newManifest := m
+	if variant.UserChrome != "" {
+		newManifest.UserChrome = variant.UserChrome
+	}
+	if variant.UserContent != "" {
+		newManifest.UserContent = variant.UserContent
+	}
+	if variant.UserJS != "" {
+		newManifest.UserJS = variant.UserJS
+	}
+	if len(variant.Assets) > 0 {
+		newManifest.Assets = variant.Assets
+	}
+	for key, val := range variant.Config {
+		newManifest.Config[key] = val
+	}
+	return newManifest
 }
 
 // ThemeStore represents a collection of themes

@@ -19,7 +19,7 @@ func TestRenderFileTemplate(t *testing.T) {
 func TestAssetsPaths(t *testing.T) {
 	simplerentfox := Manifest{
 		ExplicitName: "simplerentfox",
-		Variants: map[string]Theme{
+		Variants: map[string]Variant{
 			"WithoutURLBar": {},
 			"OneLine":       {},
 		},
@@ -39,7 +39,7 @@ func TestAssetsPaths(t *testing.T) {
 func TestDestinationPathOf(t *testing.T) {
 	manifest := Manifest{
 		ExplicitName: "materialfox",
-		Variants:     map[string]Theme{},
+		Variants:     map[string]Variant{},
 		Config:       Config{},
 	}
 
@@ -57,7 +57,7 @@ func TestDestinationPathOf(t *testing.T) {
 
 	manifest = Manifest{
 		ExplicitName: "simplerentfox",
-		Variants: map[string]Theme{
+		Variants: map[string]Variant{
 			"WithoutURLBar": {},
 			"OneLine":       {},
 		},

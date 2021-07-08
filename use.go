@@ -46,7 +46,8 @@ func RunCommandUse(args docopt.Opts) error {
 		}
 		survey.AskOne(variantPrompt, &variantName)
 	}
-	variant := Variant{Name: variantName}
+	variant := manifest.Variants[variantName]
+	manifest = manifest.WithVariant(variant)
 	// Detect OS
 	operatingSystem := GOOStoOS(runtime.GOOS)
 	// For each profile directory...
