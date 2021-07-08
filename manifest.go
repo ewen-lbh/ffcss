@@ -26,7 +26,8 @@ type Manifest struct {
 	ExplicitName string `yaml:"name"`
 	FfcssVersion int    `yaml:"ffcss"`
 	Variants     map[string]Variant
-	CopyFrom     string `yaml:"copy from"`
+	OSNames      map[string]string `yaml:"os"`
+	CopyFrom     string            `yaml:"copy from"`
 	Config       Config
 	UserChrome   FileTemplate `yaml:"userChrome"`
 	UserContent  FileTemplate `yaml:"userContent"`

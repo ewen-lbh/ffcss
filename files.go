@@ -69,7 +69,7 @@ func (m Manifest) InstallAssets(operatingSystem string, variant Variant, profile
 func (m Manifest) AssetsPaths(os string, variant Variant, profileDirectory string) ([]string, error) {
 	resolvedFiles := make([]string, 0)
 	for _, template := range m.Assets {
-		glob := RenderFileTemplate(template, os, variant)
+		glob := RenderFileTemplate(template, os, variant, m.OSNames)
 		glob = path.Clean(filepath.Join(m.DownloadPath(), glob))
 		files, err := doublestar.Glob(glob)
 		if err != nil {
@@ -96,7 +96,7 @@ func (m Manifest) InstallUserJS(operatingSystem string, variant Variant, profile
 	if m.UserJS == "" {
 		return nil
 	}
-	file := filepath.Join(m.DownloadPath(), RenderFileTemplate(m.UserJS, operatingSystem, variant))
+	file := filepath.Join(m.DownloadPath(), RenderFileTemplate(m.UserJS, operatingSystem, variant, m.OSNames))
 	content, err := ioutil.ReadFile(file)
 	if err != nil {
 		return fmt.Errorf("while reading %s: %w", file, err)
@@ -106,7 +106,6 @@ func (m Manifest) InstallUserJS(operatingSystem string, variant Variant, profile
 	if err != nil {
 		return fmt.Errorf("while creating backup of %s: %w", filepath.Join(profileDir, "user.js"), err)
 	}
-
 	additionalContent, err := m.UserJSFileContent()
 	if err != nil {
 		return fmt.Errorf("while translating config entries to javascript: %w", err)
@@ -126,7 +125,7 @@ func (m Manifest) InstallUserChrome(os string, variant Variant, profileDir strin
 	if m.UserChrome == "" {
 		return nil
 	}
-	file := filepath.Join(m.DownloadPath(), RenderFileTemplate(m.UserChrome, os, variant))
+	file := filepath.Join(m.DownloadPath(), RenderFileTemplate(m.UserChrome, os, variant, m.OSNames))
 	content, err := ioutil.ReadFile(file)
 	if err != nil {
 		return fmt.Errorf("while reading %s: %w", file, err)
@@ -145,7 +144,7 @@ func (m Manifest) InstallUserContent(os string, variant Variant, profileDir stri
 	if m.UserContent == "" {
 		return nil
 	}
-	file := filepath.Join(m.DownloadPath(), RenderFileTemplate(m.UserContent, os, variant))
+	file := filepath.Join(m.DownloadPath(), RenderFileTemplate(m.UserContent, os, variant, m.OSNames))
 	content, err := ioutil.ReadFile(file)
 	if err != nil {
 		return fmt.Errorf("while reading %s: %w", file, err)
@@ -166,7 +165,7 @@ func (m Manifest) DestinationPathOfAsset(assetPath string, profileDir string, op
 		return "", fmt.Errorf("asset %q is outside of the theme's root %q", assetPath, m.DownloadPath())
 	}
 
-	relativeTo := path.Clean(filepath.Join(m.DownloadPath(), filepath.Clean(RenderFileTemplate(m.CopyFrom, operatingSystem, variant))))
+	relativeTo := path.Clean(filepath.Join(m.DownloadPath(), filepath.Clean(RenderFileTemplate(m.CopyFrom, operatingSystem, variant, m.OSNames))))
 	if !strings.HasPrefix(relativeTo, m.DownloadPath()) {
 		return "", fmt.Errorf("copy from %q is outside of the theme's root %q", relativeTo, m.DownloadPath())
 	}
@@ -179,9 +178,18 @@ func (m Manifest) DestinationPathOfAsset(assetPath string, profileDir string, op
 	return filepath.Join(profileDir, "chrome", relativised), nil
 }
 
-func RenderFileTemplate(f FileTemplate, os string, variant Variant) string {
+func RenderFileTemplate(f FileTemplate, operatingSystem string, variant Variant, osRenameMap map[string]string) string {
+	if strings.Contains(strings.Trim(f, " "), "{{variant}}") && variant.Name == "" {
+		fmt.Printf("WARNING: %q uses {{variant}} which is empty\n", f)
+	}
+	var osName string
+	if osRenameMap[operatingSystem] == "" {
+		osName = operatingSystem
+	} else {
+		osName = osRenameMap[operatingSystem]
+	}
 	return mustache.Render(f, map[string]string{
-		"os":      os,
+		"os":      osName,
 		"variant": variant.Name,
 	})
 }
