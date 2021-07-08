@@ -2,11 +2,12 @@ build:
 	go mod tidy
 	go build
 
-test:
+tests:
 	make mocks-setup > /dev/null
 	-go test -race -coverprofile=coverage.txt -covermode=atomic -v
 	go get -u github.com/jandelgado/gcov2lcov
 	gcov2lcov -infile=coverage.txt -outfile=coverage/lcov.info
+	go mod tidy
 	make mocks-teardown > /dev/null
 
 install:
