@@ -34,12 +34,12 @@
 # vscode
 .vscode/
 
-coverage.txt
-
-ffcss
 commit-types-distribution.png
 
 # coverage
 profile.out
-
+coverage.txt
 coverage/lcov.info
+
+# compiled binary
+ffcss
