@@ -1,13 +1,13 @@
 package main
 
 import (
-	"path"
+	"path/filepath"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
 
-var testarea = path.Join(cwd(), "testarea")
+var testarea = filepath.Join(cwd(), "testarea")
 
 func TestRenderFileTemplate(t *testing.T) {
 	Assert(t, RenderFileTemplate("userChrome.css", "linux", Variant{}), "userChrome.css")
@@ -66,5 +66,5 @@ func TestDestinationPathOf(t *testing.T) {
 
 	file, err = manifest.DestinationPathOfAsset(CacheDir("simplerentfox/linux/userChrome__OneLine.css"), testarea, "linux", Variant{Name: "OneLine"})
 	assert.NoError(t, err)
-	assert.Equal(t, path.Join(testarea, "chrome", "userChrome__OneLine.css"), file)
+	assert.Equal(t, filepath.Join(testarea, "chrome", "userChrome__OneLine.css"), file)
 }

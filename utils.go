@@ -6,12 +6,10 @@ import (
 	"os"
 	"os/exec"
 	"os/user"
-	"path"
 	"path/filepath"
 	"regexp"
 	"strings"
 	"testing"
-	"runtime"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -62,17 +60,17 @@ func GetCacheDir() string {
 
 // CacheDir joins the cache directory with the given path segments
 func CacheDir(pathSegments ...string) string {
-	return path.Join(GetCacheDir(), path.Join(pathSegments...))
+	return filepath.Join(GetCacheDir(), filepath.Join(pathSegments...))
 }
 
 // ConfigDir joins the config directory with the given path segments
 func ConfigDir(pathSegments ...string) string {
-	return path.Join(GetConfigDir(), path.Join(pathSegments...))
+	return filepath.Join(GetConfigDir(), filepath.Join(pathSegments...))
 }
 
 // GetManifestPath returns the path of a theme's manifest file
 func GetManifestPath(themeRoot string) string {
-	return path.Join(themeRoot, "ffcss.yaml")
+	return filepath.Join(themeRoot, "ffcss.yaml")
 }
 
 // ProfileDirsPaths returns an array of profile directories from ~/.mozilla.
@@ -101,12 +99,12 @@ func ProfileDirsPaths(dotMozilla ...string) ([]string, error) {
 	}
 	for _, releasePath := range directories {
 		if patternReleaseID.MatchString(releasePath.Name()) {
-			stat, err := os.Stat(path.Join(mozillaFolder, "firefox", releasePath.Name()))
+			stat, err := os.Stat(filepath.Join(profilesFolder, releasePath.Name()))
 			if err != nil {
 				continue
 			}
 			if stat.IsDir() {
-				releasesPaths = append(releasesPaths, path.Join(mozillaFolder, "firefox", releasePath.Name()))
+				releasesPaths = append(releasesPaths, filepath.Join(profilesFolder, releasePath.Name()))
 			}
 		}
 	}
@@ -120,21 +118,21 @@ func DefaultProfilesDir(operatingSystem string) (string, error) {
 		if err != nil {
 			return "", err
 		}
-		return path.Join(homedir, ".mozilla", "firefox"), nil
+		return filepath.Join(homedir, ".mozilla", "firefox"), nil
 	case "macos":
 		user, err := user.Current()
 		if err != nil {
-			return "", fmt.Errorf("couldn't get the current user: %w",  err)
+			return "", fmt.Errorf("couldn't get the current user: %w", err)
 		}
 
-		return path.Join("Users", user.Username, "Library", "Application Support", "Firefox", "Profiles"), nil
+		return filepath.Join("/Users", user.Username, "Library", "Application Support", "Firefox", "Profiles"), nil
 	case "windows":
 		homedir, err := os.UserHomeDir()
 		if err != nil {
 			return "", err
 		}
 
-		return path.Join(homedir, "AppData", "Roaming", "Mozilla", "Firefox", "Profiles"), nil
+		return filepath.Join(homedir, "AppData", "Roaming", "Mozilla", "Firefox", "Profiles"), nil
 	}
 	return "", fmt.Errorf("unknown operating system %s", operatingSystem)
 }

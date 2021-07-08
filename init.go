@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/exec"
 	"path"
+	"path/filepath"
 	"strings"
 
 	"github.com/MakeNowJust/heredoc"
@@ -50,7 +51,7 @@ func RunCommandInit(args docopt.Opts) error {
 			- chrome/**
 	`), VersionMajor, name, remote)
 
-	err = ioutil.WriteFile(path.Join(workingDir, "ffcss.yaml"), []byte(content), 0700)
+	err = ioutil.WriteFile(filepath.Join(workingDir, "ffcss.yaml"), []byte(content), 0700)
 	if err != nil {
 		return fmt.Errorf("while writing the manifest: %w", err)
 	}

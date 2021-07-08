@@ -70,7 +70,7 @@ func (m Manifest) AssetsPaths(os string, variant Variant, profileDirectory strin
 	resolvedFiles := make([]string, 0)
 	for _, template := range m.Assets {
 		glob := RenderFileTemplate(template, os, variant)
-		glob = path.Clean(path.Join(m.DownloadPath(), glob))
+		glob = path.Clean(filepath.Join(m.DownloadPath(), glob))
 		files, err := doublestar.Glob(glob)
 		if err != nil {
 			return resolvedFiles, fmt.Errorf("while getting all matches of glob %s: %w", glob, err)
@@ -96,15 +96,15 @@ func (m Manifest) InstallUserJS(operatingSystem string, variant Variant, profile
 	if m.UserJS == "" {
 		return nil
 	}
-	file := path.Join(m.DownloadPath(), RenderFileTemplate(m.UserJS, operatingSystem, variant))
+	file := filepath.Join(m.DownloadPath(), RenderFileTemplate(m.UserJS, operatingSystem, variant))
 	content, err := ioutil.ReadFile(file)
 	if err != nil {
 		return fmt.Errorf("while reading %s: %w", file, err)
 	}
 
-	err = RenameIfExists(path.Join(profileDir, "user.js"), path.Join(profileDir, "user.js.bak"))
+	err = RenameIfExists(filepath.Join(profileDir, "user.js"), filepath.Join(profileDir, "user.js.bak"))
 	if err != nil {
-		return fmt.Errorf("while creating backup of %s: %w", path.Join(profileDir, "user.js"), err)
+		return fmt.Errorf("while creating backup of %s: %w", filepath.Join(profileDir, "user.js"), err)
 	}
 
 	additionalContent, err := m.UserJSFileContent()
@@ -113,7 +113,7 @@ func (m Manifest) InstallUserJS(operatingSystem string, variant Variant, profile
 	}
 
 	content = []byte(string(content) + "\n" + additionalContent)
-	err = ioutil.WriteFile(path.Join(profileDir, "user.js"), content, 0700)
+	err = ioutil.WriteFile(filepath.Join(profileDir, "user.js"), content, 0700)
 	if err != nil {
 		return fmt.Errorf("while writing: %w", err)
 	}
@@ -126,13 +126,13 @@ func (m Manifest) InstallUserChrome(os string, variant Variant, profileDir strin
 	if m.UserChrome == "" {
 		return nil
 	}
-	file := path.Join(m.DownloadPath(), RenderFileTemplate(m.UserChrome, os, variant))
+	file := filepath.Join(m.DownloadPath(), RenderFileTemplate(m.UserChrome, os, variant))
 	content, err := ioutil.ReadFile(file)
 	if err != nil {
 		return fmt.Errorf("while reading %s: %w", file, err)
 	}
 
-	err = ioutil.WriteFile(path.Join(profileDir, "chrome", "userChrome.css"), content, 0700)
+	err = ioutil.WriteFile(filepath.Join(profileDir, "chrome", "userChrome.css"), content, 0700)
 	if err != nil {
 		return fmt.Errorf("while writing: %w", err)
 	}
@@ -145,13 +145,13 @@ func (m Manifest) InstallUserContent(os string, variant Variant, profileDir stri
 	if m.UserContent == "" {
 		return nil
 	}
-	file := path.Join(m.DownloadPath(), RenderFileTemplate(m.UserContent, os, variant))
+	file := filepath.Join(m.DownloadPath(), RenderFileTemplate(m.UserContent, os, variant))
 	content, err := ioutil.ReadFile(file)
 	if err != nil {
 		return fmt.Errorf("while reading %s: %w", file, err)
 	}
 
-	err = ioutil.WriteFile(path.Join(profileDir, "chrome", "userContent.css"), content, 0700)
+	err = ioutil.WriteFile(filepath.Join(profileDir, "chrome", "userContent.css"), content, 0700)
 	if err != nil {
 		return fmt.Errorf("while writing: %w", err)
 	}
@@ -166,17 +166,17 @@ func (m Manifest) DestinationPathOfAsset(assetPath string, profileDir string, op
 		return "", fmt.Errorf("asset %q is outside of the theme's root %q", assetPath, m.DownloadPath())
 	}
 
-	relativeTo := path.Clean(path.Join(m.DownloadPath(), filepath.Clean(RenderFileTemplate(m.CopyFrom, operatingSystem, variant))))
+	relativeTo := path.Clean(filepath.Join(m.DownloadPath(), filepath.Clean(RenderFileTemplate(m.CopyFrom, operatingSystem, variant))))
 	if !strings.HasPrefix(relativeTo, m.DownloadPath()) {
 		return "", fmt.Errorf("copy from %q is outside of the theme's root %q", relativeTo, m.DownloadPath())
 	}
 
 	relativised, err := filepath.Rel(relativeTo, assetPath)
 	if err != nil {
-		return "", fmt.Errorf("couldn't make %s relative to %s: %w", assetPath, path.Join(m.DownloadPath(), filepath.Clean(m.CopyFrom)), err)
+		return "", fmt.Errorf("couldn't make %s relative to %s: %w", assetPath, filepath.Join(m.DownloadPath(), filepath.Clean(m.CopyFrom)), err)
 	}
 
-	return path.Join(profileDir, "chrome", relativised), nil
+	return filepath.Join(profileDir, "chrome", relativised), nil
 }
 
 func RenderFileTemplate(f FileTemplate, os string, variant Variant) string {

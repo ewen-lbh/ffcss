@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/exec"
 	"path"
+	"path/filepath"
 	"regexp"
 	"strings"
 
@@ -119,8 +120,8 @@ func DownloadRepository(URL string, tempCloneTo string, cloneTo string, themeMan
 		return manifest, fmt.Errorf("does not point to a clonable git repository")
 	}
 	if !hasManifest {
-		manifest, err = LoadManifest(path.Join(tempCloneTo, "ffcss.yaml"))
-		if _, err := os.Stat(path.Join(tempCloneTo, "ffcss.yaml")); os.IsNotExist(err) {
+		manifest, err = LoadManifest(filepath.Join(tempCloneTo, "ffcss.yaml"))
+		if _, err := os.Stat(filepath.Join(tempCloneTo, "ffcss.yaml")); os.IsNotExist(err) {
 			return manifest, fmt.Errorf("no manifest found: %w", err)
 		}
 		if err != nil {
@@ -130,7 +131,7 @@ func DownloadRepository(URL string, tempCloneTo string, cloneTo string, themeMan
 	if manifest.Name() == "" {
 		return manifest, errors.New("manifest has no name")
 	}
-	os.Rename(tempCloneTo, path.Join(cloneTo, manifest.Name()))
+	os.Rename(tempCloneTo, filepath.Join(cloneTo, manifest.Name()))
 	return
 }
 
@@ -190,9 +191,9 @@ func DownloadFromZip(URL string, tempDownloadTo string, finalDownloadTo string, 
 	if manifest.Name() == "" {
 		return manifest, errors.New("manifest has no name")
 	}
-	err = os.Rename(path.Dir(tempDownloadTo), path.Join(finalDownloadTo, manifest.Name()))
+	err = os.Rename(path.Dir(tempDownloadTo), filepath.Join(finalDownloadTo, manifest.Name()))
 	if err != nil {
-		return manifest, fmt.Errorf("could not move %s to %s: %w", path.Dir(tempDownloadTo), path.Join(finalDownloadTo, manifest.Name()), err)
+		return manifest, fmt.Errorf("could not move %s to %s: %w", path.Dir(tempDownloadTo), filepath.Join(finalDownloadTo, manifest.Name()), err)
 	}
 	return
 }

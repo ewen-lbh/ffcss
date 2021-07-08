@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
-	"path"
+	"path/filepath"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -46,8 +46,8 @@ func TestDownload(t *testing.T) {
 func TestDownloadFromZip(t *testing.T) {
 	i := 0
 	dl := func(s string) error {
-		os.MkdirAll(path.Join(cwd(), fmt.Sprintf("mocks/zip-dropoff/%d", i)), 0777)
-		_, err := DownloadFromZip(s, path.Join(cwd(), fmt.Sprintf("mocks/zip-dropoff/%d", i)), path.Join(cwd(), "mocks/cache-directory"))
+		os.MkdirAll(filepath.Join(cwd(), fmt.Sprintf("mocks/zip-dropoff/%d", i)), 0777)
+		_, err := DownloadFromZip(s, filepath.Join(cwd(), fmt.Sprintf("mocks/zip-dropoff/%d", i)), filepath.Join(cwd(), "mocks/cache-directory"))
 		i++
 		return err
 	}

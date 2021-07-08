@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"net/url"
 	"os"
-	"path"
+	"path/filepath"
 	"regexp"
 	"strings"
 
@@ -18,7 +18,7 @@ type Variant struct {
 	UserJS      FileTemplate `yaml:"user.js"`
 	Assets      []FileTemplate
 	Description string
-	Name		string
+	Name        string
 }
 
 type Manifest struct {
@@ -143,7 +143,7 @@ func LoadThemeCatalog(storeDirectory string) (themes ThemeStore, err error) {
 			continue
 		}
 		themeName := themeNamePattern.FindStringSubmatch(manifest.Name())[1]
-		theme, err := LoadManifest(path.Join(storeDirectory, manifest.Name()))
+		theme, err := LoadManifest(filepath.Join(storeDirectory, manifest.Name()))
 		if err != nil {
 			return nil, err
 		}

@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
-	"path"
+	"path/filepath"
 	"runtime"
 
 	"github.com/AlecAivazis/survey/v2"
@@ -14,7 +14,7 @@ import (
 func RunCommandUse(args docopt.Opts) error {
 	themeName, _ := args.String("THEME_NAME")
 	// variant, _ := args.String("VARIANT")
-	err := os.MkdirAll(path.Join(GetConfigDir(), "themes"), 0777)
+	err := os.MkdirAll(filepath.Join(GetConfigDir(), "themes"), 0777)
 	if err != nil {
 		return fmt.Errorf("couldn't create data directories: %w", err)
 	}
@@ -52,12 +52,12 @@ func RunCommandUse(args docopt.Opts) error {
 	operatingSystem := GOOStoOS(runtime.GOOS)
 	// For each profile directory...
 	for _, profileDir := range selectedProfileDirs {
-		err = RenameIfExists(path.Join(profileDir, "chrome"), path.Join(profileDir, "chrome.bak"))
+		err = RenameIfExists(filepath.Join(profileDir, "chrome"), filepath.Join(profileDir, "chrome.bak"))
 		if err != nil {
 			return fmt.Errorf("while backing up chrome directory: %w", err)
 		}
 
-		err := os.Mkdir(path.Join(profileDir, "chrome"), 0700)
+		err := os.Mkdir(filepath.Join(profileDir, "chrome"), 0700)
 		if err != nil {
 			return err
 		}
