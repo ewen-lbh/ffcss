@@ -38,7 +38,6 @@ ffcss - Apply and configure FirefoxCSS themes
 
 Usage:
     ffcss use THEME_NAME
-    ffcss reapply
     ffcss init 
 
 Where:
@@ -74,12 +73,6 @@ Some config keys need to be changed before applying a theme. `toolkit.legacyUser
 Synopsis: `ffcss config KEY [VALUE]`
 
 Much simpler than the `use` command, this one just adds convenience to set `about:config` keys. If `VALUE` is not provided, ffcss will output the specified `KEY`'s current value. -->
-
-### The `reapply` command
-
-Synopsis: `ffcss reapply`
-
-This is the same as doing `ffcss use` with the current theme, useful when firefox updates.
 
 ### The `init` command
 
