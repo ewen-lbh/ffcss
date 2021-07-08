@@ -97,14 +97,6 @@ func LoadManifest(manifestPath string) (manifest Manifest, err error) {
 	return
 }
 
-func (m Manifest) VariantsSlice() []Variant {
-	variantsSlice := make([]Variant, 0, len(m.Variants))
-	for _, variant := range m.Variants {
-		variantsSlice = append(variantsSlice, variant)
-	}
-	return variantsSlice
-}
-
 // WithVariant returns a Manifest representing the theme if the selected variant
 // was used as the "root values".
 // i.e. the values of UserJS, UserContent, UserChrome, Assets are replaced with their variant's, if set,
