@@ -8,7 +8,7 @@ config:
   svg.context-properties.content.enabled: true
 
 variants:
-  WithoutURLBar: {}
+  HideURLBar: {}
   WithURLBar: {}
   OneLine: {}
 
