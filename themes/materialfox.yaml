@@ -12,6 +12,5 @@ userContent: null
 user.js: user.js
 assets:
   - chrome/**
-  - chrome/../../../../todo
 
 copy from: chrome/
