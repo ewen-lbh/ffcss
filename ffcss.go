@@ -55,6 +55,7 @@ func main() {
 }
 
 func dispatchCommand(args docopt.Opts) error {
+	d("dispatching %#v", args)
 	if val, _ := args.Bool("configure"); val {
 		err := RunCommandConfigure(args)
 		return err

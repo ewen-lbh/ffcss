@@ -117,6 +117,7 @@ func (m Manifest) InstallUserJS(operatingSystem string, variant Variant, profile
 	}
 
 	content = []byte(string(content) + "\n" + additionalContent)
+		d("generated additional user.js content from config entries: %q", additionalContent)
 	err = ioutil.WriteFile(filepath.Join(profileDir, "user.js"), content, 0700)
 	if err != nil {
 		return fmt.Errorf("while writing: %w", err)
