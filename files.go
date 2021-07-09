@@ -5,7 +5,6 @@ import (
 	"io/ioutil"
 	"os"
 	"os/exec"
-	"path"
 	"path/filepath"
 	"strings"
 
@@ -53,7 +52,7 @@ func (m Manifest) InstallAssets(operatingSystem string, variant Variant, profile
 			continue
 		}
 
-		err = os.MkdirAll(path.Dir(destPath), 0700)
+		err = os.MkdirAll(filepath.Dir(destPath), 0700)
 		if err != nil {
 			return fmt.Errorf("couldn't create parent directories for %s: %w", destPath, err)
 		}
@@ -73,7 +72,7 @@ func (m Manifest) AssetsPaths(os string, variant Variant, profileDirectory strin
 	resolvedFiles := make([]string, 0)
 	for _, template := range m.Assets {
 		glob := RenderFileTemplate(template, os, variant, m.OSNames)
-		glob = path.Clean(filepath.Join(m.DownloadedTo, glob))
+		glob = filepath.Clean(filepath.Join(m.DownloadedTo, glob))
 		files, err := doublestar.Glob(glob)
 		if err != nil {
 			return resolvedFiles, fmt.Errorf("while getting all matches of glob %s: %w", glob, err)
@@ -187,7 +186,7 @@ func (m Manifest) DestinationPathOfAsset(assetPath string, profileDir string, op
 		return "", fmt.Errorf("asset %q is outside of the theme's root %q", assetPath, m.DownloadedTo)
 	}
 
-	relativeTo := path.Clean(filepath.Join(m.DownloadedTo, filepath.Clean(RenderFileTemplate(m.CopyFrom, operatingSystem, variant, m.OSNames))))
+	relativeTo := filepath.Clean(filepath.Join(m.DownloadedTo, filepath.Clean(RenderFileTemplate(m.CopyFrom, operatingSystem, variant, m.OSNames))))
 	if !strings.HasPrefix(relativeTo, m.DownloadedTo) {
 		return "", fmt.Errorf("copy from %q is outside of the theme's root %q", relativeTo, m.DownloadedTo)
 	}

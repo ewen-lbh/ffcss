@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
-	"path"
 	"path/filepath"
 	"regexp"
 
@@ -204,15 +203,15 @@ func DownloadFromZip(URL string, tempDownloadTo string, finalDownloadTo string, 
 	}
 
 	// Unzip it, check contents
-	d("Unzipping %s to %s", tempDownloadTo, path.Dir(tempDownloadTo))
-	unzipped, err := zip.Unzip(tempDownloadTo, path.Dir(tempDownloadTo))
+	d("Unzipping %s to %s", tempDownloadTo, filepath.Dir(tempDownloadTo))
+	unzipped, err := zip.Unzip(tempDownloadTo, filepath.Dir(tempDownloadTo))
 	if err != nil {
 		return manifest, fmt.Errorf("while unzipping %s: %w", tempDownloadTo, err)
 	}
 
 	if !hasManifest {
 		for _, file := range unzipped {
-			if path.Base(file) == "ffcss.yaml" {
+			if filepath.Base(file) == "ffcss.yaml" {
 				hasManifest = true
 				manifest, err = LoadManifest(file)
 				if err != nil {
@@ -222,16 +221,16 @@ func DownloadFromZip(URL string, tempDownloadTo string, finalDownloadTo string, 
 			}
 		}
 		if !hasManifest {
-			os.RemoveAll(path.Dir(tempDownloadTo))
+			os.RemoveAll(filepath.Dir(tempDownloadTo))
 			return manifest, errors.New("downloaded zip file has no manifest file (ffcss.yaml)")
 		}
 	}
 	if manifest.Name() == "" {
 		return manifest, errors.New("manifest has no name")
 	}
-	err = os.Rename(path.Dir(tempDownloadTo), filepath.Join(finalDownloadTo, manifest.Name()))
+	err = os.Rename(filepath.Dir(tempDownloadTo), filepath.Join(finalDownloadTo, manifest.Name()))
 	if err != nil {
-		return manifest, fmt.Errorf("could not move %s to %s: %w", path.Dir(tempDownloadTo), filepath.Join(finalDownloadTo, manifest.Name()), err)
+		return manifest, fmt.Errorf("could not move %s to %s: %w", filepath.Dir(tempDownloadTo), filepath.Join(finalDownloadTo, manifest.Name()), err)
 	}
 	return
 }

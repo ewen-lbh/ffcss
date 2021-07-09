@@ -6,7 +6,6 @@ import (
 	"io/ioutil"
 	"os"
 	"os/exec"
-	"path"
 	"path/filepath"
 	"strings"
 
@@ -28,7 +27,7 @@ func RunCommandInit(args docopt.Opts) error {
 	if strings.Contains(remote, "https://github.com") {
 		name = remote[strings.LastIndex(remote, "/")+1:]
 	} else {
-		name = path.Dir(workingDir)
+		name = filepath.Dir(workingDir)
 	}
 
 	// For the manifest's content
