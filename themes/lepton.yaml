@@ -1,7 +1,7 @@
 ffcss: 0
 
 name: lepton
-repository: https://github.com/black7375/Firefox-UI-Fix
+download: https://github.com/black7375/Firefox-UI-Fix
 
 user.js: user.js
 userChrome: userChrome.css

@@ -1,0 +1,29 @@
+ffcss: 0
+
+name: UWP
+download: https://github.com/Guerra24/Firefox-UWP-Style
+
+# evolution of the firefox: entry,
+# now firefox: <number> means firefox: {<number>: {}}
+firefox:
+  nightly:
+    download: https://github.com/Guerra24/Firefox-UWP-Style/archive/refs/heads/master.zip
+  89-90:
+    download: https://github.com/Guerra24/Firefox-UWP-Style/archive/refs/heads/firefox-89.zip
+  88:
+    download: https://github.com/Guerra24/Firefox-UWP-Style/archive/refs/heads/firefox-88.zip
+  76-87:
+    download: https://github.com/Guerra24/Firefox-UWP-Style/archive/refs/heads/firefox-76.zip
+
+variants:
+  default: {}
+  acrylic blur:
+    config:
+      layout.css.backdrop-filter.enabled: true
+
+userContent: userContent.css
+userChrome: userChrome.css
+assets:
+  - custom*.css
+  - css/**
+  - img/**

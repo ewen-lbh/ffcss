@@ -39,7 +39,7 @@ type Manifest struct {
 	OSNames            map[string]string `yaml:"os"`
 
 	// Those can be modified by variant
-	Repository  string
+	DownloadAt  string `yaml:"download"`
 	Branch      string
 	CopyFrom    string `yaml:"copy from"`
 	Config      Config
@@ -55,8 +55,8 @@ func (m Manifest) Name() string {
 	if m.ExplicitName != "" {
 		return strings.ToLower(m.ExplicitName)
 	}
-	if strings.HasPrefix(m.Repository, "https://github.com") {
-		fragments := strings.Split(m.Repository, "/")
+	if strings.HasPrefix(m.DownloadAt, "https://github.com") {
+		fragments := strings.Split(m.DownloadAt, "/")
 		return strings.ToLower(fragments[len(fragments)-1])
 	}
 	return ""
@@ -143,7 +143,7 @@ func (m Manifest) WithVariant(variant Variant) (newManifest Manifest, actionsNee
 	}
 	if variant.Repository != "" {
 		actionsNeeded.reDownload = true
-		newManifest.Repository = variant.Repository
+		newManifest.DownloadAt = variant.Repository
 	}
 	if variant.Branch != "" {
 		actionsNeeded.switchBranch = true

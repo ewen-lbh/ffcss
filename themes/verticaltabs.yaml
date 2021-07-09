@@ -1,7 +1,7 @@
 ffcss: 0
 
 name: verticaltabs
-repository: https://github.com/ranmaru22/firefox-vertical-tabs
+download: https://github.com/ranmaru22/firefox-vertical-tabs
 
 userChrome: userChrome.css
 

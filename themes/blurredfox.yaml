@@ -1,7 +1,7 @@
 ffcss: 0
 
 name: blurredfox
-repository: https://github.com/manilarome/blurredfox
+download: https://github.com/manilarome/blurredfox
 
 user.js: user.js
 userChrome: userChrome.css

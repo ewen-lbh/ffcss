@@ -1,7 +1,7 @@
 ffcss: 0
 
 name: materialfox
-repository: https://github.com/muckSponge/MaterialFox
+download: https://github.com/muckSponge/MaterialFox
 
 config:
   svg.context-properties.content.enabled: true

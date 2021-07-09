@@ -93,7 +93,7 @@ func Download(URL string, typ string, themeManifest ...Manifest) (manifest Manif
 			return manifest, fmt.Errorf("while : %w", err)
 		}
 		if theme, ok := themes[URL]; ok {
-			manifest, err = Download(theme.Repository, "git", theme)
+			manifest, err = Download(theme.DownloadAt, "git", theme)
 			if err != nil {
 				return manifest, fmt.Errorf("from catalog: %w", err)
 			}

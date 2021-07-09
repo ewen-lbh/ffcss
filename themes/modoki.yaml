@@ -1,7 +1,7 @@
 ffcss: 0
 
 name: modoki
-repository: https://github.com/soup-bowl/Modoki-FirefoxCSS
+download: https://github.com/soup-bowl/Modoki-FirefoxCSS
 
 assets:
   - IE6/chrome/**

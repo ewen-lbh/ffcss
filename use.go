@@ -76,10 +76,10 @@ func RunCommandUse(args docopt.Opts) error {
 	// FIXME for now switching branches just re-downloads the entire thing to a new dir with the new branch
 	// ideal thing would be to copy from the root variant to the new variant, cd into it then `git switch` there.
 	if actionsNeeded.reDownload || actionsNeeded.switchBranch {
-		d("re-downloading: new repo is %s", manifest.Repository)
-		uri, typ, err := ResolveURL(manifest.Repository)
+		d("re-downloading: new repo is %s", manifest.DownloadAt)
+		uri, typ, err := ResolveURL(manifest.DownloadAt)
 		if err != nil {
-			return fmt.Errorf("while resolving URL %s: %w", manifest.Repository, err)
+			return fmt.Errorf("while resolving URL %s: %w", manifest.DownloadAt, err)
 		}
 
 		_, err = Download(uri, typ, manifest)

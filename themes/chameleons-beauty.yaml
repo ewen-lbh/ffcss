@@ -1,7 +1,7 @@
 ffcss: 0
 
 name: chameleons-beauty
-repository: https://github.com/Godiesc/Chameleons-Beauty
+download: https://github.com/Godiesc/Chameleons-Beauty
 
 user.js: user.js
 

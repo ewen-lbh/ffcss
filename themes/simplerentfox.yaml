@@ -1,7 +1,7 @@
 ffcss: 0
 
 name: simplerentfox
-repository: https://github.com/MiguelRAvila/SimplerentFox
+download: https://github.com/MiguelRAvila/SimplerentFox
 
 config:
   layers.acceleration.force-enabled: true
