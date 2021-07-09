@@ -120,7 +120,7 @@ All files will get copied to `<user's profile folder>/chrome/`. You can change t
 ```yaml
 ffcss: 0 # signals that no compatibility is ensured (since 0.X.X versions can contain breaking changes, see semver)
 
-repository: https://github.com/muckSponge/MaterialFox
+download: https://github.com/muckSponge/MaterialFox
 config:
   svg.context-properties.content.enabled: true
   browser.tabs.tabClipWidth: 83
