@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/docopt/docopt-go"
 )
@@ -13,6 +14,7 @@ Usage:
     ffcss [--profiles-dir=DIRECTORY] configure KEY [VALUE]
     ffcss [--profiles-dir=DIRECTORY] [--all-profiles] use THEME_NAME [VARIANT]
     ffcss reapply
+	ffcss cache clear
     ffcss init [FORMAT]
 
 Where:
@@ -53,6 +55,11 @@ func dispatchCommand(args docopt.Opts) error {
 	if val, _ := args.Bool("init"); val {
 		err := RunCommandInit(args)
 		return err
+	}
+	if val, _ := args.Bool("cache"); val {
+		if val, _ := args.Bool("clear"); val {
+			return ClearWholeCache()
+		}
 	}
 	return nil
 }

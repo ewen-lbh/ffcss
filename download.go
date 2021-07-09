@@ -202,3 +202,8 @@ func DownloadFromZip(URL string, tempDownloadTo string, finalDownloadTo string, 
 func CleanDownloadArea() error {
 	return os.RemoveAll(CacheDir(".download"))
 }
+
+// ClearWholeCache destroys the cache directory
+func ClearWholeCache() error {
+	return os.RemoveAll(CacheDir())
+}
