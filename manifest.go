@@ -145,7 +145,9 @@ func (m Manifest) WithVariant(variant Variant) (newManifest Manifest, actionsNee
 	for key, val := range variant.Config {
 		newManifest.Config[key] = val
 	}
-	newManifest.DownloadedTo = CacheDir(newManifest.Name(), newManifest.CurrentVariantName)
+	if actionsNeeded.reDownload || actionsNeeded.switchBranch {
+		newManifest.DownloadedTo = CacheDir(newManifest.Name(), newManifest.CurrentVariantName)
+	}
 	return newManifest, actionsNeeded
 }
 
