@@ -10,18 +10,24 @@ It uses a YAML file to declare files, variants, helper addons and others. This f
 
 #### Linux & MacOS
 
+_Make sure there isn't a folder called “installation” in your working directory_
+
 ```sh
+# Don’t pollute your current directory
+mkdir installation; cd installation
 # Install the latest release by downloading the binary on Github
-wget https://github.com/ewen-lbh/ffcss/releases/latest/download/YOUR-OS.tar.gz -O ffcss.tar.gz
+wget https://github.com/ewen-lbh/ffcss/releases/latest/download/linux.tar.gz -O ffcss.tar.gz
 # Extract it
-tar -xzfv ffcss.tar.gz
+tar -xzvf ffcss.tar.gz
 # Install built-in themes
 mkdir -p ~/.config/ffcss/themes/
-cp -v ffcss/themes/*.yaml ~/.config/ffcss/themes/
+cp -v themes/*.yaml ~/.config/ffcss/themes/
 # Make sure the file is marked as executable
-chmod a+x ffcss/ffcss
-# Move it to a folder that's in your path (so you can type `ffcss` anywhere), eg.
-mv ffcss/ffcss ~/.local/bin/ffcss
+chmod +x ffcss
+# Move it to a folder that’s in your path (so you can type `ffcss` anywhere), eg.
+mv ffcss ~/.local/bin/ffcss
+# Remove the extracted contents (you don’t need them anymore)
+cd ..; rm -I -rf installation
 ```
 
 #### Windows
