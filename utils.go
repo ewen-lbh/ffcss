@@ -132,18 +132,19 @@ func cwd() string {
 }
 
 // isURLClonable determines if the given URL points to a git repository
-func isURLClonable(URL string) (clonable bool, err error) {
+func isURLClonable(URL string) bool {
 	output, err := exec.Command("git", "ls-remote", URL).CombinedOutput()
 	if err == nil {
-		return true, nil
+		return true
 	}
 	switch err.(type) {
 	case *exec.ExitError:
 		if err.(*exec.ExitError).ExitCode() == 128 {
-			return false, nil
+			return false
 		}
 	}
-	return false, fmt.Errorf("while running git-ls-remote: %w: %s", err, output)
+	fmt.Printf("WARNING: could not determine clonability of %s: while running git-ls-remote: %w: %s\n", URL, err, output)
+	return false
 }
 
 // RenameIfExists renames from to to if from exists. If it doesn't, don't attempt renaming.

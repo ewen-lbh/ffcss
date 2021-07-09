@@ -19,7 +19,11 @@ func RunCommandUse(args docopt.Opts) error {
 	if err != nil {
 		return fmt.Errorf("couldn't create data directories: %w", err)
 	}
-	uri, typ := ResolveURL(themeName)
+	uri, typ, err := ResolveURL(themeName)
+	if err != nil {
+		return fmt.Errorf("while resolving name %s: %w", themeName, err)
+	}
+
 	manifest, err := Download(uri, typ)
 	if err != nil {
 		return err
@@ -68,7 +72,21 @@ func RunCommandUse(args docopt.Opts) error {
 		}
 	}
 	variant := manifest.Variants[variantName]
-	manifest = manifest.WithVariant(variant)
+	manifest, actionsNeeded := manifest.WithVariant(variant)
+	// FIXME for now switching branches just re-downloads the entire thing to a new dir with the new branch
+	// ideal thing would be to copy from the root variant to the new variant, cd into it then `git switch` there.
+	if actionsNeeded.reDownload || actionsNeeded.switchBranch {
+		uri, typ, err := ResolveURL(manifest.Repository)
+		if err != nil {
+			return fmt.Errorf("while resolving URL %s: %w", manifest.Repository, err)
+		}
+
+		_, err = Download(uri, typ, manifest)
+		if err != nil {
+			return fmt.Errorf("couldn't download the variant at %s: %w", uri, err)
+		}
+	}
+
 	// For each profile directory...
 	for _, profileDir := range selectedProfileDirs {
 		err = RenameIfExists(filepath.Join(profileDir, "chrome"), filepath.Join(profileDir, "chrome.bak"))
@@ -104,26 +122,28 @@ func RunCommandUse(args docopt.Opts) error {
 	}
 
 	// Ask to open extensions' pages
-	acceptOpenExtensionPages := false
-	survey.AskOne(&survey.Confirm{
-		Message: fmt.Sprintf("This theme suggests installing %d %s. Open %s?",
-			len(manifest.Addons),
-			plural("addon", len(manifest.Addons)),
-			plural("its page", len(manifest.Addons), "their pages"),
-		),
-		Default: acceptOpenExtensionPages,
-	}, &acceptOpenExtensionPages)
+	if len(manifest.Addons) > 0 {
+		acceptOpenExtensionPages := false
+		survey.AskOne(&survey.Confirm{
+			Message: fmt.Sprintf("This theme suggests installing %d %s. Open %s?",
+				len(manifest.Addons),
+				plural("addon", len(manifest.Addons)),
+				plural("its page", len(manifest.Addons), "their pages"),
+			),
+			Default: acceptOpenExtensionPages,
+		}, &acceptOpenExtensionPages)
 
-	if acceptOpenExtensionPages {
-		for _, profile := range selectedProfileDirs {
-			fmt.Printf("Opening on %s\n", profile)
-			for _, url := range manifest.Addons {
-				command := exec.Command("firefox", "--new-tab", url, "--profile", profile)
-				err = command.Run()
-				if err != nil {
-					return fmt.Errorf("couldn't open %q: while running %s: %w", url, command.String(), err)
+		if acceptOpenExtensionPages {
+			for _, profile := range selectedProfileDirs {
+				fmt.Printf("Opening on %s\n", profile)
+				for _, url := range manifest.Addons {
+					command := exec.Command("firefox", "--new-tab", url, "--profile", profile)
+					err = command.Run()
+					if err != nil {
+						return fmt.Errorf("couldn't open %q: while running %s: %w", url, command.String(), err)
+					}
+					break
 				}
-				break
 			}
 		}
 	}

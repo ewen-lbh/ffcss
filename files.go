@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"os/exec"
 	"path"
 	"path/filepath"
 	"strings"
@@ -70,7 +71,7 @@ func (m Manifest) AssetsPaths(os string, variant Variant, profileDirectory strin
 	resolvedFiles := make([]string, 0)
 	for _, template := range m.Assets {
 		glob := RenderFileTemplate(template, os, variant, m.OSNames)
-		glob = path.Clean(filepath.Join(m.DownloadPath(), glob))
+		glob = path.Clean(filepath.Join(m.DownloadedTo, glob))
 		files, err := doublestar.Glob(glob)
 		if err != nil {
 			return resolvedFiles, fmt.Errorf("while getting all matches of glob %s: %w", glob, err)
@@ -102,7 +103,7 @@ func (m Manifest) InstallUserJS(operatingSystem string, variant Variant, profile
 		return nil
 	}
 
-	file := filepath.Join(m.DownloadPath(), RenderFileTemplate(m.UserJS, operatingSystem, variant, m.OSNames))
+	file := filepath.Join(m.DownloadedTo, RenderFileTemplate(m.UserJS, operatingSystem, variant, m.OSNames))
 	content, err := ioutil.ReadFile(file)
 	if err != nil {
 		return fmt.Errorf("while reading %s: %w", file, err)
@@ -119,6 +120,7 @@ func (m Manifest) InstallUserJS(operatingSystem string, variant Variant, profile
 		return fmt.Errorf("while writing: %w", err)
 	}
 
+
 	return nil
 }
 
@@ -127,7 +129,7 @@ func (m Manifest) InstallUserChrome(os string, variant Variant, profileDir strin
 	if m.UserChrome == "" {
 		return nil
 	}
-	file := filepath.Join(m.DownloadPath(), RenderFileTemplate(m.UserChrome, os, variant, m.OSNames))
+	file := filepath.Join(m.DownloadedTo, RenderFileTemplate(m.UserChrome, os, variant, m.OSNames))
 	content, err := ioutil.ReadFile(file)
 	if err != nil {
 		return fmt.Errorf("while reading %s: %w", file, err)
@@ -138,6 +140,7 @@ func (m Manifest) InstallUserChrome(os string, variant Variant, profileDir strin
 		return fmt.Errorf("while writing: %w", err)
 	}
 
+
 	return nil
 }
 
@@ -146,7 +149,7 @@ func (m Manifest) InstallUserContent(os string, variant Variant, profileDir stri
 	if m.UserContent == "" {
 		return nil
 	}
-	file := filepath.Join(m.DownloadPath(), RenderFileTemplate(m.UserContent, os, variant, m.OSNames))
+	file := filepath.Join(m.DownloadedTo, RenderFileTemplate(m.UserContent, os, variant, m.OSNames))
 	content, err := ioutil.ReadFile(file)
 	if err != nil {
 		return fmt.Errorf("while reading %s: %w", file, err)
@@ -157,24 +160,25 @@ func (m Manifest) InstallUserContent(os string, variant Variant, profileDir stri
 		return fmt.Errorf("while writing: %w", err)
 	}
 
+
 	return nil
 }
 
 // DestinationPathOfAsset computes the destination path of some asset from its path and the destination profile directory
 // It is assumed that assetPath is absolute.
 func (m Manifest) DestinationPathOfAsset(assetPath string, profileDir string, operatingSystem string, variant Variant) (string, error) {
-	if !strings.HasPrefix(assetPath, m.DownloadPath()) {
-		return "", fmt.Errorf("asset %q is outside of the theme's root %q", assetPath, m.DownloadPath())
+	if !strings.HasPrefix(assetPath, m.DownloadedTo) {
+		return "", fmt.Errorf("asset %q is outside of the theme's root %q", assetPath, m.DownloadedTo)
 	}
 
-	relativeTo := path.Clean(filepath.Join(m.DownloadPath(), filepath.Clean(RenderFileTemplate(m.CopyFrom, operatingSystem, variant, m.OSNames))))
-	if !strings.HasPrefix(relativeTo, m.DownloadPath()) {
-		return "", fmt.Errorf("copy from %q is outside of the theme's root %q", relativeTo, m.DownloadPath())
+	relativeTo := path.Clean(filepath.Join(m.DownloadedTo, filepath.Clean(RenderFileTemplate(m.CopyFrom, operatingSystem, variant, m.OSNames))))
+	if !strings.HasPrefix(relativeTo, m.DownloadedTo) {
+		return "", fmt.Errorf("copy from %q is outside of the theme's root %q", relativeTo, m.DownloadedTo)
 	}
 
 	relativised, err := filepath.Rel(relativeTo, assetPath)
 	if err != nil {
-		return "", fmt.Errorf("couldn't make %s relative to %s: %w", assetPath, filepath.Join(m.DownloadPath(), filepath.Clean(m.CopyFrom)), err)
+		return "", fmt.Errorf("couldn't make %s relative to %s: %w", assetPath, filepath.Join(m.DownloadedTo, filepath.Clean(m.CopyFrom)), err)
 	}
 
 	return filepath.Join(profileDir, "chrome", relativised), nil
@@ -194,4 +198,11 @@ func RenderFileTemplate(f FileTemplate, operatingSystem string, variant Variant,
 		"os":      osName,
 		"variant": variant.Name,
 	})
+}
+
+func SwitchGitBranch(newBranch, clonedTo string) error {
+	process := exec.Command("git", "switch", newBranch)
+	process.Dir = clonedTo
+	output, err := process.CombinedOutput()
+	return fmt.Errorf("%w: %s", err, output)
 }

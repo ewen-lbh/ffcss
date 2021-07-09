@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"net/url"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -18,6 +17,8 @@ type Variant struct {
 	Message string
 
 	// Properties that modify the "default variant"
+	Repository  string
+	Branch      string
 	Config      Config
 	UserChrome  FileTemplate `yaml:"userChrome"`
 	UserContent FileTemplate `yaml:"userContent"`
@@ -28,13 +29,16 @@ type Variant struct {
 }
 
 type Manifest struct {
-	Repository   string
-	ExplicitName string `yaml:"name"`
-	FfcssVersion int    `yaml:"ffcss"`
-	Variants     map[string]Variant
-	OSNames      map[string]string `yaml:"os"`
+	ExplicitName       string `yaml:"name"`
+	CurrentVariantName string // Used to construct the directory where the theme will be cached
+	DownloadedTo       string // Stores the path to the directory where the theme is cached. Set by .Download().
+	FfcssVersion       int    `yaml:"ffcss"`
+	Variants           map[string]Variant
+	OSNames            map[string]string `yaml:"os"`
 
 	// Those can be modified by variant
+	Repository  string
+	Branch      string
 	CopyFrom    string `yaml:"copy from"`
 	Config      Config
 	UserChrome  FileTemplate `yaml:"userChrome"`
@@ -56,10 +60,6 @@ func (m Manifest) Name() string {
 	return ""
 }
 
-func (m Manifest) DownloadPath() string {
-	return CacheDir(m.Name())
-}
-
 type Config map[string]interface{}
 
 type FileTemplate = string
@@ -77,15 +77,6 @@ func NewManifest() Manifest {
 	}
 }
 
-func (m Manifest) URL() url.URL {
-	uri, _ := ResolveURL(m.Name())
-	URL, err := url.Parse(uri)
-	if err != nil {
-		panic(err)
-	}
-	return *URL
-}
-
 // LoadManifest loads a ffcss.yaml file into a Manifest object.
 func LoadManifest(manifestPath string) (manifest Manifest, err error) {
 	raw, err := os.ReadFile(manifestPath)
@@ -95,15 +86,27 @@ func LoadManifest(manifestPath string) (manifest Manifest, err error) {
 	}
 	manifest = NewManifest()
 	err = yaml.Unmarshal(raw, &manifest)
+
+	if manifest.Name() == TempDownloadsDirName {
+		err = fmt.Errorf("invalid theme name %q", TempDownloadsDirName)
+		return
+	}
+
 	for name, variant := range manifest.Variants {
+		if name == RootVariantName {
+			err = fmt.Errorf("invalid variant name %q", name)
+			return
+		}
 		variantWithName := variant
 		variantWithName.Name = name
 		manifest.Variants[name] = variantWithName
 	}
+	manifest.CurrentVariantName = RootVariantName // ensure the current variant's name wasn't manipulated by the YAML unmarshaling
 	if err != nil {
 		err = fmt.Errorf("while parsing manifest %s: %w", manifestPath, err)
 		return
 	}
+	manifest.DownloadedTo = CacheDir(manifest.Name(), manifest.CurrentVariantName)
 	return
 }
 
@@ -111,8 +114,11 @@ func LoadManifest(manifestPath string) (manifest Manifest, err error) {
 // was used as the "root values".
 // i.e. the values of UserJS, UserContent, UserChrome, Assets are replaced with their variant's, if set,
 // and the value of Config is combined with the variant's.
-func (m Manifest) WithVariant(variant Variant) Manifest {
-	newManifest := m
+// Some variants change the git branch, the entire repository or other settings that require external actions.
+// Those are returned in actionsNeeded as a struct of booleans with descriptive field names.
+func (m Manifest) WithVariant(variant Variant) (newManifest Manifest, actionsNeeded struct{ switchBranch, reDownload bool }) {
+	newManifest = m
+	newManifest.CurrentVariantName = variant.Name
 	if variant.UserChrome != "" {
 		newManifest.UserChrome = variant.UserChrome
 	}
@@ -128,10 +134,19 @@ func (m Manifest) WithVariant(variant Variant) Manifest {
 	if len(variant.Assets) > 0 {
 		newManifest.Assets = variant.Assets
 	}
+	if variant.Repository != "" {
+		actionsNeeded.reDownload = true
+		newManifest.Repository = variant.Repository
+	}
+	if variant.Branch != "" {
+		actionsNeeded.switchBranch = true
+		newManifest.Branch = variant.Branch
+	}
 	for key, val := range variant.Config {
 		newManifest.Config[key] = val
 	}
-	return newManifest
+	newManifest.DownloadedTo = CacheDir(newManifest.Name(), newManifest.CurrentVariantName)
+	return newManifest, actionsNeeded
 }
 
 // ThemeStore represents a collection of themes

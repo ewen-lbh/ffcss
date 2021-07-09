@@ -10,20 +10,29 @@ import (
 )
 
 func TestResolveURL(t *testing.T) {
-	name, typ := ResolveURL("ewen-lbh/ffcss")
+	name, typ, err := ResolveURL("ewen-lbh/ffcss")
+	assert.NoError(t, err)
 	assert.Equal(t, []string{"https://github.com/ewen-lbh/ffcss", "git"}, []string{name, typ})
 
-	name, typ = ResolveURL("bitbucket.io/guaca/mole")
+	name, typ, err = ResolveURL("bitbucket.io/guaca/mole")
+	assert.NoError(t, err)
 	assert.Equal(t, []string{"https://bitbucket.io/guaca/mole", "website"}, []string{name, typ})
 
-	name, typ = ResolveURL("http://localhost:8080/")
+	name, typ, err = ResolveURL("http://localhost:8080/")
+	assert.NoError(t, err)
 	assert.Equal(t, []string{"http://localhost:8080/", "website"}, []string{name, typ})
 
-	name, typ = ResolveURL("materialfox")
+	name, typ, err = ResolveURL("materialfox")
+	assert.NoError(t, err)
 	assert.Equal(t, []string{"materialfox", "bare"}, []string{name, typ})
 
-	name, typ = ResolveURL("unknownone")
+	name, typ, err = ResolveURL("unknownone")
+	assert.NoError(t, err)
 	assert.Equal(t, []string{"unknownone", "bare"}, []string{name, typ})
+
+	name, typ, err = ResolveURL("unvalid~github~username/somerepo")
+	assert.Contains(t, err.Error(), "https://github.com/unvalid~github~username/somerepo is not clonable")
+	assert.Equal(t, []string{"", ""}, []string{name, typ})
 }
 
 func TestDownload(t *testing.T) {

@@ -9,29 +9,44 @@ import (
 	"path"
 	"path/filepath"
 	"regexp"
-	"strings"
 
 	"github.com/evilsocket/islazy/zip"
 )
 
+const RootVariantName = "_"
+const TempDownloadsDirName = ".download"
+
 // ResolveURL resolves the THEME_NAME given to ffcss use to either:
 // - a URL to download
 // - a git repo URL to clone
-func ResolveURL(themeName string) (URL string, typ string) {
-	protocolLessURL := regexp.MustCompile(`\w+\.\w+/.*`)
+func ResolveURL(themeName string) (URL string, typ string, err error) {
+	protocolLessURL := regexp.MustCompile(`^\w+\.\w+/.*$`)
+	userSlashRepo := regexp.MustCompile(`^\w+/\w+$`)
+	var completeURL string
 
 	// Try OWNER/REPO
-	if len(strings.Split(themeName, "/")) == 2 {
-		return "https://github.com/" + themeName, "git"
+	if userSlashRepo.MatchString(themeName) {
+		completeURL = "https://github.com/" + themeName
+		if !isURLClonable(completeURL) {
+			return "", "", fmt.Errorf("%s is not clonable. Make sure it exists", completeURL)
+		}
 		// Try DOMAIN.TLD/PATH
 	} else if protocolLessURL.MatchString(themeName) {
-		return "https://" + themeName, "website"
+		completeURL = "https://" + themeName
+		if !isValidURL(completeURL) {
+			return "", "", fmt.Errorf("%q is not a valid URL", completeURL)
+		}
 		// Try URL
 	} else if isValidURL(themeName) {
-		return themeName, "website"
+		completeURL = themeName
 	} else {
-		return themeName, "bare"
+		return themeName, "bare", nil
 	}
+
+	if isURLClonable(completeURL) {
+		return completeURL, "git", nil
+	}
+	return completeURL, "website", nil
 }
 
 // Download downloads the theme at URL.
@@ -41,31 +56,34 @@ func ResolveURL(themeName string) (URL string, typ string) {
 // In all cases, the theme is downloaded to ~/.cache/ffcss/{{themeName}}.
 // If themeName is not provided, the theme will first be downloaded to a temporary location to get the name from the manifest.
 func Download(URL string, typ string, themeManifest ...Manifest) (manifest Manifest, err error) {
+	d("typ is %s", typ)
 	if len(themeManifest) >= 1 {
 		manifest = themeManifest[0]
-
+		d("manifest is provided")
 		// Don't re-download if it already exists
-		stat, err := os.Stat(CacheDir(manifest.Name()))
+		d("checking if theme is in cache @ %s", manifest.DownloadedTo)
+		stat, err := os.Stat(manifest.DownloadedTo)
 		if err == nil && stat.IsDir() {
+			d("skipped downloading of %s [%s#%s]", URL, manifest.Name(), manifest.CurrentVariantName)
 			return manifest, nil
 		}
 	}
-	err = os.MkdirAll(CacheDir(".download"), 0777)
+	err = os.MkdirAll(CacheDir(TempDownloadsDirName), 0777)
 	if err != nil {
-		return manifest, fmt.Errorf("couldn't create %s: %w", CacheDir(".download"), err)
+		return manifest, fmt.Errorf("couldn't create %s: %w", CacheDir(TempDownloadsDirName), err)
 	}
-	tempDir, err := os.MkdirTemp(CacheDir(".download"), "*")
+	tempDir, err := os.MkdirTemp(CacheDir(TempDownloadsDirName), "*")
 	if err != nil {
-		return manifest, fmt.Errorf("couldn't create a temporary directory at %s: %w", CacheDir(".download"), err)
+		return manifest, fmt.Errorf("couldn't create a temporary directory at %s: %w", CacheDir(TempDownloadsDirName), err)
 	}
 	switch typ {
 	case "website":
-		manifest, err = DownloadFromZip(URL, tempDir, CacheDir(""), themeManifest...)
+		manifest, err = DownloadFromZip(URL, tempDir, CacheDir(), themeManifest...)
 		if err != nil {
 			return manifest, fmt.Errorf("couldn't use the zip file at %s: %w", URL, err)
 		}
 	case "git":
-		manifest, err = DownloadRepository(URL, tempDir, CacheDir(""), themeManifest...)
+		manifest, err = DownloadRepository(URL, tempDir, CacheDir(), themeManifest...)
 		if err != nil {
 			return manifest, fmt.Errorf("couldn't use the repository %s: %w", URL, err)
 		}
@@ -85,10 +103,11 @@ func Download(URL string, typ string, themeManifest ...Manifest) (manifest Manif
 	default:
 		panic("unexpected URL type")
 	}
+	manifest.DownloadedTo = CacheDir(manifest.Name(), manifest.CurrentVariantName)
 	return
 }
 
-// DownloadRepository downloads the repository at URL to {{cloneTo}}/{{ffcss.yaml:name}}
+// DownloadRepository downloads the repository at URL to {{cloneTo}}/{{ffcss.yaml:name}}/{{current variant's name}}
 // It first clones the repo to tempCloneTo, then loads the manifest to determine where to move it.
 // the manifest can be provided in case the repository does not contain it.
 func DownloadRepository(URL string, tempCloneTo string, cloneTo string, themeManifest ...Manifest) (manifest Manifest, err error) {
@@ -96,29 +115,29 @@ func DownloadRepository(URL string, tempCloneTo string, cloneTo string, themeMan
 	if hasManifest {
 		manifest = themeManifest[0]
 	}
-	clonable, err := isURLClonable(URL)
-	if err != nil {
-		return manifest, fmt.Errorf("while determining clonability: %w", err)
-	}
+
 	err = os.MkdirAll(cloneTo, 0777)
 	if err != nil {
 		return manifest, fmt.Errorf("could not create directory to download to: %w", err)
 	}
+
 	err = os.MkdirAll(tempCloneTo, 0777)
 	if err != nil {
 		return manifest, fmt.Errorf("could not create directory to clone to: %w", err)
 	}
-	if clonable {
-		process := exec.Command("git", "clone", URL, tempCloneTo, "--depth=1")
-		//TODO print this in verbose mode: fmt.Printf("DEBUG $ %s\n", process.String())
-		output, err := process.CombinedOutput()
-		if err != nil {
-			return manifest, fmt.Errorf("%w: %s", err, output)
-		}
 
-	} else {
-		return manifest, fmt.Errorf("does not point to a clonable git repository")
+	cloneArgs := []string{"clone", URL, tempCloneTo}
+	if hasManifest && manifest.Branch != "" {
+		cloneArgs = append(cloneArgs, "--branch", manifest.Branch)
 	}
+	d("Cloning repo...")
+	process := exec.Command("git", cloneArgs...)
+	//TODO print this in verbose mode: fmt.Printf("DEBUG $ %s\n", process.String())
+	output, err := process.CombinedOutput()
+	if err != nil {
+		return manifest, fmt.Errorf("%w: %s", err, output)
+	}
+
 	if !hasManifest {
 		manifest, err = LoadManifest(filepath.Join(tempCloneTo, "ffcss.yaml"))
 		if _, err := os.Stat(filepath.Join(tempCloneTo, "ffcss.yaml")); os.IsNotExist(err) {
@@ -127,11 +146,28 @@ func DownloadRepository(URL string, tempCloneTo string, cloneTo string, themeMan
 		if err != nil {
 			return manifest, fmt.Errorf("could not load manifest: %w", err)
 		}
+		if manifest.Branch != "" {
+			err = SwitchGitBranch(manifest.Branch, tempCloneTo)
+			if err != nil {
+				return manifest, fmt.Errorf("while switching to branch %q: %w", manifest.Branch, err)
+			}
+		}
 	}
+
 	if manifest.Name() == "" {
 		return manifest, errors.New("manifest has no name")
 	}
-	os.Rename(tempCloneTo, filepath.Join(cloneTo, manifest.Name()))
+
+	err = os.MkdirAll(filepath.Dir(manifest.DownloadedTo), 0700)
+	if err != nil {
+		return manifest, fmt.Errorf("while creating final cache location: %w", err)
+	}
+
+	err = os.Rename(tempCloneTo, manifest.DownloadedTo)
+	if err != nil {
+		return manifest, fmt.Errorf("while moving from temporary downloads %q to final cache location %q: %w", tempCloneTo, manifest.DownloadedTo, err)
+	}
+
 	return
 }
 
@@ -161,12 +197,14 @@ func DownloadFromZip(URL string, tempDownloadTo string, finalDownloadTo string, 
 
 	// Download it
 	process := exec.Command("wget", URL, "-O", tempDownloadTo)
+	d("Running %s", process.String())
 	output, err := process.CombinedOutput()
 	if err != nil {
 		return manifest, fmt.Errorf("couldn't download zip file: %w: %s", err, output)
 	}
 
 	// Unzip it, check contents
+	d("Unzipping %s to %s", tempDownloadTo, path.Dir(tempDownloadTo))
 	unzipped, err := zip.Unzip(tempDownloadTo, path.Dir(tempDownloadTo))
 	if err != nil {
 		return manifest, fmt.Errorf("while unzipping %s: %w", tempDownloadTo, err)
@@ -200,7 +238,7 @@ func DownloadFromZip(URL string, tempDownloadTo string, finalDownloadTo string, 
 
 // CleanDownloadArea removes the temporary download area used to download themes before knowing their name from their manifest
 func CleanDownloadArea() error {
-	return os.RemoveAll(CacheDir(".download"))
+	return os.RemoveAll(CacheDir(TempDownloadsDirName))
 }
 
 // ClearWholeCache destroys the cache directory

@@ -42,19 +42,15 @@ func TestProfileDirsPaths(t *testing.T) {
 
 func TestIsURLClonable(t *testing.T) {
 	var actual bool
-	var err error
 
-	actual, err = isURLClonable("https://github.com/ewen-lbh/ffcss/")
+	actual = isURLClonable("https://github.com/ewen-lbh/ffcss/")
 	assert.Equal(t, true, actual)
-	assert.Nil(t, err)
 
-	actual, err = isURLClonable("https://github.com/users/schoolsyst")
+	actual = isURLClonable("https://github.com/users/schoolsyst")
 	assert.Equal(t, false, actual)
-	assert.Nil(t, err)
 
-	actual, err = isURLClonable("https://ewen.works/")
+	actual = isURLClonable("https://ewen.works/")
 	assert.Equal(t, false, actual)
-	assert.Nil(t, err)
 }
 
 func TestDefaultProfilesDir(t *testing.T) {
