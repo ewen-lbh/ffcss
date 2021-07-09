@@ -56,8 +56,8 @@ func TestAssetsPaths(t *testing.T) {
 		},
 		Assets: []string{"./{{ os }}/userChrome__{{ variant }}.css"}, // for the purposes of testing
 		OSNames: map[string]string{
-			"linux": "Linux",
-			"macos": "Linux",
+			"linux":   "Linux",
+			"macos":   "Linux",
 			"windows": "Windows",
 		},
 	}

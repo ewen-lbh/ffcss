@@ -8,17 +8,22 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/charmbracelet/glamour"
 	"gopkg.in/yaml.v2"
 )
 
 type Variant struct {
+	// Properties exclusive to variants
+	Name        string
+	Message string
+
+	// Properties that modify the "default variant"
 	Config      Config
 	UserChrome  FileTemplate `yaml:"userChrome"`
 	UserContent FileTemplate `yaml:"userContent"`
 	UserJS      FileTemplate `yaml:"user.js"`
 	Assets      []FileTemplate
 	Description string
-	Name        string
 }
 
 type Manifest struct {
@@ -27,12 +32,15 @@ type Manifest struct {
 	FfcssVersion int    `yaml:"ffcss"`
 	Variants     map[string]Variant
 	OSNames      map[string]string `yaml:"os"`
+
+	// Those can be modified by variant
 	CopyFrom     string            `yaml:"copy from"`
 	Config       Config
 	UserChrome   FileTemplate `yaml:"userChrome"`
 	UserContent  FileTemplate `yaml:"userContent"`
 	UserJS       FileTemplate `yaml:"user.js"`
 	Assets       []FileTemplate
+	Message string
 }
 
 func (m Manifest) Name() string {
@@ -112,6 +120,9 @@ func (m Manifest) WithVariant(variant Variant) Manifest {
 	if variant.UserJS != "" {
 		newManifest.UserJS = variant.UserJS
 	}
+	if variant.Message != "" {
+		newManifest.Message = variant.Message
+	}
 	if len(variant.Assets) > 0 {
 		newManifest.Assets = variant.Assets
 	}
@@ -154,4 +165,22 @@ func (m Manifest) AvailableVariants() []string {
 		names = append(names, name)
 	}
 	return names
+}
+
+// ShowMessage renders the message and prints it to the user
+func (m Manifest) ShowMessage() error {
+	scheme := os.Getenv("COLORSCHEME")
+	if scheme != "light" && scheme != "dark" {
+		// TODO: detect with the terminal's current background color as a fallback
+		scheme = "dark"
+	}
+	rendered, err := glamour.Render(m.Message, scheme)
+	if err != nil {
+		return  fmt.Errorf("while rendering message: %w",  err)
+	}
+
+	if strings.TrimSpace(rendered) != "" {
+		fmt.Println(rendered)
+	}
+	return nil
 }
