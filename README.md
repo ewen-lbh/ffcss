@@ -1,12 +1,8 @@
 # ffcss
 
----
-
-**Warning** This project is in a "I'm figuring out the interface" phase. The README is meant to represent what the final product will look like.
-
----
-
 A CLI interface to apply and configure [Firefox CSS themes](https://reddit.com/r/FirefoxCSS) (also known as userChrome.css themes).
+
+It uses a YAML file to declare files, variants, helper addons and others. This file is referred to as a "manifest".
 
 ## Installation
 
@@ -14,12 +10,14 @@ A CLI interface to apply and configure [Firefox CSS themes](https://reddit.com/r
 
 ```sh
 # Install the latest release by downloading the binary on Github
-curl -LO https://github.com/ewen-lbh/ffcss/releases/latest/download/ffcss
+wget https://github.com/ewen-lbh/ffcss/releases/latest/download/ffcss-YOUR-OS 
 # Make sure the file is marked as executable
-chmod a+x ffcss
+chmod a+x ffcss-YOUR-OS
 # Move it to a folder that's in your path (so you can type `ffcss` anywhere), eg.
-mv ffcss ~/.local/bin/ffcss
+mv ffcss-YOUR-OS ~/.local/bin/ffcss
 ```
+
+_Note: on windows, ffcss has a '.exe' at the end_
 
 ### Compile it yourself
 
@@ -37,11 +35,12 @@ make install
 ffcss - Apply and configure FirefoxCSS themes
 
 Usage:
-    ffcss use THEME_NAME
-    ffcss reapply
+    ffcss [--profiles-dir=DIRECTORY] [--all-profiles] use THEME_NAME [VARIANT]
+	ffcss cache clear
     ffcss init 
 
 Where:
+    KEY         a setting key (see firefox's about:config)
     THEME_NAME  a theme name or URL (see README.md)
 ```
 
@@ -49,7 +48,8 @@ Where:
 
 Synopsis: `ffcss use THEME_NAME`
 
-ffcss will first search for a folder at `~/.config/ffcss/themes/THEME_NAME`. If not found, it will try to download the theme:
+ffcss will first search for a folder at `~/.cache/ffcss/THEME_NAME/VARIANT_NAME`. If not found, it will try to download the theme:
+
 
 If `THEME_NAME` is of the form `OWNER/REPO`:
 
@@ -57,7 +57,7 @@ If `THEME_NAME` is of the form `OWNER/REPO`:
 
 If `THEME_NAME` is of the form `DOMAIN.TLD/PATH`:
 
-- It'll download the zip file at `https://DOMAIN.TLD/PATH`
+- It'll download the zip file / clone the git repository at `https://DOMAIN.TLD/PATH`
   
 If `THEME_NAME` is of the form `NAME`:
 
@@ -65,9 +65,9 @@ If `THEME_NAME` is of the form `NAME`:
 
 And if `THEME_NAME` is an URL:
 
-- It'll download the zip file at `THEME_NAME`
+- It'll download the zip file / clone the git repository at `THEME_NAME` 
 
-Some config keys need to be changed before applying a theme. `toolkit.legacyUserProfileCustomizations.stylesheets` must be set to `true` for _all_ themes, but most require their own extra config keys. Those can be set in the project's `ffcss.yaml`, but, don't worry, if the theme you use do not include a `ffcss.yaml` file, it might be in this repository's `themes/*.yaml` files
+_Technical note: when no variant is used, `VARIANT_NAME` is "\_"_
 
 <!-- ### The `config` command
 
@@ -75,11 +75,11 @@ Synopsis: `ffcss config KEY [VALUE]`
 
 Much simpler than the `use` command, this one just adds convenience to set `about:config` keys. If `VALUE` is not provided, ffcss will output the specified `KEY`'s current value. -->
 
-### The `reapply` command
+<!-- ### The `reapply` command
 
 Synopsis: `ffcss reapply`
 
-This is the same as doing `ffcss use` with the current theme, useful when firefox updates.
+This is the same as doing `ffcss use` with the current theme, useful when firefox updates. -->
 
 ### The `init` command
 
@@ -87,11 +87,34 @@ Synopsis: `ffcss init`
 
 Creates a [`ffcss` manifest file](#creating-a-firefoxcss-theme) in the current directory
 
+## What if the theme I want to download has no manifest?
+
+You can create one for yourself, by placing it in `<home folder>/.config/ffcss/<your theme's name>.yaml`, along with the other included themes, then running `ffcss use` with that name.
+
+Consider opening a pull request if you can, so that others can benefit from your manifest without having to write it again.
+
+The next section covers how to create that manifest file. It is written for theme makers, but the only difference is that the manifest you wrote isn't named `ffcss.yaml`.
+
 ## Creating a FirefoxCSS theme
 
 So that your users can benefit from the simple installation process provided by ffcss, you can add a `ffcss.yaml` file in the root of your project and declare additional configuration you might need. 
 
-Note that `toolkit.legacyUserProfileCustomizations.stylesheets` is set to `true` automatically, no need to declare it.
+_Note: example use cases from real FirefoxCSS themes are given for illustrative purposes, and I don't claim to speak in place of the theme's author(s), even if it may appear as so_.
+
+You can start by using `ffcss init` in your theme's folder, some values will be filled automatically.
+
+
+### Download & Branch
+
+You can specify in your manifest file from where to download the theme.
+This can be useful if
+
+- you want to use that value in `variants`, to download a different zip file
+- you want to [add your manifest to the registry](#add-to-the-registry), in which case the repository's URL is needed for ffcss to figure out where to download your theme from
+- you want users to download a zip file instead of cloning your repo
+
+If you use a git repository URL (ffcss will know if any given URL is `git-clone`-able), you can also use `branch` to change the branch used.
+Here again, this is especially useful for variants (for example, Lepton's photon-style variant is on a separate branch `photon-style`)
 
 ### Config
 
@@ -103,39 +126,44 @@ config:
     security.insecure_connection_text.enabled: true
 ```
 
+Note that `toolkit.legacyUserProfileCustomizations.stylesheets` is set to `true` automatically, no need to declare it.
+
+This will write a generated `user.js` file in the selected profile directory (or directories).
+If you provide your own `user.js` file, the generated content will be appended to yours and written on the same file.
+
 ### Files
 
-You can use `userChrome`, `userContent` and `user.js` keys to specify where those files are in your repo. You can use **case-insensitive** [glob patterns][globster]
+You can use `userChrome`, `userContent` and `user.js` keys to specify where those files are in your repo. You can use [glob patterns][globster].
 
-If not specified, their default values are either `userChrome.css` (or `userContent.css`, or `user.js`) or `null` when the default file is not found.
+They will get copied to `<selected profile directory>/chrome/userChrome.css` (or `userContent.css`) and `<selected profile directory>/user.js>`, respectively.
 
-Note that keys declared in `config` will be appended to the copied `user.js`.
+Note that even if _your_ file is not called like this, if will get copied with that name, no manual renaming required.
+
+For example, SimplerentFox uses three different `userContent.css` files for its variants, and the manifest has `{{ os }}/userContent__{{ variant }}.css`.
+
+<!--If not specified, their default values are either `userChrome.css` (or `userContent.css`, or `user.js`) or `null` when the default file is not found.-->
 
 You can also declare other files in `assets`, an array of [glob patterns][globster]. They take precedence over the others keys, since they get copied last.
 
 You can use `{{ os }}`, which will get replaced with one of `windows`, `linux` or `macos`, and `{{ variant }}`, which will get replaced by the variant the user has chosen.
 
-All files will get copied to `<user's profile folder>/chrome/`. You can change the destination folder (relative to `<user's profile folder>`) with `copy to`:
+
+All files will get copied to `<user's profile folder>/chrome/`. You can change the from where they get copied with `copy from`.
+This is pretty useful if you store your assets inside a folder (such as `chrome`), to avoid them being nested too much
 
 ```yaml
-ffcss: 0 # signals that no compatibility is ensured (since 0.X.X versions can contain breaking changes, see semver)
-
-download: https://github.com/muckSponge/MaterialFox
-config:
-  svg.context-properties.content.enabled: true
-  browser.tabs.tabClipWidth: 83
-  materialFox.reduceTabOverflow: true
-  security.insecure_connection_text.enabled: true
-
-assets: chrome/**
-copy to: ./ # relative to user's profile folder
+assets: 
+    - my-assets/**
+copy from: my-assets/ 
 ```
 
-without the `copy to`, files would get copied to `<user's profile folder>/chrome/chrome/...`, as `chrome/` will be a part of the file names.
+without the `copy from`, files would get copied to `<user's profile folder>/chrome/my-assets/...` instead of `<user's profile folder>/chrome/...`: `my-assets/` will be a part of the file names described by `my-assets/**`.
+
+For example, MaterialFox stores everything under `chrome/`, and its manifest uses `copy from: chrome/` to tell ffcss to copy assets _from that directory_, not from the repository's root.
 
 ### Variants
 
-Some themes allow users to choose between different variations. To declare them, add an object with key `variants`, that maps variant names to a configuration object, overriding `config`, `userContent`, etc. for that variation. An additional `description` key is available and will be shown to users when selecting a variant.
+Some themes allow users to choose between different variations. To declare them, add an object with key `variants`, that maps variant names to a configuration object, overriding `config`, `userContent`, etc. for that variation. <!--An additional `description` key is available and will be shown to users when selecting a variant.-->
 
 Note that overriding `config` only overrides values set, it does not remove configuration keys that have been set globally: with the following manifest:
 
@@ -159,74 +187,70 @@ one.property: false
 another.property: buckaroo
 ```
 
-### Example
+Properties that can be overriden are:
 
-A configuration file example for [@MiguelRAvila](https://github.com/MiguelRAvila)'s [SimplerentFox](https://github.com/MiguelRAvila/SimplerentFox):
+- repository 
+- branch
+- config
+- userChrome
+- userContent
+- user.js
+- assets
+- addons
 
-```yaml
-ffcss: 1
+### Addons
 
-config:
-    layers.acceleration.force-enabled: true
-    gfx.webrender.all: true
-    svg.context-properties.content.enabled: true
+You can specify URL(s) to open after the installation. I called it `addons` because I plan on installing addons automatically in the future.
 
-userContent: ./{{ os }}/userContent.css
-
-variants:
-    OneLine:
-        description: Puts everything onto a single line
-        userChrome:
-            ./{{ os }}/userChrome__OneLine.css
-    WithURLBar:
-        description: Include the URL bar
-        userChrome:
-            ./{{ os }}/userChrome__WithURLBar.css
-    WithoutURLBar:
-        description: Do not include a URL bar
-        userChrome:
-            ./{{ os }}/userChrome__WithoutURLBar.css
-```
-
-#### Using {{ variant }}
-
-The above manifest could be simplified to:
-
+The manifest entry is `addons`, and it's a list of URLs:
 
 ```yaml
-ffcss: 1
-
-config:
-    layers.acceleration.force-enabled: true
-    gfx.webrender.all: true
-    svg.context-properties.content.enabled: true
-
-userContent: ./{{ os }}/userContent.css
-userChrome: ./{{ os }}/userChrome__{{ variant }}.css
-
-variants:
-    OneLine:
-        description: Puts everything onto a single line
-    WithURLBar:
-        description: Include the URL bar
-    WithoutURLBar:
-        description: Do not include a URL bar
+addons:
+    - URL 1
+    - URL 2
 ```
 
-If you don't want to write descriptions for variants and don't need to override anything, use `{}` as the variant's value:
+
+For example, SimplerentFox proposes an addon to enhance the experience, and declares it as such:
 
 ```yaml
-ffcss: 1
+...
 
-userChrome: ./userChrome--{{ variant }}.css
+addons:
+    - https://addons.mozilla.org/en-US/firefox/addon/simplerentfox/
 
-variants:
-    blue: {}
-    yellow: {}
-    red: {}
+...
 ```
 
-[globster]: https://globster.xyz/
+### Messages
+
+You can specify a message to be printed at the end of the installation. Markdown syntax is supported.
+
+Useful to provide additional instructions that can't be automated, to suggest optional tweaks, to do shameless promotion or even just to say thanks! 
+
+For example, VerticalTabs uses messages to tell users about additional installation steps that can't be automated:
+
+```yaml
+message: |
+  Go to about:addons, select Tab Center Reborn, go to Preferences and set:
+
+  - *Animations*: on.
+  - *Use current browser theme*: on, if you want to use dark mode.
+  - *Compact Mode*: either “Dynamic” or “Enabled”. It works with “Disabled” too but looks nicer with only favicons.
+  - *Favicon-only pinned tabs*: off.
+  - *Activate Custom Stylesheet* and paste the contents of tabCenterReborn.css into the text area, and click “Save CSS”.
+```
+
+### Declaring ffcss' version
+
+Putting a `ffcss: 0` in your manifest tells the user that this theme was made with ffcss version 0.X.X. 
+If their version differs, they'll get a warning: major version changes (i.e. when the leftmost number changes) may include _breaking changes_ regarding the manifest file, which means that your theme might not work.
+
+I'll try to not do that though, it sucks to break things. (I may support _different versions of manifest files_, at least)
+
+### Examples
+
+You can look at some themes' manifests in `themes/*.yaml` to see how they are written.
 
 ## Built-in themes
 
