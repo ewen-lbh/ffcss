@@ -88,6 +88,13 @@ func RunCommandUse(args docopt.Opts) error {
 		}
 	}
 
+	// Check for OS compatibility
+	for k, v := range manifest.OSNames {
+		if k == operatingSystem && v == "" {
+			warn("This theme is marked as incompatible with %s. Things might not work.", operatingSystem)
+		}
+	}
+
 	// For each profile directory...
 	for _, profileDir := range selectedProfileDirs {
 		err = RenameIfExists(filepath.Join(profileDir, "chrome"), filepath.Join(profileDir, "chrome.bak"))
