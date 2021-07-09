@@ -8,7 +8,6 @@ import (
 	"os/user"
 	"path/filepath"
 	"regexp"
-	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -33,29 +32,16 @@ func Assert(t *testing.T, got interface{}, expected interface{}) {
 	assert.Equal(t, expected, got)
 }
 
-// expandHomeDir expands the "~/" part of a path to the current user's home directory
-func expandHomeDir(p string) string {
-	usr, _ := user.Current()
-	homedir := usr.HomeDir
-	if p == "~" {
-		// In case of "~", which won't be caught by the "else if"
-		p = homedir
-	} else if strings.HasPrefix(p, "~/") {
-		// Use strings.HasPrefix so we don't match paths like
-		// "/something/~/something/"
-		p = filepath.Join(homedir, p[2:])
-	}
-	return p
-}
-
 // GetConfigDir returns the absolute path of ffcss's configuration directory
 func GetConfigDir() string {
-	return expandHomeDir("~/.config/ffcss")
+	homedir, _ := os.UserHomeDir()
+	return filepath.Join(homedir, ".config", "ffcss")
 }
 
 // GetCacheDir returns the temporary path for cloned repos and other stuff
 func GetCacheDir() string {
-	return expandHomeDir("~/.cache/ffcss/")
+	homedir, _ := os.UserHomeDir()
+	return filepath.Join(homedir, ".cache", "ffcss")
 }
 
 // CacheDir joins the cache directory with the given path segments
