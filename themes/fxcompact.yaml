@@ -1,0 +1,9 @@
+ffcss: 0
+
+name: fxcompact
+repository: https://github.com/dannycolin/fx-compact-mode
+
+config:
+  browser.uidensity: 1
+
+userChrome: userChrome.css
