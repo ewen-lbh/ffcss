@@ -145,7 +145,17 @@ func RunCommandUse(args docopt.Opts) error {
 			for _, profile := range selectedProfileDirs {
 				fmt.Printf("Opening on %s\n", profile)
 				for _, url := range manifest.Addons {
-					command := exec.Command("firefox", "--new-tab", url, "--profile", profile)
+					var command *exec.Cmd
+					switch operatingSystem {
+					case "linux":
+						command = exec.Command("firefox", "--new-tab", url, "--profile", profile)
+					case "macos":
+						command = exec.Command("open", "-a", "firefox", url, "--args", "--profile", profile)
+					case "windows":
+						command = exec.Command("start", "firefox", "-profile", profile, url)
+					default:
+						warn("unrecognized OS %s, cannot open firefox automatically. Open %s in firefox using profile %s", operatingSystem, url, profile)
+					}
 					err = command.Run()
 					if err != nil {
 						return fmt.Errorf("couldn't open %q: while running %s: %w", url, command.String(), err)
