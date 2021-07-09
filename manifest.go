@@ -11,6 +11,8 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
+var ThemeCompatWarningShown = false
+
 type Variant struct {
 	// Properties exclusive to variants
 	Name    string
@@ -86,6 +88,11 @@ func LoadManifest(manifestPath string) (manifest Manifest, err error) {
 	}
 	manifest = NewManifest()
 	err = yaml.Unmarshal(raw, &manifest)
+
+	if manifest.FfcssVersion != VersionMajor && !ThemeCompatWarningShown {
+		fmt.Printf("WARNING: ffcss %s is installed, but you are using a theme made for ffcss %d.X.X. Some things may not work.\n", VersionString, manifest.FfcssVersion)
+		ThemeCompatWarningShown = true
+	}
 
 	if manifest.Name() == TempDownloadsDirName {
 		err = fmt.Errorf("invalid theme name %q", TempDownloadsDirName)
