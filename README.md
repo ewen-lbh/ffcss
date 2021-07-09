@@ -8,18 +8,38 @@ It uses a YAML file to declare files, variants, helper addons and others. This f
 
 ### Pre-compiled binary 
 
+#### Linux & MacOS
+
 ```sh
 # Install the latest release by downloading the binary on Github
-wget https://github.com/ewen-lbh/ffcss/releases/latest/download/ffcss-YOUR-OS 
+wget https://github.com/ewen-lbh/ffcss/releases/latest/download/YOUR-OS.tar.gz -O ffcss.tar.gz
+# Extract it
+tar -xzfv ffcss.tar.gz
+# Install built-in themes
+mkdir -p ~/.config/ffcss/themes/
+cp -v ffcss/themes/*.yaml ~/.config/ffcss/themes/
 # Make sure the file is marked as executable
-chmod a+x ffcss-YOUR-OS
+chmod a+x ffcss/ffcss
 # Move it to a folder that's in your path (so you can type `ffcss` anywhere), eg.
-mv ffcss-YOUR-OS ~/.local/bin/ffcss
+mv ffcss/ffcss ~/.local/bin/ffcss
 ```
 
-_Note: on windows, ffcss has a '.exe' at the end_
+#### Windows
+
+(Assuming your user folder is at `C:\Users\you`)
+
+1. Download the zip file: https://github.com/ewen-lbh/ffcss/releases/latest/download/windows.zip
+1. Extract it somewhere, let's say in `C:\Users\you\Desktop\ffcss`.
+1. Open that folder in the Explorer
+1. Right-click on empty space and select "Open Windows Terminal Here"
+1. Type `.\ffcss.exe`
+1. Copy `C:\Users\you\Desktop\ffcss\themes` to `C:\Users\you\.config\ffcss`
+
+To use ffcss, you can run that `ffcss.exe` in the Windows Terminal
 
 ### Compile it yourself
+
+_instructions for linux & MacOS, I haven't figured out how to run `make` on Windows, winget installs it but the command is still 'not found'..._
 
 ```sh
 git clone https://github.com/ewen-lbh/ffcss
