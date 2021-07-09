@@ -13,8 +13,7 @@ before:
 builds:
   -
     goos: [windows, linux, darwin]
-    binary: '{{.Version}}-{{.Os}}-{{.Arch}}'
-    no_unique_dist_dir: true
+    binary: ffcss
 
 archives:
   -
