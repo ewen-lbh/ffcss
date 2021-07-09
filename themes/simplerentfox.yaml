@@ -1,5 +1,6 @@
 ffcss: 0
 
+name: simplerentfox
 repository: https://github.com/MiguelRAvila/SimplerentFox
 
 config:

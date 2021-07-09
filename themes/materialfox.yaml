@@ -1,6 +1,8 @@
 ffcss: 0
 
+name: materialfox
 repository: https://github.com/muckSponge/MaterialFox
+
 config:
   svg.context-properties.content.enabled: true
   browser.tabs.tabClipWidth: 83
