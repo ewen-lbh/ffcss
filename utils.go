@@ -144,7 +144,7 @@ func isURLClonable(URL string) bool {
 			return false
 		}
 	}
-	fmt.Printf("WARNING: could not determine clonability of %s: while running git-ls-remote: %w: %s\n", URL, err, output)
+	warn("could not determine clonability of %s: while running git-ls-remote: %w: %s\n", URL, err, output)
 	return false
 }
 
@@ -182,6 +182,15 @@ func plural(singular string, amount int, optionalPlural ...string) string {
 // d prints a debug log line
 func d(s string, fmtArgs ...interface{}) {
 	if os.Getenv("DEBUG") != "" {
-		fmt.Printf(ansi.Color("[DEBUG] "+s+"\n", ansi.LightBlack), fmtArgs...)
+		fmt.Printf(ansi.Color("[ DEBUG ] "+s+"\n", "black+dh"), fmtArgs...)
+	}
+}
+
+// warn prints a log line with "warning" styling
+func warn(s string, fmtArgs ...interface{}) {
+	if os.Getenv("DEBUG") != "" {
+		fmt.Printf(ansi.Color("[WARNING] "+s+"\n", "yellow+b"), fmtArgs...)
+	} else {
+		fmt.Printf(ansi.Color(s+"\n", "yellow+b"), fmtArgs...)
 	}
 }

@@ -68,7 +68,7 @@ func getCurrentRepoRemote() string {
 
 	err := command.Run()
 	if err != nil {
-		fmt.Printf("WARNING: Could not get the current git remote origin's URL. Leaving repository entry blank.\n")
+		warn("Could not get the current git remote origin's URL. Leaving repository entry blank.\n")
 		return ""
 	}
 	return out.String()

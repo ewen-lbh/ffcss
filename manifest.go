@@ -89,8 +89,8 @@ func LoadManifest(manifestPath string) (manifest Manifest, err error) {
 	manifest = NewManifest()
 	err = yaml.Unmarshal(raw, &manifest)
 
-	if manifest.FfcssVersion != VersionMajor && !ThemeCompatWarningShown {
-		fmt.Printf("WARNING: ffcss %s is installed, but you are using a theme made for ffcss %d.X.X. Some things may not work.\n", VersionString, manifest.FfcssVersion)
+	if manifest.FfcssVersion != VersionMajor && !ThemeCompatWarningShown && manifest.FfcssVersion != 0 {
+		warn("ffcss %s is installed, but you are using a theme made for ffcss %d.X.X. Some things may not work.\n", VersionString, manifest.FfcssVersion)
 		ThemeCompatWarningShown = true
 	}
 

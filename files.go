@@ -192,7 +192,7 @@ func (m Manifest) DestinationPathOfAsset(assetPath string, profileDir string, op
 
 func RenderFileTemplate(f FileTemplate, operatingSystem string, variant Variant, osRenameMap map[string]string) string {
 	if strings.Contains(strings.Trim(f, " "), "{{variant}}") && variant.Name == "" {
-		fmt.Printf("WARNING: %q uses {{variant}} which is empty\n", f)
+		warn("%q uses {{variant}} which is empty\n", f)
 	}
 	var osName string
 	if osRenameMap[operatingSystem] == "" {
