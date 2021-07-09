@@ -30,6 +30,7 @@ func (m Manifest) InstallAssets(operatingSystem string, variant Variant, profile
 	if err != nil {
 		return fmt.Errorf("while gathering assets: %w", err)
 	}
+	d("gathered %d asset(s)", len(files))
 
 	for _, file := range files {
 		stat, err := os.Stat(file)
@@ -61,6 +62,7 @@ func (m Manifest) InstallAssets(operatingSystem string, variant Variant, profile
 		if err != nil {
 			return fmt.Errorf("while writing to %s: %w", destPath, err)
 		}
+		d("wrote %s", destPath)
 
 	}
 	return nil
@@ -120,6 +122,7 @@ func (m Manifest) InstallUserJS(operatingSystem string, variant Variant, profile
 		return fmt.Errorf("while writing: %w", err)
 	}
 
+	d("installed user.js @ %s", filepath.Join(profileDir, "user.js"))
 
 	return nil
 }
@@ -140,6 +143,7 @@ func (m Manifest) InstallUserChrome(os string, variant Variant, profileDir strin
 		return fmt.Errorf("while writing: %w", err)
 	}
 
+	d("installed userChrome.css @ %s", filepath.Join(profileDir, "chrome", "userChrome.css"))
 
 	return nil
 }
@@ -160,6 +164,7 @@ func (m Manifest) InstallUserContent(os string, variant Variant, profileDir stri
 		return fmt.Errorf("while writing: %w", err)
 	}
 
+	d("installed userContent.css @ %s", filepath.Join(profileDir, "chrome", "userContent.css"))
 
 	return nil
 }

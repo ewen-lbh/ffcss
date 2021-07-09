@@ -10,6 +10,7 @@ import (
 	"regexp"
 	"testing"
 
+	"github.com/mgutz/ansi"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -176,4 +177,11 @@ func plural(singular string, amount int, optionalPlural ...string) string {
 		return singular
 	}
 	return plural
+}
+
+// d prints a debug log line
+func d(s string, fmtArgs ...interface{}) {
+	if os.Getenv("DEBUG") != "" {
+		fmt.Printf(ansi.Color("[DEBUG] "+s+"\n", ansi.LightBlack), fmtArgs...)
+	}
 }
