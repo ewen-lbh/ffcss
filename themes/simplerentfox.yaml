@@ -21,6 +21,9 @@ os:
 userContent: ./{{ os }}/userContent.css
 userChrome: ./{{ os }}/userChrome__{{ variant }}.css
 
+addons:
+  - https://addons.mozilla.org/en-US/firefox/addon/simplerentfox/
+
 # without {{ variables }}:
 # files:
 #  windows:

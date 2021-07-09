@@ -1,0 +1,20 @@
+ffcss: 0
+
+name: chameleons-beauty
+repository: https://github.com/Godiesc/Chameleons-Beauty
+
+user.js: user.js
+
+assets:
+  - chrome/**
+
+copy from: chrome/
+
+addons:
+  - https://addons.mozilla.org/es/firefox/user/7024772/
+
+variants:
+  default: {}
+  dark:
+    addons:
+      - https://addons.mozilla.org/es/firefox/addon/beautiful-opera-gx-proton/

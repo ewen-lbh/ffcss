@@ -1,0 +1,12 @@
+ffcss: 0
+
+name: modoki
+repository: https://github.com/soup-bowl/Modoki-FirefoxCSS
+
+assets:
+  - IE6/chrome/**
+
+copy from: IE6/chrome/
+
+message:
+  In Customize, turn on Title Bar and enable Menu bar under toolbars.

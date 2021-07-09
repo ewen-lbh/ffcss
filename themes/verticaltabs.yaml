@@ -1,0 +1,21 @@
+ffcss: 0
+
+name: verticaltabs
+repository: https://github.com/ranmaru22/firefox-vertical-tabs
+
+userChrome: userChrome.css
+
+config:
+  dom.animations-api.getAnimations.enabled: true # from https://framagit.org/ariasuni/tabcenter-reborn/-/wikis/home
+
+addons:
+  - https://addons.mozilla.org/en-US/firefox/addon/tabcenter-reborn/
+
+message: |
+  Go to about:addons, select Tab Center Reborn, go to Preferences and set:
+
+  - *Animations*: on.
+  - *Use current browser theme*: on, if you want to use dark mode.
+  - *Compact Mode*: either “Dynamic” or “Enabled”. It works with “Disabled” too but looks nicer with only favicons.
+  - *Favicon-only pinned tabs*: off.
+  - *Activate Custom Stylesheet* and paste the contents of tabCenterReborn.css into the text area, and click “Save CSS”.
