@@ -100,13 +100,15 @@ func RunCommandUse(args docopt.Opts) error {
 		if err != nil {
 			return fmt.Errorf("couldn't install assets: %w", err)
 		}
+	}
 
-		// Show message
-		err = manifest.ShowMessage()
-		if err != nil {
-			return fmt.Errorf("couldn't display the message: %w", err)
 		}
+	}
 
+	// Show message
+	err = manifest.ShowMessage()
+	if err != nil {
+		return fmt.Errorf("couldn't display the message: %w", err)
 	}
 	return nil
 }
