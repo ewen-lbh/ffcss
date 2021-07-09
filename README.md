@@ -61,7 +61,7 @@ If `THEME_NAME` is of the form `DOMAIN.TLD/PATH`:
   
 If `THEME_NAME` is of the form `NAME`:
 
-- It'll download the zip file at the URL found in this repo's `themes/*.yaml`  files
+- It'll search for `NAME` in the manifests included with ffcss (see [Built-in themes](#built-in-themes))
 
 And if `THEME_NAME` is an URL:
 
@@ -227,3 +227,17 @@ variants:
 ```
 
 [globster]: https://globster.xyz/
+
+## Built-in themes
+
+See their manifest in `themes/NAME.yaml`, where `NAME` is one of:
+
+- [blurredfox](https://github.com/manilarome/blurredfox)
+- [chameleons-beauty](https://github.com/Godiesc/Chameleons-Beauty)
+- [fxcompact](https://github.com/dannycolin/fx-compact-mode)
+- [lepton](https://github.com/black7375/Firefox-UI-Fix)
+- [materialfox](https://github.com/muckSponge/MaterialFox)
+- [modoki](https://github.com/soup-bowl/Modoki-FirefoxCSS)
+- [simplerentfox](https://github.com/MiguelRAvila/SimplerentFox)
+- [UWP](https://github.com/Guerra24/Firefox-UWP-Style)
+- [verticaltabs](https://github.com/ranmaru22/firefox-vertical-tabs)
