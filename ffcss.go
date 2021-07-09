@@ -15,10 +15,12 @@ Usage:
     ffcss [--profiles-dir=DIRECTORY] [--all-profiles] use THEME_NAME [VARIANT]
 	ffcss cache clear
     ffcss init
+	ffcss version [COMPONENT]
 
 Where:
     KEY         a setting key (see firefox's about:config)
     THEME_NAME  a theme name or URL (see README.md)
+	COMPONENT	is either major, minor or patch (to get a single digit)
 	`
 
 	VersionMajor = 0
@@ -73,6 +75,19 @@ func dispatchCommand(args docopt.Opts) error {
 	if val, _ := args.Bool("cache"); val {
 		if val, _ := args.Bool("clear"); val {
 			return ClearWholeCache()
+		}
+	}
+	if val, _ := args.Bool("version"); val {
+		component, _ := args.String("COMPONENT")
+		switch component {
+		case "major":
+			fmt.Println(VersionMajor)
+		case "minor":
+			fmt.Println(VersionMinor)
+		case "patch":
+			fmt.Println(VersionPatch)
+		default:
+			fmt.Println(VersionString)
 		}
 	}
 	return nil
