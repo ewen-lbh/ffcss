@@ -34,6 +34,16 @@ var (
 func main() {
 	args, _ := docopt.ParseDoc(Usage)
 
+	err := os.MkdirAll(CacheDir(), 0700)
+	if err != nil {
+		panic(err)
+	}
+
+	err = os.MkdirAll(ConfigDir(), 0700)
+	if err != nil {
+		panic(err)
+	}
+
 	if err := dispatchCommand(args); err != nil {
 		panic(err)
 	}
