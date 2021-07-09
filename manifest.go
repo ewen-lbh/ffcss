@@ -14,7 +14,7 @@ import (
 
 type Variant struct {
 	// Properties exclusive to variants
-	Name        string
+	Name    string
 	Message string
 
 	// Properties that modify the "default variant"
@@ -24,6 +24,7 @@ type Variant struct {
 	UserJS      FileTemplate `yaml:"user.js"`
 	Assets      []FileTemplate
 	Description string
+	Addons      []string
 }
 
 type Manifest struct {
@@ -34,13 +35,14 @@ type Manifest struct {
 	OSNames      map[string]string `yaml:"os"`
 
 	// Those can be modified by variant
-	CopyFrom     string            `yaml:"copy from"`
-	Config       Config
-	UserChrome   FileTemplate `yaml:"userChrome"`
-	UserContent  FileTemplate `yaml:"userContent"`
-	UserJS       FileTemplate `yaml:"user.js"`
-	Assets       []FileTemplate
-	Message string
+	CopyFrom    string `yaml:"copy from"`
+	Config      Config
+	UserChrome  FileTemplate `yaml:"userChrome"`
+	UserContent FileTemplate `yaml:"userContent"`
+	UserJS      FileTemplate `yaml:"user.js"`
+	Assets      []FileTemplate
+	Message     string
+	Addons      []string
 }
 
 func (m Manifest) Name() string {
@@ -176,7 +178,7 @@ func (m Manifest) ShowMessage() error {
 	}
 	rendered, err := glamour.Render(m.Message, scheme)
 	if err != nil {
-		return  fmt.Errorf("while rendering message: %w",  err)
+		return fmt.Errorf("while rendering message: %w", err)
 	}
 
 	if strings.TrimSpace(rendered) != "" {

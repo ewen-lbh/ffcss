@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"runtime"
 
@@ -102,6 +103,28 @@ func RunCommandUse(args docopt.Opts) error {
 		}
 	}
 
+	// Ask to open extensions' pages
+	acceptOpenExtensionPages := false
+	survey.AskOne(&survey.Confirm{
+		Message: fmt.Sprintf("This theme suggests installing %d %s. Open %s?",
+			len(manifest.Addons),
+			plural("addon", len(manifest.Addons)),
+			plural("its page", len(manifest.Addons), "their pages"),
+		),
+		Default: acceptOpenExtensionPages,
+	}, &acceptOpenExtensionPages)
+
+	if acceptOpenExtensionPages {
+		for _, profile := range selectedProfileDirs {
+			fmt.Printf("Opening on %s\n", profile)
+			for _, url := range manifest.Addons {
+				command := exec.Command("firefox", "--new-tab", url, "--profile", profile)
+				err = command.Run()
+				if err != nil {
+					return fmt.Errorf("couldn't open %q: while running %s: %w", url, command.String(), err)
+				}
+				break
+			}
 		}
 	}
 

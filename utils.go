@@ -160,3 +160,19 @@ func RenameIfExists(from string, to string) error {
 	}
 	return os.Rename(from, to)
 }
+
+func plural(singular string, amount int, optionalPlural ...string) string {
+	var plural string
+	switch len(optionalPlural) {
+	case 1:
+		plural = optionalPlural[0]
+	case 0:
+		plural = singular + "s"
+	default:
+		panic("plural expected 2 or 3 arguments, you gave more")
+	}
+	if amount == 1 {
+		return singular
+	}
+	return plural
+}

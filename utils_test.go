@@ -62,3 +62,10 @@ func TestDefaultProfilesDir(t *testing.T) {
 	assert.EqualError(t, err, "unknown operating system TempleOS")
 	assert.Equal(t, "", actual)
 }
+
+func TestPlural(t *testing.T) {
+	assert.Equal(t, "addons", plural("addon", 2))
+	assert.Equal(t, "addon", plural("addon", 1))
+	assert.Equal(t, "addons", plural("addon", 0))
+	assert.Equal(t, "children", plural("child", 10, "children"))
+}
