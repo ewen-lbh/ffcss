@@ -2,9 +2,6 @@
 $; = $, = "\n"
 arg = ARGV[0]
 
-puts `make`
-puts `make install`
-
 major, minor, patch = `ffcss version`.split '.'
 
 case arg
@@ -36,10 +33,6 @@ if not ["major", "minor", "patch"].include? arg
 	exit 0
 end
 
-puts `chachacha release #{arg}`
-puts `git tag -a -m v#{new_major}.#{new_minor}.#{new_patch}`
-
-
 lines = File.open("CHANGELOG.md").read.split
 release_notes = []
 
@@ -53,6 +46,6 @@ until lines.length == 0 or lines[0] =~ /^## \[\d+\.\d+\.\d+\) - \d{4}-\d{2}-\d{2
 end
 
 
-File.write 'release_notes.md', release_notes.join
 
-puts `goreleaser release --release-notes release_notes.md`
+
+File.write 'release_notes.md', release_notes.join

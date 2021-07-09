@@ -1,3 +1,5 @@
+SHELL:=/bin/bash
+
 build:
 	go mod tidy
 	go build
@@ -24,3 +26,19 @@ mocks-setup:
 
 mocks-teardown:
 	rm -rf mocks/{zip-dropoff,cache-directory,homedir} testarea
+
+release:
+	make > /dev/null
+	make install > /dev/null
+	sd -- '^  +[*-] ' '- * ' CHANGELOG.md
+	chachacha release $$(read -p bump=; echo $$REPLY)
+	sd '^([*-] ){2}' '  * ' CHANGELOG.md
+	sd '^- #' '#' CHANGELOG.md
+	./make_release_notes.rb $$(read -p bump=; echo $$REPLY)
+	make > /dev/null
+	make install > /dev/null
+	git add CHANGELOG.md ffcss.go
+	git commit -m "🔖 Release $$(ffcss version)"
+	git tag -am v$$(ffcss version) v$$(ffcss version)
+	GITHUB_TOKEN=$$(cat .github_token) goreleaser release --release-notes release_notes.md
+	rm release_notes.md
