@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/docopt/docopt-go"
 )
@@ -45,7 +46,11 @@ func main() {
 	}
 
 	if err := dispatchCommand(args); err != nil {
-		panic(err)
+		fmt.Println("Woops! An error occured:")
+		fmt.Println()
+		for idx, errorFragment := range strings.Split(err.Error(), ": ") {
+			fmt.Println(strings.Repeat("  ", idx) + "-> " + errorFragment)
+		}
 	}
 }
 
