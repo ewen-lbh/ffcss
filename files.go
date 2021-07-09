@@ -101,14 +101,17 @@ func (m Manifest) InstallUserJS(operatingSystem string, variant Variant, profile
 		return fmt.Errorf("while creating backup of %s: %w", filepath.Join(profileDir, "user.js"), err)
 	}
 
-	if m.UserJS == "" {
-		return nil
-	}
+	var content []byte
 
-	file := filepath.Join(m.DownloadedTo, RenderFileTemplate(m.UserJS, operatingSystem, variant, m.OSNames))
-	content, err := ioutil.ReadFile(file)
-	if err != nil {
-		return fmt.Errorf("while reading %s: %w", file, err)
+	if m.UserJS != "" {
+		file := filepath.Join(m.DownloadedTo, RenderFileTemplate(m.UserJS, operatingSystem, variant, m.OSNames))
+		content, err = ioutil.ReadFile(file)
+		if err != nil {
+			return fmt.Errorf("while reading %s: %w", file, err)
+		}
+
+	} else {
+		content = []byte{}
 	}
 
 	additionalContent, err := m.UserJSFileContent()
@@ -116,8 +119,15 @@ func (m Manifest) InstallUserJS(operatingSystem string, variant Variant, profile
 		return fmt.Errorf("while translating config entries to javascript: %w", err)
 	}
 
-	content = []byte(string(content) + "\n" + additionalContent)
+	if additionalContent != "" {
+		content = []byte(string(content) + "\n" + additionalContent)
 		d("generated additional user.js content from config entries: %q", additionalContent)
+	}
+
+	if string(content) == "" {
+		return nil
+	}
+
 	err = ioutil.WriteFile(filepath.Join(profileDir, "user.js"), content, 0700)
 	if err != nil {
 		return fmt.Errorf("while writing: %w", err)
