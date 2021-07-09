@@ -31,7 +31,9 @@ func TestResolveURL(t *testing.T) {
 	assert.Equal(t, []string{"unknownone", "bare"}, []string{name, typ})
 
 	name, typ, err = ResolveURL("unvalid~github~username/somerepo")
-	assert.Contains(t, err.Error(), "https://github.com/unvalid~github~username/somerepo is not clonable")
+	if assert.Error(t, err) {
+		assert.Contains(t, err.Error(), "https://github.com/unvalid~github~username/somerepo is not clonable")
+	}
 	assert.Equal(t, []string{"", ""}, []string{name, typ})
 }
 
