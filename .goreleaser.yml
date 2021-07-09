@@ -13,7 +13,7 @@ before:
 builds:
   -
     goos: [windows, linux, darwin]
-    binary: builds/{{.Version}}-{{.Os}}-{{.Arch}}
+    binary: '{{.Version}}-{{.Os}}-{{.Arch}}'
     no_unique_dist_dir: true
 
 archives:
@@ -23,7 +23,7 @@ archives:
       - goos: windows
         format: zip
 
-    name_template: releases/{{.Version}}-{{.Os}}-{{.Arch}}
+    name_template: 'ffcss-{{.Version}}-{{.Os}}-{{.Arch}}'
 
     replacements:
       darwin: macos
@@ -36,18 +36,19 @@ archives:
       - CHANGELOG.md
       - themes/**
 checksum:
-  name_template: releases/{{.Version}}-checksums.txt
+  name_template: 'ffcss-{{.Version}}-checksums.txt'
 
 # TODO: Homebrew, NFPM, Scoop, Snapcraft (eww), Signing
 
 release:
+  disable: true
   prerelease: auto
-  name_template: "{{ .Tag }}"
+  name_template: "{{ .Version }}"
 
 changelog:
   skip: true
 
 milestones:
   -
-    name_template: "{{ .Tag }}"
+    name_template: "{{ .Version }}"
     close: true
