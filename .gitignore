@@ -43,3 +43,4 @@ coverage/lcov.info
 
 # compiled binary
 ffcss
+dist/

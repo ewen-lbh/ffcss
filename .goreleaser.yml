@@ -1,0 +1,53 @@
+# This is an example .goreleaser.yml file with some sane defaults.
+# Make sure to check the documentation at http://goreleaser.com
+
+project_name: ffcss
+
+before:
+  hooks:
+    # You may remove this if you don't use go modules.
+    - go mod tidy
+    # you may remove this if you don't need go generate
+    - go generate ./...
+
+builds:
+  -
+    goos: [windows, linux, darwin]
+    binary: builds/{{.Version}}-{{.Os}}-{{.Arch}}
+    no_unique_dist_dir: true
+
+archives:
+  -
+    format: tar.gz
+    format_overrides:
+      - goos: windows
+        format: zip
+
+    name_template: releases/{{.Version}}-{{.Os}}-{{.Arch}}
+
+    replacements:
+      darwin: macos
+      386: 32bit
+      amd64: 64bit
+
+    files:
+      - LICENSE
+      - README.md
+      - CHANGELOG.md
+      - themes/**
+checksum:
+  name_template: releases/{{.Version}}-checksums.txt
+
+# TODO: Homebrew, NFPM, Scoop, Snapcraft (eww), Signing
+
+release:
+  prerelease: auto
+  name_template: "{{ .Tag }}"
+
+changelog:
+  skip: true
+
+milestones:
+  -
+    name_template: "{{ .Tag }}"
+    close: true
