@@ -12,11 +12,9 @@ const (
 	Usage = `ffcss - Apply and configure FirefoxCSS themes
 
 Usage:
-    ffcss [--profiles-dir=DIRECTORY] configure KEY [VALUE]
     ffcss [--profiles-dir=DIRECTORY] [--all-profiles] use THEME_NAME [VARIANT]
-    ffcss reapply
 	ffcss cache clear
-    ffcss init [FORMAT]
+    ffcss init
 
 Where:
     KEY         a setting key (see firefox's about:config)
