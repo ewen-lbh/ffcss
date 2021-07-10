@@ -17,6 +17,7 @@ before:
 builds:
   -
     goos: [windows, linux, darwin]
+    goarch: [amd64, 386]
     binary: ffcss
 
 archives:
@@ -26,7 +27,7 @@ archives:
       - goos: windows
         format: zip
 
-    name_template: '{{.Os}}'
+    name_template: '{{.Os}}-{{.Arch}}'
 
     replacements:
       darwin: macos

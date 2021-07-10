@@ -16,7 +16,7 @@ _Make sure there isn't a folder called “installation” in your working direct
 # Don’t pollute your current directory
 mkdir installation; cd installation
 # Install the latest release by downloading the binary on Github
-wget https://github.com/ewen-lbh/ffcss/releases/latest/download/linux.tar.gz -O ffcss.tar.gz
+wget https://github.com/ewen-lbh/ffcss/releases/latest/download/YOUR-OS-64bit.tar.gz -O ffcss.tar.gz # replace YOUR-OS with linux or macos. There's also a 32bit version (386 instead of amd64)
 # Extract it
 tar -xzvf ffcss.tar.gz
 # Install built-in themes
@@ -34,7 +34,7 @@ cd ..; rm -I -rf installation
 
 (Assuming your user folder is at `C:\Users\you`)
 
-1. Download the zip file: https://github.com/ewen-lbh/ffcss/releases/latest/download/windows.zip
+1. Download the zip file: https://github.com/ewen-lbh/ffcss/releases/latest/download/windows-64bit.zip
 1. Extract it somewhere, let's say in `C:\Users\you\Desktop\ffcss`.
 1. Open that folder in the Explorer
 1. Right-click on empty space and select "Open Windows Terminal Here"
