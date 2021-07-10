@@ -1,0 +1,15 @@
+ffcss: 0
+
+name: frozenfox
+download: https://github.com/tortious/FrozenFox
+
+userChrome: userChrome.css
+userContent: userContent.css
+
+assets:
+  - bindings.xml
+  - userChrome.js
+  - userChrome.xml
+  - 000_xPref.uc.js
+  - saveUCJS.uc.js
+  - Png/**
