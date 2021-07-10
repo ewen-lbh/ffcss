@@ -23,6 +23,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - new theme in registry: [technetium](https://github.com/edo0/Technetium) by [edo0](https://github.com/edo0)
 - new theme in registry: [wavefox](https://github.com/QNetITQ/WaveFox) by [QNetITQ](https://github.com/QNetITQ)
 
+### Fixed
+
+- `ffcss init` was generating a file with a repository setting instead of download [[#36](https://github.com/ewen-lbh/ffcss/issues/36)]
+- `ffcss init` added a .git suffix in the pre-filled value for `name`
+
 ## [0.1.1] - 2021-07-10
 
 ### Fixed
