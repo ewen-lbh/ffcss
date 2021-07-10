@@ -28,6 +28,7 @@ mocks-teardown:
 	rm -rf mocks/{zip-dropoff,cache-directory,homedir} testarea
 
 release:
+	rm -rf dist/
 	make > /dev/null
 	make install > /dev/null
 	sd -- '^  +[*-] ' '- * ' CHANGELOG.md
