@@ -187,6 +187,8 @@ without the `copy from`, files would get copied to `<user's profile folder>/chro
 
 For example, MaterialFox stores everything under `chrome/`, and its manifest uses `copy from: chrome/` to tell ffcss to copy assets _from that directory_, not from the repository's root.
 
+[globster]: https://globster.xyz
+
 ### Variants
 
 Some themes allow users to choose between different variations. To declare them, add an object with key `variants`, that maps variant names to a configuration object, overriding `config`, `userContent`, etc. for that variation. <!--An additional `description` key is available and will be shown to users when selecting a variant.-->
