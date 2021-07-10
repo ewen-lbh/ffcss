@@ -1,0 +1,9 @@
+ffcss: 0
+
+name: technetium
+
+download: https://github.com/edo0/Technetium
+
+user.js: user.js
+assets:
+  - chrome/**

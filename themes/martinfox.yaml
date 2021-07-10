@@ -1,0 +1,6 @@
+ffcss: 0
+
+name: martinfox
+download: https://github.com/arp242/MartinFox
+
+userChrome: userChrome.css

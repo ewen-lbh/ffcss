@@ -1,0 +1,13 @@
+ffcss: 0
+
+name: halo
+download: https://github.com/seirin-blu/Firefox-Halo
+
+userChrome: userChrome.css
+userContent: userContent.css
+assets:
+  - icon/**
+  - svg/**
+  - Firefox assets/**
+  - '*.css'
+  - firefox_*.png

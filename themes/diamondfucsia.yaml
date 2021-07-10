@@ -1,0 +1,8 @@
+ffcss: 0
+
+name: diamondfucsia
+download: https://github.com/Godiesc/DiamondFucsia
+
+
+user.js: user.js
+userChrome: chrome/userChrome.css

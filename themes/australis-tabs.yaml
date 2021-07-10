@@ -1,0 +1,10 @@
+ffcss: 0
+
+name: australis-tabs
+download: https://github.com/sagars007/Australis-like-tabs-FF-ProtonUI-changes
+
+userChrome: userChrome.css
+user.js: user.js
+
+addons:
+  - https://addons.mozilla.org/en-US/firefox/addon/alpenglow-dark/

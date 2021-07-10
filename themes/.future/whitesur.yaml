@@ -1,0 +1,42 @@
+ffcss: 1
+
+name: whitesur
+download: https://github.com/adamxweb/WhiteSurFirefoxThemeMacOS
+
+userChrome: chrome/userChrome.css
+user.js: configuration/user.js
+
+assets:
+	- chrome/WhiteSur/**
+copy from: chrome/
+
+# TODO: assets: allow items of {from: string; to: string} objects, get rid of `copy from` (breaking change!)
+
+variants:
+  Left hand side tab close:
+    description: Put close button of tabs on the left
+    assets:
+      - from: custom/lhsclose.css
+        to: chrome/WhiteSur/parts/lhsclose.css
+    # TODO add modifications directive: in, after, before, append, prepend, replace, with, !regex tag for replace, in, before and after
+    modifications:
+      - in: chrome/WhiteSur/theme.css
+        append: @import "parts/lhsclose.css"
+        after: !regex @namespace xul .*;
+  Standard URL Bar:
+    assets:
+      - from: custom/standard-urlbar.css
+        to: chrome/WhiteSur/parts/standard-urlbar.css
+    modifications:
+      - in: chrome/WhiteSur/theme.css
+        append: @import "parts/standard-urlbar.css"
+        after: !regex @namespace xul .*;
+  Swap navbar close buttons:
+    description: Swap the close buttons, as well as to re-order the close button from MacOS styling to Windows
+    assets:
+      - from: custom/windows-swapclose.css
+        to: chrome/WhiteSur/parts/windows-swapclose.css
+    modifications:
+      - in: chrome/WhiteSur/theme.css
+        append: @import "parts/windows-swapclose.css"
+        after: !regex @namespace xul .*;

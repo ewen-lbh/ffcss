@@ -1,0 +1,13 @@
+ffcss: 0
+
+name: alpenblue
+download: https://github.com/Godiesc/AlpenBlue
+
+
+user.js: user.js
+assets:
+  - chrome/**
+copy from: chrome/
+
+addons:
+  - https://addons.mozilla.org/en-US/firefox/addon/beautiful-alpen-blue/

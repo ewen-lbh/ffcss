@@ -1,0 +1,7 @@
+ffcss: 0
+
+name: proton-connected-rounded-tabs
+download: https://github.com/sagars007/Proton-UI-connected-rounded-tabs
+
+userChrome: userChrome.css
+user.js: user.js

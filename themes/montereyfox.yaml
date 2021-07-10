@@ -1,0 +1,9 @@
+ffcss: 0
+
+name: montereyfox
+download: https://github.com/FirefoxCSSThemers/Monterey-Fox
+
+assets:
+  - chrome/**
+
+copy from: chrome/

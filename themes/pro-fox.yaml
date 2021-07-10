@@ -1,0 +1,6 @@
+ffcss: 0
+
+name: pro-fox
+download: https://github.com/xmansyx/Pro-Fox
+
+userChrome: userChrome.css

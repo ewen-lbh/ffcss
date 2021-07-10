@@ -1,0 +1,58 @@
+ffcss: 1
+
+name: pseudo-fullscreen
+download: https://github.com/ongots/pseudo-fullscreen-firefox
+
+config:
+  layout.css.backdrop-filter.enabled: true
+  gfx.webrender.enabled: true
+
+assets:
+	- chrome/**
+copy from: chrome/
+
+message: |
+  ## To complete the setup
+
+  1. Drag Bookmarks Toolbar Items to the left of the address bar. Disable Bookmarks Toolbar
+  1. To set the wallpaper in a new tab, place a .jpg or .png image in the Chrome folder and rename it to "bg". Restart Firefox
+
+variants:
+  default: {}
+  sidebery:
+    addons:
+      - https://addons.mozilla.org/firefox/addon/sidebery/
+    message:
+      append: | # TODO to append to root variant's instead of overriding
+        1. Copy the code from Sidebery-Sidebar.css to Sidebery / Settings / Styles editor / Sidebar
+        1. Copy the code from Sidebery-GroupPage.css to Sidebery / Settings / Styles editor / Group page
+  youtube:
+    addons:
+      - https://addons.mozilla.org/firefox/addon/styl-us/
+    message:
+      append: |
+        1. Open YouTube
+        1. In Stylus, click New Style ...
+        1. In the window that opens, click Import
+        1. Copy the code here from the Stylus-YouTube.css file and click replace style
+        1. Save
+
+components:
+  Open bookmark in new tab:
+    config:
+      browser.tabs.loadBookmarksInTabs: true
+  Open tabs to the right of the current one:
+    config:
+      browser.tabs.insertAfterCurrent: true
+  Scroll step:
+    config:
+      mousewheel.min_line_scroll_amount: 25
+  Smoothness of scrolling:
+    config:
+      general.smoothScroll.mouseWheel.durationMaxMS: 380
+  Disable sponsored sites:
+    config:
+      browser.newtabpage.activity-stream.showSponsored: false
+  Disable add-on recommendations:
+    config:
+      extensions.htmlaboutaddons.recommendations.enabled: false

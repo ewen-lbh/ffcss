@@ -1,0 +1,11 @@
+ffcss: 0
+
+name: wavefox
+download: https://github.com/QNetITQ/WaveFox
+
+config:
+  svg.context-properties.content.enabled: true
+  layout.css.color-mix.enabled: true
+  browser.tabs.tabMinWith: 94
+
+userChrome: userChrome.css

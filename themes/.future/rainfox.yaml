@@ -1,0 +1,43 @@
+ffcss: 1
+
+name: rainfox
+download: https://github.com/1280px/rainfox
+
+userChrome: userChrome.css
+
+firefox:
+  90+: {}
+  0-89:  # TODO maybe a syntax to 'up to ...?' (literally just allow 'up to 89' as a key)
+    tag: v0.3
+
+
+# TODO a way to glob 'everything except... (e.g, here, userChrome*.css except userChromeTabParanoia.css)
+assets:
+  - .icon/**
+  - userChromeAnimations.css
+  - userChromeBookmarks.css
+  - userChromeContextMenus.css
+  - userChromeDownloads.css
+  - userChromeHourglassLoading.css
+  - userChromeIcons.css
+  - userChromeMenubar.css
+  - userChromeNavButtons.css
+  - userChromeOptHider.css
+  - userChromePageCustomize.css
+  - userChromeTabContainers.css
+  - userChromeTabbar.css
+  - userChromeTabs.css
+  - userChromeURLbar.css
+  - userChromeVariables.css
+
+config:
+  svg.context-properties.content.enabled: true
+  security.secure_connection_icon_color_gray: false
+
+variants:
+  default: {}
+  paranoia:
+    description: Unselected tabs are hidden until you hover over them
+    assets:
+      - .icon/**
+      - userChrome*.css
