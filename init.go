@@ -41,7 +41,7 @@ func RunCommandInit(args docopt.Opts) error {
 		ffcss: %d
 
 		name: %s
-		repository: %s
+		download: %s
 
 		userChrome: userChrome.css
 		userContent: userContent.css
