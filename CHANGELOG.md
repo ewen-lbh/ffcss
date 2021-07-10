@@ -5,6 +5,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- new theme in registry: [alpenblue](https://github.com/Godiesc/AlpenBlue) by [Godiesc](https://github.com/Godiesc)
+- new theme in registry: [australis-tabs](https://github.com/sagars007/Australis-like-tabs-FF-ProtonUI-changes) by [sagars007](https://github.com/sagars007)
+- new theme in registry: [blurredfox](https://github.com/manilarome/blurredfox) by [manilarome](https://github.com/manilarome)
+- new theme in registry: [compactmode](https://github.com/Godiesc/compactmodefirefoxcss) by [Godiesc](https://github.com/Godiesc)
+- new theme in registry: [diamondfucsia](https://github.com/Godiesc/DiamondFucsia) by [Godiesc](https://github.com/Godiesc)
+- new theme in registry: [frozenfox](https://github.com/tortious/FrozenFox) by [tortious](https://github.com/tortious)
+- new theme in registry: [halo](https://github.com/seirin-blu/Firefox-Halo) by [seirin-blu](https://github.com/seirin-blu)
+- new theme in registry: [martinfox](https://github.com/arp242/MartinFox) by [arp242](https://github.com/arp242)
+- new theme in registry: [montereyfox](https://github.com/FirefoxCSSThemers/Monterey-Fox) by [FirefoxCSSThemers](https://github.com/FirefoxCSSThemers)
+- new theme in registry: [pro-fox](https://github.com/xmansyx/Pro-Fox) by [xmansyx](https://github.com/xmansyx)
+- new theme in registry: [proton-connected-rounded-tabs](https://github.com/sagars007/Proton-UI-connected-rounded-tabs) by [sagars007](https://github.com/sagars007)
+- new theme in registry: [technetium](https://github.com/edo0/Technetium) by [edo0](https://github.com/edo0)
+- new theme in registry: [wavefox](https://github.com/QNetITQ/WaveFox) by [QNetITQ](https://github.com/QNetITQ)
+
 ## [0.1.1] - 2021-07-10
 
 ### Fixed

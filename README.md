@@ -280,16 +280,28 @@ You can look at some themes' manifests in `themes/*.yaml` to see how they are wr
 
 ## Built-in themes
 
-See their manifest in `themes/NAME.yaml`, where `NAME` is one of:
+The following themes are provided with ffcss, you can install them with `ffcss use <theme's name>`.
 
+- [alpenblue](https://github.com/Godiesc/AlpenBlue) by [Godiesc](https://github.com/Godiesc)
+- [australis-tabs](https://github.com/sagars007/Australis-like-tabs-FF-ProtonUI-changes) by [sagars007](https://github.com/sagars007)
 - [blurredfox](https://github.com/manilarome/blurredfox) by [manilarome](https://github.com/manilarome)
 - [chameleons-beauty](https://github.com/Godiesc/Chameleons-Beauty) by [Godiesc](https://github.com/Godiesc)
+- [compactmode](https://github.com/Godiesc/compactmodefirefoxcss) by [Godiesc](https://github.com/Godiesc)
+- [diamondfucsia](https://github.com/Godiesc/DiamondFucsia) by [Godiesc](https://github.com/Godiesc)
 - [frozenfox](https://github.com/tortious/FrozenFox) by [tortious](https://github.com/tortious)
 - [fxcompact](https://github.com/dannycolin/fx-compact-mode) by [dannycolin](https://github.com/dannycolin)
+- [halo](https://github.com/seirin-blu/Firefox-Halo) by [seirin-blu](https://github.com/seirin-blu)
 - [lepton](https://github.com/black7375/Firefox-UI-Fix) by [black7375](https://github.com/black7375)
+- [martinfox](https://github.com/arp242/MartinFox) by [arp242](https://github.com/arp242)
 - [materialfox](https://github.com/muckSponge/MaterialFox) by [muckSponge](https://github.com/muckSponge)
 - [modoki](https://github.com/soup-bowl/Modoki-FirefoxCSS) by [soup-bowl](https://github.com/soup-bowl)
+- [montereyfox](https://github.com/FirefoxCSSThemers/Monterey-Fox) by [FirefoxCSSThemers](https://github.com/FirefoxCSSThemers)
+- [pro-fox](https://github.com/xmansyx/Pro-Fox) by [xmansyx](https://github.com/xmansyx)
+- [proton-connected-rounded-tabs](https://github.com/sagars007/Proton-UI-connected-rounded-tabs) by [sagars007](https://github.com/sagars007)
 - [simplerentfox](https://github.com/MiguelRAvila/SimplerentFox) by [MiguelRAvila](https://github.com/MiguelRAvila)
+- [technetium](https://github.com/edo0/Technetium) by [edo0](https://github.com/edo0)
+- [verticaltabs](https://github.com/ranmaru22/firefox-vertical-tabs) by [ranmaru22](https://github.com/ranmaru22)
+- [wavefox](https://github.com/QNetITQ/WaveFox) by [QNetITQ](https://github.com/QNetITQ)
 
 ### Add to registry
 
