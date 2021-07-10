@@ -291,3 +291,7 @@ See their manifest in `themes/NAME.yaml`, where `NAME` is one of:
 - [simplerentfox](https://github.com/MiguelRAvila/SimplerentFox)
 - [UWP](https://github.com/Guerra24/Firefox-UWP-Style)
 - [verticaltabs](https://github.com/ranmaru22/firefox-vertical-tabs)
+
+### Add to registry
+
+You can add your theme to this list, just fork the repository, copy your `ffcss.yaml` theme as `themes/<your theme's name>.yaml`, and submit a PR!
