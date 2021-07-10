@@ -20,7 +20,7 @@ func RunCommandInit(args docopt.Opts) error {
 		return fmt.Errorf("could not get working directory: %w", err)
 	}
 
-	remote := getCurrentRepoRemote()
+	remote := strings.TrimSuffix(getCurrentRepoRemote(), ".git")
 
 	// Compute repository name: special case for github
 	var name string
