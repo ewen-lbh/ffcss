@@ -1,4 +1,4 @@
-ffcss: 0
+ffcss: 1
 
 name: UWP
 download: https://github.com/Guerra24/Firefox-UWP-Style
@@ -10,7 +10,7 @@ firefox:
     download: https://github.com/Guerra24/Firefox-UWP-Style/archive/refs/heads/master.zip
   89-90:
     download: https://github.com/Guerra24/Firefox-UWP-Style/archive/refs/heads/firefox-89.zip
-  88:
+  '88':
     download: https://github.com/Guerra24/Firefox-UWP-Style/archive/refs/heads/firefox-88.zip
   76-87:
     download: https://github.com/Guerra24/Firefox-UWP-Style/archive/refs/heads/firefox-76.zip
