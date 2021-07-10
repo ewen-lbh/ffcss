@@ -282,15 +282,14 @@ You can look at some themes' manifests in `themes/*.yaml` to see how they are wr
 
 See their manifest in `themes/NAME.yaml`, where `NAME` is one of:
 
-- [blurredfox](https://github.com/manilarome/blurredfox)
-- [chameleons-beauty](https://github.com/Godiesc/Chameleons-Beauty)
-- [fxcompact](https://github.com/dannycolin/fx-compact-mode)
-- [lepton](https://github.com/black7375/Firefox-UI-Fix)
-- [materialfox](https://github.com/muckSponge/MaterialFox)
-- [modoki](https://github.com/soup-bowl/Modoki-FirefoxCSS)
-- [simplerentfox](https://github.com/MiguelRAvila/SimplerentFox)
-- [UWP](https://github.com/Guerra24/Firefox-UWP-Style)
-- [verticaltabs](https://github.com/ranmaru22/firefox-vertical-tabs)
+- [blurredfox](https://github.com/manilarome/blurredfox) by [manilarome](https://github.com/manilarome)
+- [chameleons-beauty](https://github.com/Godiesc/Chameleons-Beauty) by [Godiesc](https://github.com/Godiesc)
+- [frozenfox](https://github.com/tortious/FrozenFox) by [tortious](https://github.com/tortious)
+- [fxcompact](https://github.com/dannycolin/fx-compact-mode) by [dannycolin](https://github.com/dannycolin)
+- [lepton](https://github.com/black7375/Firefox-UI-Fix) by [black7375](https://github.com/black7375)
+- [materialfox](https://github.com/muckSponge/MaterialFox) by [muckSponge](https://github.com/muckSponge)
+- [modoki](https://github.com/soup-bowl/Modoki-FirefoxCSS) by [soup-bowl](https://github.com/soup-bowl)
+- [simplerentfox](https://github.com/MiguelRAvila/SimplerentFox) by [MiguelRAvila](https://github.com/MiguelRAvila)
 
 ### Add to registry
 
