@@ -173,6 +173,7 @@ func RunCommandUse(args docopt.Opts) error {
 				li(0, "With profile "+filepath.Base(profile))
 				for _, url := range manifest.Addons {
 					li(1, "Opening [blue][bold]%s", url)
+					li(1, "[yellow]Waiting for you to close Firefox")
 					var command *exec.Cmd
 					switch operatingSystem {
 					case "linux":
