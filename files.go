@@ -221,3 +221,34 @@ func SwitchGitBranch(newBranch, clonedTo string) error {
 	output, err := process.CombinedOutput()
 	return fmt.Errorf("%w: %s", err, output)
 }
+
+type FirefoxProfile struct {
+	ID   string
+	Name string
+	Path string
+}
+
+func (ffp FirefoxProfile) FullName() string {
+	return filepath.Base(ffp.Path)
+}
+
+func FirefoxProfileFromPath(path string) FirefoxProfile {
+	base := filepath.Base(path)
+	parts := strings.SplitN(base, ".", 2)
+	return FirefoxProfile{
+		Path: path,
+		ID:   parts[0],
+		Name: parts[1],
+	}
+}
+
+func FirefoxProfileFromDisplayString(displayString string, profilePaths []string) FirefoxProfile {
+	for _, profilePath := range profilePaths {
+		ffp := FirefoxProfileFromPath(profilePath)
+		if ffp.String() == displayString {
+			return ffp
+		}
+	}
+	d("while searching for %s in %v", displayString, profilePaths)
+	panic("internal error: can't get profile from display string")
+}

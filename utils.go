@@ -10,7 +10,6 @@ import (
 	"regexp"
 	"testing"
 
-	"github.com/mgutz/ansi"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -163,34 +162,19 @@ func RenameIfExists(from string, to string) error {
 	return os.Rename(from, to)
 }
 
-func plural(singular string, amount int, optionalPlural ...string) string {
-	var plural string
-	switch len(optionalPlural) {
-	case 1:
-		plural = optionalPlural[0]
-	case 0:
-		plural = singular + "s"
-	default:
-		panic("plural expected 2 or 3 arguments, you gave more")
+// VimModeEnabled returns true if the user has explicitly set vim mode, or if the $EDITOR is vim/neovim
+func VimModeEnabled() bool {
+	if os.Getenv("VIM_MODE") == "1" || os.Getenv("VIM_STYLE") == "1" {
+		return true
 	}
-	if amount == 1 {
-		return singular
-	}
-	return plural
+	progname := filepath.Base(os.Getenv("EDITOR"))
+	return progname == "vim" || progname == "nvim"
 }
 
-// d prints a debug log line
-func d(s string, fmtArgs ...interface{}) {
-	if os.Getenv("DEBUG") != "" {
-		fmt.Printf(ansi.Color("[ DEBUG ] "+s+"\n", "black+dh"), fmtArgs...)
+func apply(f func(string) string, in []string) []string {
+	out := make([]string, 0, len(in))
+	for _, item := range in {
+		out = append(out, f(item))
 	}
-}
-
-// warn prints a log line with "warning" styling
-func warn(s string, fmtArgs ...interface{}) {
-	if os.Getenv("DEBUG") != "" {
-		fmt.Printf(ansi.Color("[WARNING] "+s+"\n", "yellow+b"), fmtArgs...)
-	} else {
-		fmt.Printf(ansi.Color(s+"\n", "yellow+b"), fmtArgs...)
-	}
+	return out
 }

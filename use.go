@@ -19,16 +19,19 @@ func RunCommandUse(args docopt.Opts) error {
 	if err != nil {
 		return fmt.Errorf("couldn't create data directories: %w", err)
 	}
+	li(0, "Resolving the theme's name")
 	uri, typ, err := ResolveURL(themeName)
 	if err != nil {
 		return fmt.Errorf("while resolving name %s: %w", themeName, err)
 	}
 
+	li(0, "Downloading the theme")
 	manifest, err := Download(uri, typ)
 	if err != nil {
 		return err
 	}
 
+	intro(manifest)
 	seeSource := false
 	survey.AskOne(&survey.Confirm{
 		Message: "See the manifest source?",
@@ -40,6 +43,7 @@ func RunCommandUse(args docopt.Opts) error {
 	// Detect OS
 	operatingSystem := GOOStoOS(runtime.GOOS)
 	// Get all profile directories
+	li(0, "Getting profile directories")
 	profilesDir, _ := args.String("--profiles-dir")
 	var profileDirs []string
 	if profilesDir != "" {
@@ -55,13 +59,21 @@ func RunCommandUse(args docopt.Opts) error {
 	selectedProfileDirs := make([]string, 0)
 	selectAllProfileDirs, _ := args.Bool("--all-profiles")
 	if selectAllProfileDirs {
+		li(0, "Selecting all profiles")
 		selectedProfileDirs = profileDirs
 	} else {
-		selectProfileDirs := &survey.MultiSelect{
-			Message: "On which profiles to install this?",
-			Options: profileDirs,
+		// XXX the whole display thing should be put in survey.MultiSelect.Renderer, look into that.
+		selectedProfileDirsDisplay := make([]string, 0)
+		li(0, "Please select profiles to apply the theme on")
+		profileDirsDisplay := apply(func(p string) string { return FirefoxProfileFromPath(p).String() }, profileDirs)
+		survey.AskOne(&survey.MultiSelect{
+			Message: "Select profiles",
+			Options: profileDirsDisplay,
+			VimMode: VimModeEnabled(),
+		}, &selectedProfileDirsDisplay)
+		for _, chosenProfileDisplay := range selectedProfileDirsDisplay {
+			selectedProfileDirs = append(selectedProfileDirs, FirefoxProfileFromDisplayString(chosenProfileDisplay, profileDirs).Path)
 		}
-		survey.AskOne(selectProfileDirs, &selectedProfileDirs)
 		// User Ctrl-C'd
 		if len(selectedProfileDirs) == 0 {
 			return nil
@@ -70,9 +82,11 @@ func RunCommandUse(args docopt.Opts) error {
 	// Choose variant
 	variantName, _ := args.String("VARIANT")
 	if len(manifest.AvailableVariants()) > 0 && variantName == "" {
+		li(0, "Please choose the theme's variant")
 		variantPrompt := &survey.Select{
-			Message: "Choose the variant",
+			Message: "Install variant",
 			Options: manifest.AvailableVariants(),
+			VimMode: VimModeEnabled(),
 		}
 		survey.AskOne(variantPrompt, &variantName)
 		// user Ctrl-C'd
@@ -85,6 +99,7 @@ func RunCommandUse(args docopt.Opts) error {
 	// FIXME for now switching branches just re-downloads the entire thing to a new dir with the new branch
 	// ideal thing would be to copy from the root variant to the new variant, cd into it then `git switch` there.
 	if actionsNeeded.reDownload || actionsNeeded.switchBranch {
+		li(0, "Downloading the variant")
 		d("re-downloading: new repo is %s", manifest.DownloadAt)
 		uri, typ, err := ResolveURL(manifest.DownloadAt)
 		if err != nil {
@@ -106,6 +121,8 @@ func RunCommandUse(args docopt.Opts) error {
 
 	// For each profile directory...
 	for _, profileDir := range selectedProfileDirs {
+		li(0, "With profile "+filepath.Base(profileDir))
+		li(1, "Backing up the chrome/ folder")
 		err = RenameIfExists(filepath.Join(profileDir, "chrome"), filepath.Join(profileDir, "chrome.bak"))
 		if err != nil {
 			return fmt.Errorf("while backing up chrome directory: %w", err)
@@ -117,6 +134,7 @@ func RunCommandUse(args docopt.Opts) error {
 		}
 
 		// Install stuff
+		li(1, "Installing the theme")
 		err = manifest.InstallUserChrome(operatingSystem, variant, profileDir)
 		if err != nil {
 			return fmt.Errorf("couldn't install userChrome.css: %w", err)
@@ -152,8 +170,9 @@ func RunCommandUse(args docopt.Opts) error {
 
 		if acceptOpenExtensionPages {
 			for _, profile := range selectedProfileDirs {
-				fmt.Printf("Opening on %s\n", profile)
+				li(0, "With profile "+filepath.Base(profile))
 				for _, url := range manifest.Addons {
+					li(1, "Opening [blue][bold]%s", url)
 					var command *exec.Cmd
 					switch operatingSystem {
 					case "linux":

@@ -32,6 +32,8 @@ type Variant struct {
 
 type Manifest struct {
 	ExplicitName       string `yaml:"name"`
+	Description        string
+	Author             string `yaml:"by"`
 	CurrentVariantName string // Used to construct the directory where the theme will be cached
 	Raw                string // Contains the raw yaml file contents
 	DownloadedTo       string // Stores the path to the directory where the theme is cached. Set by .Download().
