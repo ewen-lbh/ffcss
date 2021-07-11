@@ -1,6 +1,11 @@
 ffcss: 0
 
 name: wavefox
+description: |
+  A theme with a unique shape of tabs
+
+  _Compatible with touch, normal & compact densities_
+
 download: https://github.com/QNetITQ/WaveFox
 
 config:
