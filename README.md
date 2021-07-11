@@ -1,5 +1,7 @@
 # ffcss
 
+![a demo of ffcss](./demo.gif)
+
 A CLI interface to apply and configure [Firefox CSS themes](https://reddit.com/r/FirefoxCSS) (also known as userChrome.css themes).
 
 It uses a YAML file to declare files, variants, helper addons and others. This file is referred to as a "manifest".
