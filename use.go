@@ -28,6 +28,15 @@ func RunCommandUse(args docopt.Opts) error {
 	if err != nil {
 		return err
 	}
+
+	seeSource := false
+	survey.AskOne(&survey.Confirm{
+		Message: "See the manifest source?",
+	}, &seeSource)
+	if seeSource {
+		showSource(manifest)
+	}
+
 	// Detect OS
 	operatingSystem := GOOStoOS(runtime.GOOS)
 	// Get all profile directories

@@ -33,6 +33,7 @@ type Variant struct {
 type Manifest struct {
 	ExplicitName       string `yaml:"name"`
 	CurrentVariantName string // Used to construct the directory where the theme will be cached
+	Raw                string // Contains the raw yaml file contents
 	DownloadedTo       string // Stores the path to the directory where the theme is cached. Set by .Download().
 	FfcssVersion       int    `yaml:"ffcss"`
 	Variants           map[string]Variant
@@ -87,6 +88,7 @@ func LoadManifest(manifestPath string) (manifest Manifest, err error) {
 		return
 	}
 	manifest = NewManifest()
+	manifest.Raw = string(raw)
 	err = yaml.Unmarshal(raw, &manifest)
 
 	if manifest.FfcssVersion != VersionMajor && !ThemeCompatWarningShown && manifest.FfcssVersion != 0 {
