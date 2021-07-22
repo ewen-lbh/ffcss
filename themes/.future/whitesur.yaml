@@ -40,3 +40,12 @@ variants:
       - in: chrome/WhiteSur/theme.css
         append: @import "parts/windows-swapclose.css"
         after: !regex @namespace xul .*;
+  No Identity tab colours:
+    description: Remove the identity line from a container or facebook tab
+    assets:
+      - from: custom/noidentity.css
+        to: chrome/WhiteSur/parts/noidentity.css
+    modifications:
+      - in: chrome/WhiteSur/theme.css
+        append: @import "parts/noidentity.css"
+        after: !regex @namespace xul .*;
