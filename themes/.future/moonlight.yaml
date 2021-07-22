@@ -6,7 +6,7 @@ download: https://github.com/eduardhojbota/moonlight-userChrome
 userChrome: userChrome.css
 userContent: userContent.css
 assets:
-	- '*.css'
+  - '*.css'
   - custom/**
   - icons/**
 
@@ -17,19 +17,18 @@ variants:
   Re-enable title bar controls (MIN-MAX-CLOSE buttons):
     modifications:
       - in: userChrome.css
-        append: @import "custom/_titlebar-controls-enable-{{ os }}.css";
+        append: '@import "custom/_titlebar-controls-enable-{{ os }}.css";'
   Disable megabar behavior:
     modifications:
       - in: userChrome.css
-        append: @import "custom/_megabar-disable.css";
+        append: '@import "custom/_megabar-disable.css";'
   Add Developer Tools styling:
     modifications:
       - in: userChrome.css
-        append: @import "custom/_dev-tools.css";
+        append: '@import "custom/_dev-tools.css";'
     message:
       prepend: |
         You can also set the theme to dark in Firefox Developer Tools settings.
 
 message: |
   Inspired by [moonlight-vscode-theme](https://github.com/atomiks/moonlight-vscode-theme) and [github-moonlight](https://github.com/Brettm12345/github-moonlight)
-
