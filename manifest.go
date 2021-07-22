@@ -37,12 +37,13 @@ type Manifest struct {
 	DownloadedTo       string `yaml:"-"` // Stores the path to the directory where the theme is cached. Set by .Download().
 
 	// Top-level (non-variant-modifiable)
-	ExplicitName       string `yaml:"name"`
-	Description        string
-	Author             string `yaml:"by"`
-	FfcssVersion       int    `yaml:"ffcss"`
-	Variants           map[string]Variant
-	OSNames            map[string]string `yaml:"os"`
+	ExplicitName   string `yaml:"name"`
+	Description    string
+	Author         string `yaml:"by"`
+	FfcssVersion   int    `yaml:"ffcss"`
+	FirefoxVersion string `yaml:"firefox"`
+	Variants       map[string]Variant
+	OSNames        map[string]string `yaml:"os"`
 
 	// Override-able by variants
 	DownloadAt  string `yaml:"download"`

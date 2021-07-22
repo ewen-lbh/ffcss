@@ -54,6 +54,36 @@ func RunCommandUse(args docopt.Opts) error {
 	if err != nil {
 		return fmt.Errorf("couldn't get profile directories: %w", err)
 	}
+	if manifest.FirefoxVersion != "" {
+		constraint, err := NewFirefoxVersionConstraint(manifest.FirefoxVersion)
+		if err != nil {
+			return fmt.Errorf("invalid firefox version constraint %q: %w", manifest.FirefoxVersion, err)
+		}
+		incompatibleProfileDirs := make([]struct {
+			profile FirefoxProfile
+			version FirefoxVersion
+		}, 0)
+		for _, profileDir := range profileDirs {
+			profile := FirefoxProfileFromPath(profileDir)
+			profileVersion, err := profile.FirefoxVersion()
+			if err != nil {
+				warn("Couldn't get firefox version for profile %s", profileDir)
+			}
+			fulfillsConstraint := constraint.FulfilledBy(profileVersion)
+			if !fulfillsConstraint {
+				incompatibleProfileDirs = append(incompatibleProfileDirs, struct {
+					profile FirefoxProfile
+					version FirefoxVersion
+				}{profile, profileVersion})
+			}
+		}
+		if len(incompatibleProfileDirs) != 0 {
+			li(1, "[yellow]This theme ensures compatibility with firefox [bold]%s[reset][yellow]. The following themes could be incompatible:", constraint.sentence)
+			for _, profile := range incompatibleProfileDirs {
+				li(2, "%s [dim]([reset]version [blue][bold]%s[reset][dim])", profile.profile, profile.version)
+			}
+		}
+	}
 	// Choose profiles
 	// TODO smart default (based on {{profileDirectory}}/times.json:firstUse)
 	selectedProfileDirs := make([]string, 0)

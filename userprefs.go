@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"regexp"
 
 	"strings"
 )
@@ -23,4 +24,21 @@ func ToUserJSFile(config map[string]interface{}) (string, error) {
 
 func (m Manifest) UserJSFileContent() (string, error) {
 	return ToUserJSFile(m.Config)
+}
+
+// ValueOfUserPrefCall returns the value of configuration entry, given its key and the contents of
+// the prefs.js file. It only works if the value is a JSON-parsable literal (string, number, boolean, null, etc.).
+func ValueOfUserPrefCall(prefsJSContent []byte, key string) (string, error) {
+	pattern := regexp.MustCompile(`(?m)^\s*user_pref\("` + key + `"\s*,\s*(.+)\)\s*;?\s*$`)
+	matches := pattern.FindAllSubmatch(prefsJSContent, -1)
+	if len(matches) == 0 {
+		return "", fmt.Errorf("key %q not found", key)
+	}
+	raw := matches[len(matches)-1][1]
+	var jsonParsed interface{}
+	err := json.Unmarshal(raw, &jsonParsed)
+	if err != nil {
+		return "", fmt.Errorf("while intepreting value %q: %w", string(raw), err)
+	}
+	return fmt.Sprint(jsonParsed), nil
 }
