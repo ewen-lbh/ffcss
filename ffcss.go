@@ -1,3 +1,4 @@
+// Apply and configure FirefoxCSS themes
 package main
 
 import (
