@@ -10,6 +10,8 @@ import (
 	"github.com/mitchellh/colorstring"
 )
 
+const indent = "  "
+
 var BulletColorsByIndentLevel = []string{
 	"blue",
 	"magenta",
@@ -126,7 +128,7 @@ func li(indentLevel uint, item string, fmtArgs ...interface{}) {
 		color = BulletColorsByIndentLevel[indentLevel]
 	}
 
-	bullet := strings.Repeat("  ", int(indentLevel)) +
+	bullet := strings.Repeat(indent, int(indentLevel)) +
 		colorizer.Color("["+color+"]•")
 
 	fmt.Println(bullet + " " + colorizer.Color(fmt.Sprintf(item, fmtArgs...)))

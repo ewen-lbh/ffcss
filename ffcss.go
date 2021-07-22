@@ -49,7 +49,7 @@ func main() {
 		fmt.Println("Woops! An error occured:")
 		fmt.Println()
 		for idx, errorFragment := range strings.Split(err.Error(), ": ") {
-			fmt.Println(strings.Repeat("  ", idx) + "-> " + errorFragment)
+			fmt.Println(strings.Repeat(indent, idx) + "-> " + errorFragment)
 		}
 	}
 }
