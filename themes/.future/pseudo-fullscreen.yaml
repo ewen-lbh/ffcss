@@ -1,3 +1,4 @@
+# Needs: #48
 ffcss: 1
 
 name: pseudo-fullscreen
@@ -8,7 +9,7 @@ config:
   gfx.webrender.enabled: true
 
 assets:
-	- chrome/**
+  - chrome/**
 copy from: chrome/
 
 message: |

@@ -1,3 +1,4 @@
+# Needs: #47
 ffcss: 1
 
 name: moonlight
@@ -27,8 +28,9 @@ variants:
       - in: userChrome.css
         append: '@import "custom/_dev-tools.css";'
     message:
-      prepend: |
-        You can also set the theme to dark in Firefox Developer Tools settings.
+      Inspired by [moonlight-vscode-theme](https://github.com/atomiks/moonlight-vscode-theme) and [github-moonlight](https://github.com/Brettm12345/github-moonlight)
+
+      You can also set the theme to dark in Firefox Developer Tools settings.
 
 message: |
   Inspired by [moonlight-vscode-theme](https://github.com/atomiks/moonlight-vscode-theme) and [github-moonlight](https://github.com/Brettm12345/github-moonlight)
