@@ -31,17 +31,20 @@ type Variant struct {
 }
 
 type Manifest struct {
+	// Internal, cannot be set in the YAML file
+	CurrentVariantName string `yaml:"-"` // Used to construct the directory where the theme will be cached
+	Raw                string `yaml:"-"` // Contains the raw yaml file contents
+	DownloadedTo       string `yaml:"-"` // Stores the path to the directory where the theme is cached. Set by .Download().
+
+	// Top-level (non-variant-modifiable)
 	ExplicitName       string `yaml:"name"`
 	Description        string
 	Author             string `yaml:"by"`
-	CurrentVariantName string // Used to construct the directory where the theme will be cached
-	Raw                string // Contains the raw yaml file contents
-	DownloadedTo       string // Stores the path to the directory where the theme is cached. Set by .Download().
 	FfcssVersion       int    `yaml:"ffcss"`
 	Variants           map[string]Variant
 	OSNames            map[string]string `yaml:"os"`
 
-	// Those can be modified by variant
+	// Override-able by variants
 	DownloadAt  string `yaml:"download"`
 	Branch      string
 	CopyFrom    string `yaml:"copy from"`
