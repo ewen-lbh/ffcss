@@ -14,10 +14,13 @@ const indent = "  "
 
 var BulletColorsByIndentLevel = []string{
 	"blue",
-	"magenta",
 	"cyan",
 	"green",
 	"yellow",
+	"orange",
+	"red",
+	"magenta",
+	"white",
 }
 
 var colorizer colorstring.Colorize
@@ -25,6 +28,7 @@ var colorizer colorstring.Colorize
 func init() {
 	colorizer.Colors = colorstring.DefaultColors
 	colorizer.Colors["italic"] = "3"
+	colorizer.Colors["orange"] = "38;2;241;109;12"
 	colorizer.Reset = true
 }
 
