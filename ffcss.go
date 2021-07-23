@@ -59,10 +59,11 @@ func main() {
 	}
 
 	if err := dispatchCommand(args); err != nil {
-		fmt.Println("Woops! An error occured:")
+		fmt.Println()
+		showError("Woops! An error occured:")
 		fmt.Println()
 		for idx, errorFragment := range strings.Split(err.Error(), ": ") {
-			fmt.Println(strings.Repeat(indent, idx) + "-> " + errorFragment)
+			li(uint(idx), errorFragment)
 		}
 	}
 }

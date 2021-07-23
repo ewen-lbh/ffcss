@@ -123,8 +123,21 @@ func warn(s string, fmtArgs ...interface{}) {
 	}
 }
 
+// showError is like warn but with "error" styling
+func showError(s string, fmtArgs ...interface{}) {
+	if os.Getenv("DEBUG") != "" {
+		fmt.Printf(colorizer.Color("[red][bold][ ERROR ] "+s+"\n"), fmtArgs...)
+	} else {
+		fmt.Printf(colorizer.Color("[red][bold]"+s+"\n"), fmtArgs...)
+	}
+}
+
 // display a list item
 func li(indentLevel uint, item string, fmtArgs ...interface{}) {
+	lic("•", indentLevel, item, fmtArgs...)
+}
+
+func lic(bulletChar string, indentLevel uint, item string, fmtArgs ...interface{}) {
 	var color string
 	if int(indentLevel) > len(BulletColorsByIndentLevel)-1 {
 		color = BulletColorsByIndentLevel[len(BulletColorsByIndentLevel)-1]
@@ -133,9 +146,9 @@ func li(indentLevel uint, item string, fmtArgs ...interface{}) {
 	}
 
 	bullet := strings.Repeat(indent, int(indentLevel)) +
-		colorizer.Color("["+color+"]•")
+		colorizer.Color("["+color+"]"+bulletChar)
 
-	fmt.Println(bullet + " " + colorizer.Color(fmt.Sprintf(item, fmtArgs...)))
+	fmt.Println(bullet + " " + colorizer.Color(strings.TrimSpace(fmt.Sprintf(item, fmtArgs...))))
 }
 
 func (ffp FirefoxProfile) String() string {
