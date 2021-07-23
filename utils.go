@@ -8,6 +8,7 @@ import (
 	"os/user"
 	"path/filepath"
 	"regexp"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -179,3 +180,12 @@ func apply(f func(string) string, in []string) []string {
 	return out
 }
 
+// prefixEachLine prepends each line of s with the provided prefix (with).
+// Only supports UNIX-Style line endings (\n)
+func prefixEachLine(s string, with string) string {
+	var prefixedLines []string
+	for _, line := range strings.Split(s, "\n") {
+		prefixedLines = append(prefixedLines, with+line)
+	}
+	return strings.Join(prefixedLines, "\n")
+}

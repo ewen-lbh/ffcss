@@ -179,6 +179,24 @@ func RunCommandUse(args docopt.Opts, indentationLevel ...uint) error {
 			return fmt.Errorf("while backing up chrome directory: %w", err)
 		}
 
+		// Run pre-install script
+		if manifest.Run.Before != "" {
+			li(baseIndent+1, "Running pre-install script")
+			// TODO for this to be useful, print commandline _with mustaches replaced_:  li(baseIndent+2, "[dim]$ bash -c [reset][bold]%s", manifest.Run.Before)
+			output, err := manifest.RunPreInstallHook(profile)
+			if err != nil {
+				return fmt.Errorf("while running pre-install script: %w", err)
+			}
+			fmt.Println(
+				"\n",
+				prefixEachLine(
+					strings.TrimSpace(output),
+					strings.Repeat(indent, int(baseIndent)+2),
+				),
+				"\n",
+			)
+		}
+
 		err := os.Mkdir(filepath.Join(profileDir, "chrome"), 0700)
 		if err != nil {
 			return err
@@ -204,6 +222,24 @@ func RunCommandUse(args docopt.Opts, indentationLevel ...uint) error {
 		err = manifest.InstallAssets(operatingSystem, variant, profileDir)
 		if err != nil {
 			return fmt.Errorf("couldn't install assets: %w", err)
+		}
+
+		// Run post-install script
+		if manifest.Run.After != "" {
+			li(baseIndent+1, "Running post-install script")
+			// TODO for this to be useful, print commandline _with mustaches replaced_:  li(baseIndent+2, "[dim]$ bash -c [reset][bold]%s", manifest.Run.After)
+			output, err := manifest.RunPostInstallHook(profile)
+			if err != nil {
+				return fmt.Errorf("while running post-install script: %w", err)
+			}
+			fmt.Println(
+				"\n",
+				prefixEachLine(
+					strings.TrimSpace(output),
+					strings.Repeat(indent, int(baseIndent)+2),
+				),
+				"\n",
+			)
 		}
 
 		err = profile.RegisterCurrentTheme(themeName)

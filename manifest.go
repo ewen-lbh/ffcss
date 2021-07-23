@@ -3,11 +3,13 @@ package main
 import (
 	"fmt"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"regexp"
 	"strings"
 
 	"github.com/charmbracelet/glamour"
+	"github.com/hoisie/mustache"
 	"gopkg.in/yaml.v2"
 )
 
@@ -28,6 +30,10 @@ type Variant struct {
 	Assets      []FileTemplate
 	Description string
 	Addons      []string
+	Run         struct {
+		Before string
+		After  string
+	}
 }
 
 type Manifest struct {
@@ -54,8 +60,12 @@ type Manifest struct {
 	UserContent FileTemplate `yaml:"userContent"`
 	UserJS      FileTemplate `yaml:"user.js"`
 	Assets      []FileTemplate
-	Message     string
-	Addons      []string
+	Run         struct {
+		Before string
+		After  string
+	}
+	Message string
+	Addons  []string
 }
 
 func (m Manifest) Name() string {
@@ -157,6 +167,12 @@ func (m Manifest) WithVariant(variant Variant) (newManifest Manifest, actionsNee
 		actionsNeeded.switchBranch = true
 		newManifest.Branch = variant.Branch
 	}
+	if variant.Run.Before != "" {
+		newManifest.Run.Before = variant.Run.Before
+	}
+	if variant.Run.After != "" {
+		newManifest.Run.After = variant.Run.After
+	}
 	for key, val := range variant.Config {
 		newManifest.Config[key] = val
 	}
@@ -217,4 +233,40 @@ func (m Manifest) ShowMessage() error {
 		fmt.Println(rendered)
 	}
 	return nil
+}
+
+// runHook runs a provided command for a specific profile. See any of the (Manifest).Run*Hook methods
+// for a list of available {{mustache}} placeholders.
+func (m Manifest) runHook(commandline string, profile FirefoxProfile) (output string, err error) {
+	ffversion, err := profile.FirefoxVersion()
+	if err != nil {
+		return "", fmt.Errorf("while getting firefox version for current profile: %w", err)
+	}
+
+	command := exec.Command("bash", "-c", mustache.Render(commandline, map[string]interface{}{
+		"profile_path":    profile.Path,
+		"firefox_version": ffversion.String(),
+	}))
+
+	outputBytes, err := command.CombinedOutput()
+	output = string(outputBytes)
+	if err != nil {
+		return "", fmt.Errorf("while running %q: %s: %w", command.String(), output, err)
+	}
+
+	return
+}
+
+// RunPreInstallHook passes the pre-install hook specified in the manifest's run.before entry to bash.
+// Several {{mustache}} placeholders are available:
+//
+//	profile_path        The current profile's path
+//	firefox_version     The current profile's Firefox version
+func (m Manifest) RunPreInstallHook(profile FirefoxProfile) (output string, err error) {
+	return m.runHook(m.Run.Before, profile)
+}
+
+// RunPostInstallHook does the same as RunPreInstallHook but for the manifest's run.after entry.
+func (m Manifest) RunPostInstallHook(profile FirefoxProfile) (output string, err error) {
+	return m.runHook(m.Run.After, profile)
 }

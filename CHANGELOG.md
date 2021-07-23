@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - new `firefox` manifest entry: can be used to declare which versions of firefox are compatible with your theme: `version+` means "`version` and up", `up to version` means, well, you guessed it, `version1-version2` is an (inclusive) range and finally just `version` means exactly _that_ version. Use `major.minor` to specify the minor version, or omit it (or use ".x") to ignore it.
 - prompt to show the manifest source of the theme you're installing. The prompt can be turned off with a new flag `--skip-manifest-source`
 - command _reapply_ to reapply themes after firefox updates. The current themes for each profile are stored in a YAML file at `~/.config/ffcss/currently.yaml`. If ffcss tells you that a profile has no ffcss theme applied, try re-applying it manually with `ffcss use` so that this file gets created & filled.
+- hooks to run custom shell commands before and after theme installations, via manifest entries `run.before` and `run.after`. Variants can override them.
 
 ## [0.1.2] - 2021-07-10
 
