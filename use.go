@@ -46,7 +46,7 @@ func RunCommandUse(args docopt.Opts) error {
 	// Detect OS
 	operatingSystem := GOOStoOS(runtime.GOOS)
 	// Get all profile directories
-	li(0, "Getting profile directories")
+	li(0, "Getting profiles")
 	profilesDir, _ := args.String("--profiles-dir")
 	var profilePaths []string
 	if profilesDir != "" {
