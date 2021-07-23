@@ -24,7 +24,7 @@ Where:
 	COMPONENT   is either major, minor or patch (to get a single digit)
 
 Options:
-	--all-profiles           Apply the theme to all profiles
+	-a --all-profiles           Apply the theme to all profiles
 	-p --profiles=PATHS      Select which profiles to apply the theme to.
 	                         Can be absolute or relative to --profiles-dir.
 							 Comma-separated.
