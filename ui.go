@@ -29,9 +29,9 @@ func init() {
 }
 
 // Show the introduction message before installation
-func intro(theme Manifest) {
+func intro(theme Manifest, indentLevel uint) {
 	fmt.Print("\n")
-	indent := ""
+	indentation := strings.Repeat(indent, int(indentLevel))
 
 	var author string
 	urlParts := strings.Split(theme.DownloadAt, "/")
@@ -42,7 +42,7 @@ func intro(theme Manifest) {
 		author = urlParts[len(urlParts)-2]
 	}
 
-	fmt.Print(indent)
+	fmt.Print(indentation)
 
 	fmt.Printf(
 		colorizer.Color("[dim]Installing ") +
@@ -58,7 +58,7 @@ func intro(theme Manifest) {
 
 	if theme.Description != "" {
 		fmt.Print("\n")
-		gutter := colorstring.Color(indent + "[blue]│")
+		gutter := colorstring.Color(indentation + "[blue]│")
 		// gutter := colorstring.Color(indent + "[blue]|")
 		d("gutter is %q", gutter)
 		markdownRendered, err := glamour.Render(theme.Description, "dark")

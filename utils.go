@@ -178,3 +178,4 @@ func apply(f func(string) string, in []string) []string {
 	}
 	return out
 }
+

@@ -16,6 +16,7 @@ Usage:
 	ffcss [options] use THEME_NAME [VARIANT]
 	ffcss [options] cache clear
 	ffcss [options] init
+	ffcss [options] reapply
 	ffcss version [COMPONENT]
 
 Where:
@@ -24,6 +25,9 @@ Where:
 
 Options:
 	--all-profiles           Apply the theme to all profiles
+	-p --profiles=PATHS      Select which profiles to apply the theme to.
+	                         Can be absolute or relative to --profiles-dir.
+							 Comma-separated.
 	--profiles-dir=PATH      Directory that contains profile directories.
 	                         Default value is platform-specific:
 	                         - $HOME/.mozilla/firefox                                on Linux

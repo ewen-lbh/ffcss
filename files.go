@@ -10,6 +10,7 @@ import (
 
 	"github.com/bmatcuk/doublestar"
 	"github.com/hoisie/mustache"
+	"gopkg.in/yaml.v2"
 )
 
 func GOOStoOS(GOOS string) string {
@@ -21,6 +22,22 @@ func GOOStoOS(GOOS string) string {
 	default:
 		return GOOS
 	}
+}
+
+func CurrentThemeByProfile() (map[string]string, error) {
+	currentThemesRaw, err := os.ReadFile(ConfigDir("currently.yaml"))
+	if os.IsNotExist(err) {
+		err = os.WriteFile(ConfigDir("currently.yaml"), []byte(""), 0777)
+		if err != nil {
+			return nil, fmt.Errorf("while creating current themes list file: %w", err)
+		}
+	} else if err != nil {
+		return nil, fmt.Errorf("while reading current themes list: %w", err)
+	}
+
+	currentThemes := make(map[string]string)
+	yaml.Unmarshal(currentThemesRaw, &currentThemes)
+	return currentThemes, nil
 }
 
 // InstallAssets installs the assets in the specified profile directory
@@ -226,6 +243,25 @@ type FirefoxProfile struct {
 	ID   string
 	Name string
 	Path string
+}
+
+func (ffp FirefoxProfile) RegisterCurrentTheme(themeName string) error {
+	currentThemes, err := CurrentThemeByProfile()
+	if err != nil {
+		return err
+	}
+	currentThemes[ffp.FullName()] = themeName
+	currentThemesNewContents, err := yaml.Marshal(currentThemes)
+	if err != nil {
+		return fmt.Errorf("while marshaling into YAML: %w", err)
+	}
+
+	err = os.WriteFile(ConfigDir("currently.yaml"), currentThemesNewContents, 0777)
+	if err != nil {
+		return fmt.Errorf("while writing new contents: %w", err)
+	}
+
+	return nil
 }
 
 func (ffp FirefoxProfile) FullName() string {
