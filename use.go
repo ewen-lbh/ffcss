@@ -48,11 +48,11 @@ func RunCommandUse(args docopt.Opts) error {
 	// Get all profile directories
 	li(0, "Getting profile directories")
 	profilesDir, _ := args.String("--profiles-dir")
-	var profileDirs []string
+	var profilePaths []string
 	if profilesDir != "" {
-		profileDirs, err = ProfileDirsPaths(operatingSystem, profilesDir)
+		profilePaths, err = ProfilePaths(operatingSystem, profilesDir)
 	} else {
-		profileDirs, err = ProfileDirsPaths(operatingSystem)
+		profilePaths, err = ProfilePaths(operatingSystem)
 	}
 	if err != nil {
 		return fmt.Errorf("couldn't get profile directories: %w", err)
@@ -66,11 +66,11 @@ func RunCommandUse(args docopt.Opts) error {
 			profile FirefoxProfile
 			version FirefoxVersion
 		}, 0)
-		for _, profileDir := range profileDirs {
-			profile := FirefoxProfileFromPath(profileDir)
+		for _, profilePath := range profilePaths {
+			profile := FirefoxProfileFromPath(profilePath)
 			profileVersion, err := profile.FirefoxVersion()
 			if err != nil {
-				warn("Couldn't get firefox version for profile %s", profileDir)
+				warn("Couldn't get firefox version for profile %s", profilePath)
 			}
 			fulfillsConstraint := constraint.FulfilledBy(profileVersion)
 			if !fulfillsConstraint {
@@ -93,19 +93,19 @@ func RunCommandUse(args docopt.Opts) error {
 	selectAllProfileDirs, _ := args.Bool("--all-profiles")
 	if selectAllProfileDirs {
 		li(0, "Selecting all profiles")
-		selectedProfileDirs = profileDirs
+		selectedProfileDirs = profilePaths
 	} else {
 		// XXX the whole display thing should be put in survey.MultiSelect.Renderer, look into that.
 		selectedProfileDirsDisplay := make([]string, 0)
 		li(0, "Please select profiles to apply the theme on")
-		profileDirsDisplay := apply(func(p string) string { return FirefoxProfileFromPath(p).String() }, profileDirs)
+		profileDirsDisplay := apply(func(p string) string { return FirefoxProfileFromPath(p).String() }, profilePaths)
 		survey.AskOne(&survey.MultiSelect{
 			Message: "Select profiles",
 			Options: profileDirsDisplay,
 			VimMode: VimModeEnabled(),
 		}, &selectedProfileDirsDisplay)
 		for _, chosenProfileDisplay := range selectedProfileDirsDisplay {
-			selectedProfileDirs = append(selectedProfileDirs, FirefoxProfileFromDisplayString(chosenProfileDisplay, profileDirs).Path)
+			selectedProfileDirs = append(selectedProfileDirs, FirefoxProfileFromDisplayString(chosenProfileDisplay, profilePaths).Path)
 		}
 		// User Ctrl-C'd
 		if len(selectedProfileDirs) == 0 {

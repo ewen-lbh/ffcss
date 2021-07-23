@@ -22,18 +22,18 @@ func withuser(s string) string {
 	return fmt.Sprintf(s, currentUser.Username)
 }
 
-func TestProfileDirsPaths(t *testing.T) {
+func TestProfilePaths(t *testing.T) {
 	cwd, _ := os.Getwd()
 	mockedHomedir := filepath.Join(cwd, "mocks", "homedir")
 
-	paths, err := ProfileDirsPaths("linux", filepath.Join(mockedHomedir, ".mozilla", "firefox"))
+	paths, err := ProfilePaths("linux", filepath.Join(mockedHomedir, ".mozilla", "firefox"))
 	if err != nil {
 		panic(err)
 	}
 	assert.Equal(t, []string{filepath.Join(mockedHomedir, ".mozilla", "firefox", "667ekipp.default-release")}, paths)
 
 	// FIXME needs firefox installed with default profiles location (~/.mozilla/firefox/)
-	paths, err = ProfileDirsPaths("linux")
+	paths, err = ProfilePaths("linux")
 	assert.GreaterOrEqual(t, len(paths), 1)
 	if len(paths) >= 1 {
 		assert.Regexp(t, withuser(`/home/%s/.mozilla/firefox/[a-z0-9]{8}\.\w+`), paths[0])

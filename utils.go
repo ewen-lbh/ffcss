@@ -59,11 +59,11 @@ func GetManifestPath(themeRoot string) string {
 	return filepath.Join(themeRoot, "ffcss.yaml")
 }
 
-// ProfileDirsPaths returns an array of profile directories from the profile folder.
+// ProfilePaths returns an array of profile directories from the profile folder.
 // 1 arguments: the profiles folder is assumed to be the current OS's default.
 // 2 argument: use the given profiles folder
 // more arguments: panic.
-func ProfileDirsPaths(operatingSystem string, optionalProfilesDir ...string) ([]string, error) {
+func ProfilePaths(operatingSystem string, optionalProfilesDir ...string) ([]string, error) {
 	var profilesFolder string
 	if len(optionalProfilesDir) == 0 {
 		// XXX: Weird golang thing, if I assign to profilesFolder directly, it tells me the variable is unused
