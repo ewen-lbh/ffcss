@@ -23,12 +23,13 @@ Where:
 	COMPONENT   is either major, minor or patch (to get a single digit)
 
 Options:
-	--all-profiles       Apply the theme to all profiles
-	--profiles-dir=PATH  Directory that contains profile directories.
-	                     Default value is platform-specific:
-	                     - $HOME/.mozilla/firefox                                on Linux
-	                     - $HOME/Library/Application Support/Firefox/Profiles    on MacOS
-	                     - %appdata%/Roaming/Mozilla/Firefox/Profiles            on Windows
+	--all-profiles           Apply the theme to all profiles
+	--profiles-dir=PATH      Directory that contains profile directories.
+	                         Default value is platform-specific:
+	                         - $HOME/.mozilla/firefox                                on Linux
+	                         - $HOME/Library/Application Support/Firefox/Profiles    on MacOS
+	                         - %appdata%/Roaming/Mozilla/Firefox/Profiles            on Windows
+	--skip-manifest-source   Don't ask to show the manifest source
 	`
 
 	VersionMajor = 0

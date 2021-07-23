@@ -33,9 +33,12 @@ func RunCommandUse(args docopt.Opts) error {
 
 	intro(manifest)
 	wantsSource := false
-	survey.AskOne(&survey.Confirm{
-		Message: "Show the manifest source?",
-	}, &wantsSource)
+	skipQuestion, _ := args.Bool("--skip-manifest-source")
+	if !skipQuestion {
+		survey.AskOne(&survey.Confirm{
+			Message: "Show the manifest source?",
+		}, &wantsSource)
+	}
 	if wantsSource {
 		showSource(manifest)
 	}
