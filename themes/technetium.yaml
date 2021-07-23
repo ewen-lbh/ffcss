@@ -8,3 +8,15 @@ user.js: user.js
 assets:
   - chrome/**
 copy from: chrome/
+
+# TODO: variant for https://github.com/edo0/Technetium#really-missing-tab-separators
+# Needs: #47
+
+# variants:
+#   Default: {}
+#   Tab separators:
+#     description: Restore tab separators
+#     modifications:
+#     - in: chrome/userChrome.css
+#       prepend: !fromfile https://pastebin.com/raw/yHggpULx
+#       before: !regex ^}$
