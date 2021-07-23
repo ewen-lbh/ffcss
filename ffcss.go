@@ -13,15 +13,22 @@ const (
 	Usage = `ffcss - Apply and configure FirefoxCSS themes
 
 Usage:
-	ffcss [--profiles-dir=DIRECTORY] [--all-profiles] use THEME_NAME [VARIANT]
-	ffcss cache clear
-	ffcss init
+	ffcss [options] use THEME_NAME [VARIANT]
+	ffcss [options] cache clear
+	ffcss [options] init
 	ffcss version [COMPONENT]
 
 Where:
-	KEY         a setting key (see firefox's about:config)
 	THEME_NAME  a theme name or URL (see README.md)
 	COMPONENT   is either major, minor or patch (to get a single digit)
+
+Options:
+	--all-profiles       Apply the theme to all profiles
+	--profiles-dir=PATH  Directory that contains profile directories.
+	                     Default value is platform-specific:
+	                     - $HOME/.mozilla/firefox                                on Linux
+	                     - $HOME/Library/Application Support/Firefox/Profiles    on MacOS
+	                     - %appdata%/Roaming/Mozilla/Firefox/Profiles            on Windows
 	`
 
 	VersionMajor = 0
