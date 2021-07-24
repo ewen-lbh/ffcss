@@ -15,6 +15,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - hooks to run custom shell commands before and after theme installations, via manifest entries `run.before` and `run.after`. Variants can override them.
 - "did you mean ...?" message when a theme with a similar name is found
 - command _get_ to download a theme without applying it
+- manifest entry `commit` to specify a commit SHA to use for the theme. Can be overriden by variants.
+- manifest entry `tag` to specify a git tag to use for the theme. Can be overriden by variants.
 
 ### Changed
 
