@@ -10,7 +10,7 @@ jobs:
         os:
           - ubuntu-latest
           - macos-latest
-          - windows-latest
+          # - windows-latest
     steps:
       - name: Install Go
         uses: actions/setup-go@v2
