@@ -1,0 +1,70 @@
+ffcss: 0
+
+name: flyingfox
+download: https://github.com/akshat46/FlyingFox
+
+user.js: user.js
+assets:
+  - chrome/**
+
+copy from: chrome/
+
+# components:
+#   Sidebar Static:
+#     description: Permanently expanded sidebar
+#     modifications:
+#       - in: config.css
+#         with: '@import "userChrome-static.css";'
+#         replace: '@import "userChrome-hover.css";'
+#   Sidebar Hover:
+#     description: Sidebar shown on mouse hover
+#     modifications:
+#       - in: config.css
+#         replace: '@import "userChrome-static.css";'
+#         with: '@import "userChrome-hover.css";'
+#   Extension Icons:
+#     description: >
+#       Supported extension icons are changed, and a mask(generated for custom color with webapp)
+#       is applied to unsupported ones to blend them better with rest of the theme.
+#     modifications:
+#       - in: config.css
+#         prepend: '@import "icons/extension-icons.css";'
+#   Right Window Controls:
+#     incompatible with:
+#       - component:horizontal-tabs
+#     description: Move window controls to the right
+#     modifications:
+#       - in: config.css
+#         prepend: |
+#           @import ''
+#   Horizontal tabs:
+#     description: Use a traditional horizontal tab line
+#     modifications:
+#       - in: config.css
+#         replace: '@import "hide-tabline.css";'
+#         with: ''
+#       - in: config.css
+#         replace: '@import "window-controls/wc-without-tabline.css";'
+#         with: ''
+#       - in: config.css
+#         replace: '@import "window-controls/wc-wt-windowspatch.css";'
+#         with: ''
+#
+# if:
+#   # os:windows and not component:horizontal-tabs and ask:Are you running Windows 10:
+#   windows:10 and not component:horizontal-tabs:
+#     modifications:
+#       - in: config.css
+#         prepend: '@import "window-controls/wc-wt-windowspatch.css";'
+
+message: |
+  New firefox themes _alpenglow_ and _default_ aren't supported.
+
+#  If you are on Windows 10 and did not use Horizontal Tabs,
+#  please add
+#
+#  ```css
+#  @import "window-controls/wc-wt-windowspatch.css";
+#  ```
+#
+#  to **config.css**
