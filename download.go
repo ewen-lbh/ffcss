@@ -91,13 +91,14 @@ func Download(URL string, typ string, themeManifest ...Manifest) (manifest Manif
 		if err != nil {
 			return manifest, fmt.Errorf("while : %w", err)
 		}
-		if theme, ok := themes[URL]; ok {
-			manifest, err = Download(theme.DownloadAt, "git", theme)
-			if err != nil {
-				return manifest, fmt.Errorf("from catalog: %w", err)
-			}
-		} else {
-			return manifest, fmt.Errorf("theme %q not found", URL)
+		theme, err := themes.Lookup(URL)
+		if err != nil {
+			return theme, err
+		}
+
+		manifest, err = Download(theme.DownloadAt, "git", theme)
+		if err != nil {
+			return manifest, fmt.Errorf("from catalog: %w", err)
 		}
 	default:
 		panic("unexpected URL type")

@@ -9,7 +9,9 @@ import (
 	"strings"
 
 	"github.com/charmbracelet/glamour"
+	"github.com/hbollon/go-edlib"
 	"github.com/hoisie/mustache"
+	"golang.org/x/text/unicode/norm"
 	"gopkg.in/yaml.v2"
 )
 
@@ -183,7 +185,36 @@ func (m Manifest) WithVariant(variant Variant) (newManifest Manifest, actionsNee
 }
 
 // ThemeStore represents a collection of themes
-type ThemeStore = map[string]Manifest
+type ThemeStore map[string]Manifest
+
+// Lookup looks up a theme by its name in the theme store.
+// It also returns an error starting with "did you mean:" when
+// a theme name is not found but themes with similar names exist.
+func (store ThemeStore) Lookup(query string) (Manifest, error) {
+	originalQuery := query
+	query = lookupPreprocess(query)
+	processedThemeNames := make([]string, 0, len(store))
+	for name, theme := range store {
+		if lookupPreprocess(name) == query {
+			return theme, nil
+		}
+		processedThemeNames = append(processedThemeNames, lookupPreprocess(name))
+	}
+	// Use fuzzy search for did-you-mean errors
+	suggestion, _ := edlib.FuzzySearchThreshold(query, processedThemeNames, 0.75, edlib.Levenshtein)
+
+	if suggestion != "" {
+		return Manifest{}, fmt.Errorf("theme %q not found. did you mean [blue][bold]%s[reset]?", originalQuery, suggestion)
+	}
+	return Manifest{}, fmt.Errorf("theme %q not found", originalQuery)
+}
+
+// lookupPreprocess applies transformations to s so that it can be compared
+// to search for something.
+// For example, it is used by (ThemeStore).Lookup
+func lookupPreprocess(s string) string {
+	return strings.ToLower(norm.NFC.String(strings.Trim(s, "-_ .")))
+}
 
 // LoadThemeCatalog loads a directory of theme manifests.
 // Keys are theme names (files' basenames with the .yaml removed).
