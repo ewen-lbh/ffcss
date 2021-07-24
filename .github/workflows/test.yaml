@@ -12,6 +12,21 @@ jobs:
           - macos-latest
           - windows-latest
     steps:
+      - name: Skip if commit type is skippable
+        uses: mstachniuk/ci-skip@v1
+        with:
+          commit-filter: >
+            📝 :memo:
+            ✏️ :pencil2:
+            📄 :page_facing_up:
+            💡 :bulb:
+            💬 :speech_baloon:
+            🔊 :loud_sound:
+            🔇 :mute:
+            👥 :busts_in_silhouette:
+            🙈 :see_no_evil:
+            🧪 :test_tube:
+          commit-filter-separator: ' '
       - name: Install Go
         uses: actions/setup-go@v2
         with:
