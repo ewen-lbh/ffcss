@@ -153,6 +153,10 @@ func lic(bulletChar string, indentLevel uint, item string, fmtArgs ...interface{
 	bullet := strings.Repeat(indent, int(indentLevel)) +
 		colorizer.Color("["+color+"]"+bulletChar)
 
+	if os.Getenv("DEBUG") != "" {
+		bullet = "[  LOG  ]"
+	}
+
 	fmt.Println(bullet + " " + colorizer.Color(strings.TrimSpace(fmt.Sprintf(item, fmtArgs...))))
 }
 
