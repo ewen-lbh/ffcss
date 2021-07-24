@@ -22,7 +22,8 @@ format:
 
 mocks-setup:
 # this is a code smell! ↓
-	make install > /dev/null
+	mkdir -p ~/.config/ffcss/themes ~/.local/bin
+	@cp -v themes/*.yaml ~/.config/ffcss/themes/
 	mkdir -p mocks/{zip-dropoff,cache-directory,homedir/.mozilla/firefox/667ekipp.default-release} testarea
 
 mocks-teardown:
