@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - command _reapply_ to reapply themes after firefox updates. The current themes for each profile are stored in a YAML file at `~/.config/ffcss/currently.yaml`. If ffcss tells you that a profile has no ffcss theme applied, try re-applying it manually with `ffcss use` so that this file gets created & filled.
 - hooks to run custom shell commands before and after theme installations, via manifest entries `run.before` and `run.after`. Variants can override them.
 - "did you mean ...?" message when a theme with a similar name is found
+- command _get_ to download a theme without applying it
 
 ### Changed
 

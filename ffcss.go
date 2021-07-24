@@ -14,6 +14,7 @@ const (
 
 Usage:
 	ffcss [options] use THEME_NAME [VARIANT]
+	ffcss [options] get THEME_NAME
 	ffcss [options] cache clear
 	ffcss [options] init
 	ffcss [options] reapply
@@ -76,6 +77,10 @@ func dispatchCommand(args docopt.Opts) error {
 	}
 	if val, _ := args.Bool("use"); val {
 		err := RunCommandUse(args)
+		return err
+	}
+	if val, _ := args.Bool("get"); val {
+		err := RunCommandGet(args)
 		return err
 	}
 	if val, _ := args.Bool("reapply"); val {
