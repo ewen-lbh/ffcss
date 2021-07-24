@@ -1,5 +1,5 @@
 on: [push, pull_request]
-name: Test
+name: test
 
 jobs:
   test:
@@ -10,7 +10,7 @@ jobs:
         os:
           - ubuntu-latest
           - macos-latest
-          # - windows-latest
+          - windows-latest
     steps:
       - name: Install Go
         uses: actions/setup-go@v2

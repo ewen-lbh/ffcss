@@ -46,3 +46,6 @@ ffcss
 dist/
 release_notes.md
 .github_token
+
+# Testing artifacts
+mocks/zip-dropoff/

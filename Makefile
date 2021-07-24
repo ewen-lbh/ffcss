@@ -6,7 +6,7 @@ build:
 
 tests:
 	make mocks-setup > /dev/null
-	-go test -race -coverprofile=coverage.txt -covermode=atomic -v
+	go test -race -coverprofile=coverage.txt -covermode=atomic -v
 	go get -u github.com/jandelgado/gcov2lcov
 	gcov2lcov -infile=coverage.txt -outfile=coverage/lcov.info
 	go mod tidy
@@ -25,7 +25,7 @@ mocks-setup:
 	mkdir -p ~/.config/ffcss/themes ~/.local/bin
 	@cp -v themes/*.yaml ~/.config/ffcss/themes/
 	mkdir -p mocks/{zip-dropoff,cache-directory,homedir/.mozilla/firefox/667ekipp.default-release} testarea
-	mkdir coverage
+	mkdir -p coverage
 
 mocks-teardown:
 	rm -rf mocks/{zip-dropoff,cache-directory,homedir} testarea
