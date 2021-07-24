@@ -18,7 +18,7 @@ jobs:
           go-version: ${{ matrix.go }}
       - name: Checkout code
         uses: actions/checkout@v2
-      - name: Tets
+      - name: Test
         run: make tests
       - name: Upload coverage
         uses: codecov/codecov-action@v2

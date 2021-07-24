@@ -13,6 +13,7 @@ tests:
 	make mocks-teardown > /dev/null
 
 install:
+	mkdir -p ~/.config/ffcss/themes ~/.local/bin
 	@cp -v themes/*.yaml ~/.config/ffcss/themes/
 	@cp -v ffcss ~/.local/bin/ffcss
 
