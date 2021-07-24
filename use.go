@@ -187,12 +187,13 @@ func RunCommandUse(args docopt.Opts, indentationLevel ...uint) error {
 			if err != nil {
 				return fmt.Errorf("while running pre-install script: %w", err)
 			}
-			fmt.Println(
+			fmt.Print(
 				"\n",
 				prefixEachLine(
 					strings.TrimSpace(output),
 					strings.Repeat(indent, int(baseIndent)+2),
 				),
+				"\n",
 				"\n",
 			)
 		}
@@ -232,12 +233,13 @@ func RunCommandUse(args docopt.Opts, indentationLevel ...uint) error {
 			if err != nil {
 				return fmt.Errorf("while running post-install script: %w", err)
 			}
-			fmt.Println(
+			fmt.Print(
 				"\n",
 				prefixEachLine(
 					strings.TrimSpace(output),
 					strings.Repeat(indent, int(baseIndent)+2),
 				),
+				"\n",
 				"\n",
 			)
 		}
