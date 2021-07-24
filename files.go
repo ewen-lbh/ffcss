@@ -236,7 +236,37 @@ func SwitchGitBranch(newBranch, clonedTo string) error {
 	process := exec.Command("git", "switch", newBranch)
 	process.Dir = clonedTo
 	output, err := process.CombinedOutput()
-	return fmt.Errorf("%w: %s", err, output)
+	if err != nil {
+		return fmt.Errorf("%w: %s", err, output)
+	}
+	return nil
+}
+
+func SwitchGitCommit(commitSHA, clonedTo string) error {
+	process := exec.Command("git", "checkout", commitSHA)
+	process.Dir = clonedTo
+	output, err := process.CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("%w: %s", err, output)
+	}
+	return nil
+}
+
+func SwitchGitTag(tagName, clonedTo string) error {
+	process := exec.Command("git", "fetch", "--all", "--tags")
+	process.Dir = clonedTo
+	output, err := process.CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("%w: %s", err, output)
+	}
+
+	process = exec.Command("git", "checkout", "tags/"+tagName)
+	process.Dir = clonedTo
+	output, err = process.CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("%w: %s", err, output)
+	}
+	return nil
 }
 
 type FirefoxProfile struct {

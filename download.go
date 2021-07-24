@@ -147,10 +147,26 @@ func DownloadRepository(URL string, tempCloneTo string, cloneTo string, themeMan
 			return manifest, fmt.Errorf("could not load manifest: %w", err)
 		}
 		if manifest.Branch != "" {
+			d("switching to branch %q", manifest.Branch)
 			err = SwitchGitBranch(manifest.Branch, tempCloneTo)
 			if err != nil {
 				return manifest, fmt.Errorf("while switching to branch %q: %w", manifest.Branch, err)
 			}
+		}
+	}
+
+	if manifest.Commit != "" {
+		d("switching to commit %q", manifest.Commit)
+		err = SwitchGitCommit(manifest.Commit, tempCloneTo)
+		if err != nil {
+			return manifest, fmt.Errorf("while checking out commit %q: %w", manifest.Commit, err)
+		}
+	}
+	if manifest.Tag != "" {
+		d("switching to tag %q", manifest.Tag)
+		err = SwitchGitTag(manifest.Tag, tempCloneTo)
+		if err != nil {
+			return manifest, fmt.Errorf("while checking out tag %q: %w", manifest.Tag, err)
 		}
 	}
 

@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"regexp"
 	"strings"
 
 	chromaQuick "github.com/alecthomas/chroma/quick"
@@ -52,6 +53,10 @@ func intro(theme Manifest, indentLevel uint) {
 		colorizer.Color("[dim]Installing ") +
 			colorizer.Color("[blue][bold]"+theme.Name()),
 	)
+
+	if regexp.MustCompile(`^v([0-9\.]+)$`).MatchString(theme.Tag) {
+		fmt.Printf(colorstring.Color(" [blue]" + theme.Tag))
+	}
 
 	if author != "" {
 		fmt.Printf(

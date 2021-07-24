@@ -25,6 +25,8 @@ type Variant struct {
 	// Properties that modify the "default variant"
 	Repository  string
 	Branch      string
+	Commit      string
+	Tag         string
 	Config      Config
 	UserChrome  FileTemplate `yaml:"userChrome"`
 	UserContent FileTemplate `yaml:"userContent"`
@@ -56,6 +58,8 @@ type Manifest struct {
 	// Override-able by variants
 	DownloadAt  string `yaml:"download"`
 	Branch      string
+	Commit      string
+	Tag         string
 	CopyFrom    string `yaml:"copy from"`
 	Config      Config
 	UserChrome  FileTemplate `yaml:"userChrome"`
@@ -144,6 +148,7 @@ func LoadManifest(manifestPath string) (manifest Manifest, err error) {
 // Some variants change the git branch, the entire repository or other settings that require external actions.
 // Those are returned in actionsNeeded as a struct of booleans with descriptive field names.
 func (m Manifest) WithVariant(variant Variant) (newManifest Manifest, actionsNeeded struct{ switchBranch, reDownload bool }) {
+	// TODO might clean this up with reflection, selecting fields that are both in Manifest & Variant
 	newManifest = m
 	newManifest.CurrentVariantName = variant.Name
 	if variant.UserChrome != "" {
@@ -168,6 +173,12 @@ func (m Manifest) WithVariant(variant Variant) (newManifest Manifest, actionsNee
 	if variant.Branch != "" {
 		actionsNeeded.switchBranch = true
 		newManifest.Branch = variant.Branch
+	}
+	if variant.Commit != "" {
+		newManifest.Commit = variant.Commit
+	}
+	if variant.Tag != "" {
+		newManifest.Tag = variant.Tag
 	}
 	if variant.Run.Before != "" {
 		newManifest.Run.Before = variant.Run.Before
