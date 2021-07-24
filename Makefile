@@ -25,6 +25,7 @@ mocks-setup:
 	mkdir -p ~/.config/ffcss/themes ~/.local/bin
 	@cp -v themes/*.yaml ~/.config/ffcss/themes/
 	mkdir -p mocks/{zip-dropoff,cache-directory,homedir/.mozilla/firefox/667ekipp.default-release} testarea
+	mkdir coverage
 
 mocks-teardown:
 	rm -rf mocks/{zip-dropoff,cache-directory,homedir} testarea
