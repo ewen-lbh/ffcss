@@ -14,6 +14,16 @@ It uses a YAML file to declare files, variants, helper addons and others. This f
 
 ## Installation
 
+### AUR
+
+Arch Linux users can install the package through the AUR:
+
+```
+yay -S ffcss # latest release
+# COMING SOON yay -S ffcss-git # latest commit
+# COMING SOON yay -S ffcss-bin # pre-compiled binary of latest release
+```
+
 ### Pre-compiled binary 
 
 #### Linux & MacOS
