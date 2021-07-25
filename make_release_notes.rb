@@ -41,7 +41,7 @@ until lines.length == 0 or lines.shift =~ /^## \[#{new_major}.#{new_minor}.#{new
 	# nothing
 end
 
-until lines.length == 0 or lines[0] =~ /^## \[\d+\.\d+\.\d+\) - \d{4}-\d{2}-\d{2}$/ do
+until lines.length == 0 or lines[0] =~ /^## \[\d+\.\d+\.\d+\] - \d{4}-\d{2}-\d{2}$/ do
 	release_notes << lines.shift
 end
 
