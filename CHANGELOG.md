@@ -17,10 +17,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - command _get_ to download a theme without applying it
 - manifest entry `commit` to specify a commit SHA to use for the theme. Can be overriden by variants.
 - manifest entry `tag` to specify a git tag to use for the theme. Can be overriden by variants.
+- manifest entry `description` that will be shown at the start of the installation
+- manifest entry `by` to set an author name to be shown at the start of the installation (for github repos, defaults to the owner in the URL)
+- shorthand flag `-a` for `--all-profiles`
+- flag `-p`/`--profiles` to specify profile paths to use (and therefore not prompt during installation)
 
 ### Changed
 
 - `ffcss use <theme name>` is now case-insensitive, punctuation-insensitive (`-`, `_` and `.`), whitespace-insensitive and unicode-insensitive (NFC normalization is applied before searching)
+- UI improvements: log what is happening with bullet points, don't show the full profile path when selecting
+
+### Fixed
+
+- inconsistent indentation in the `--help` screen
 
 ## [0.1.2] - 2021-07-10
 
