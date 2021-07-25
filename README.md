@@ -69,37 +69,52 @@ make install
 ffcss - Apply and configure FirefoxCSS themes
 
 Usage:
-    ffcss [--profiles-dir=DIRECTORY] [--all-profiles] use THEME_NAME [VARIANT]
-	ffcss cache clear
-    ffcss init 
+	ffcss [options] use THEME_NAME [VARIANT]
+	ffcss [options] get THEME_NAME
+	ffcss [options] cache clear
+	ffcss [options] init
+	ffcss [options] reapply
+	ffcss version [COMPONENT]
 
 Where:
-    KEY         a setting key (see firefox's about:config)
-    THEME_NAME  a theme name or URL (see README.md)
+	THEME_NAME  a theme name or URL (see README.md)
+	COMPONENT   is either major, minor or patch (to get a single digit)
+
+Options:
+	-a --all-profiles           Apply the theme to all profiles
+	-p --profiles=PATHS      Select which profiles to apply the theme to.
+	                         Can be absolute or relative to --profiles-dir.
+							 Comma-separated.
+	--profiles-dir=PATH      Directory that contains profile directories.
+	                         Default value is platform-specific:
+	                         - $HOME/.mozilla/firefox                                on Linux
+	                         - $HOME/Library/Application Support/Firefox/Profiles    on MacOS
+	                         - %appdata%/Roaming/Mozilla/Firefox/Profiles            on Windows
+	--skip-manifest-source   Don't ask to show the manifest source
 ```
 
 #### The `use` command
 
-Synopsis: `ffcss use THEME_NAME`
+Synopsis: `ffcss use THEME_NAME [VARIANT_NAME]`
 
 ffcss will first search for a folder at `~/.cache/ffcss/THEME_NAME/VARIANT_NAME`. If not found, it will try to download the theme:
 
 
 If `THEME_NAME` is of the form `OWNER/REPO`:
 
-- It'll try to download a folder named `chrome` from the repository `github.com/OWNER/REPO`
-
-If `THEME_NAME` is of the form `DOMAIN.TLD/PATH`:
-
-- It'll download the zip file / clone the git repository at `https://DOMAIN.TLD/PATH`
+- It'll use the repository `github.com/OWNER/REPO`
   
 If `THEME_NAME` is of the form `NAME`:
 
 - It'll search for `NAME` in the manifests included with ffcss (see [Built-in themes](#built-in-themes))
 
+The `NAME` here is insensitive to case, whitespace, punctuation (`.`, ` `, `_` and `-`) and unicode ([NFD normalization](http://www.macchiato.com/unicode/nfc-faq) is applied before searching). 
+
+That means that typing `ffcss use FrozenFox` will work even if the theme's manifest is stored in `frozenfox.yaml`, and not `FrozenFox.yaml`.
+
 And if `THEME_NAME` is an URL:
 
-- It'll download the zip file / clone the git repository at `THEME_NAME` 
+- It'll download the zip file / clone the git repository at `THEME_NAME` (the `https://` part can be omitted)
 
 _Technical note: when no variant is used, `VARIANT_NAME` is "\_"_
 
@@ -109,11 +124,21 @@ Synopsis: `ffcss config KEY [VALUE]`
 
 Much simpler than the `use` command, this one just adds convenience to set `about:config` keys. If `VALUE` is not provided, ffcss will output the specified `KEY`'s current value. -->
 
-<!-- ### The `reapply` command
+### The `reapply` command
 
 Synopsis: `ffcss reapply`
 
-This is the same as doing `ffcss use` with the current theme, useful when firefox updates. -->
+This is the same as doing `ffcss use` with the current theme, useful when firefox updates.
+
+The current theme for each profile is stored in ffcss' configuration folder, in `currently.yaml`
+
+### The `get` command
+
+This is the same as running `use`, but does not actually apply the theme, it just downloads it to the cache.
+
+### The `cache clear` command
+
+Clears the ffcss cache, including all downloaded themes.
 
 ### The `init` command
 
@@ -138,7 +163,7 @@ _Note: example use cases from real FirefoxCSS themes are given for illustrative 
 You can start by using `ffcss init` in your theme's folder, some values will be filled automatically.
 
 
-### Download & Branch
+### Download
 
 You can specify in your manifest file from where to download the theme.
 This can be useful if
@@ -147,7 +172,14 @@ This can be useful if
 - you want to [add your manifest to the registry](#add-to-the-registry), in which case the repository's URL is needed for ffcss to figure out where to download your theme from
 - you want users to download a zip file instead of cloning your repo
 
-If you use a git repository URL (ffcss will know if any given URL is `git-clone`-able), you can also use `branch` to change the branch used.
+### Branch, Tag & Commit
+
+If you use a git repository URL (ffcss will know if any given URL is `git-clone`-able), you can also use these three to:
+
+- change the branch used (`branch: <the branch's name>`)
+- change the commit used (`commit: <the commit's SHA>`)
+- change the tag used (`tag: <the git tag's name>`)
+
 Here again, this is especially useful for variants (for example, Lepton's photon-style variant is on a separate branch `photon-style`)
 
 ### Config
@@ -227,24 +259,16 @@ Properties that can be overriden are:
 
 - repository 
 - branch
+- tag
+- commit
 - config
 - userChrome
 - userContent
 - user.js
 - assets
 - addons
-
-### Addons
-
-You can specify URL(s) to open after the installation. I called it `addons` because I plan on installing addons automatically in the future.
-
-The manifest entry is `addons`, and it's a list of URLs:
-
-```yaml
-addons:
-    - URL 1
-    - URL 2
-```
+- run
+- description
 
 
 For example, SimplerentFox proposes an addon to enhance the experience, and declares it as such:
@@ -257,6 +281,18 @@ addons:
 
 ...
 ```
+
+### Running custom commands
+
+You can run any shell command after and/or before the installation, with the manifest entries `run`.`before` and `run`.`after`:
+
+```yaml
+run:
+  before: echo hello from {{ profile_path }}!
+  after: wget https://example.com/my-custom-file?version={{ firefox_version }}
+```
+
+In both values, `{{ profile_path }}` and `{{ firefox_version }}` will respectively get replaced with the path of the profile to which the theme is being installed, and that profile's firefox version.
 
 ### Messages
 
@@ -277,12 +313,66 @@ message: |
   - *Activate Custom Stylesheet* and paste the contents of tabCenterReborn.css into the text area, and click “Save CSS”.
 ```
 
+### Description & By
+
+Those two fields can be set to be displayed before the installation begins. Something like
+
+
+```
+Installing <name> by <by>
+
+| <description>
+```
+
+Will then be shown to the user when starting the installation
+
 ### Declaring ffcss' version
 
 Putting a `ffcss: 0` in your manifest tells the user that this theme was made with ffcss version 0.X.X. 
 If their version differs, they'll get a warning: major version changes (i.e. when the leftmost number changes) may include _breaking changes_ regarding the manifest file, which means that your theme might not work.
 
 I'll try to not do that though, it sucks to break things. (I may support _different versions of manifest files_, at least)
+
+### Declaring supported Firefox versions
+
+The manifest entry `firefox` can be used to specify which versions of Firefox are compatible with your theme.
+
+Users that have a non-compatible Firefox version will be shown a warning.
+
+The following patterns can be used:
+
+- `<version>` - compatible with that version only.
+
+    For example:
+
+    ```yaml
+    firefox: 90
+    ```
+- `<A>-<B>` - compatible with every version from _A_ to _B_ (including both _A_ and _B_)
+
+    For example:
+
+    ```yaml
+    firefox: 86-90
+    ```
+
+- `<A>+` - compatible with version _A_ or more recent 
+
+    For example:
+
+    ```yaml
+    firefox: 90+
+    ```
+
+- `up to <A>` - compatible with every version, up to _A_ (including _A_)
+
+    For example:
+
+    ```yaml
+    firefox: up to 88
+    ```
+
+Note that you can also be more precise and specify the minor part (the second digit after the dot), for example `firefox: 90.5+`.
 
 ### Examples
 
