@@ -1,0 +1,39 @@
+menupopup
+{
+	appearance: none !important;
+	background-color: var(--arrowpanel-background) !important;
+	color: var(--arrowpanel-color) !important;
+	-moz-context-properties: fill, fill-opacity !important;
+	fill: currentColor !important;
+}
+
+menuitem,
+menu > menu,
+menupopup > menu
+{
+	appearance: none !important;
+}
+
+menuitem[disabled],
+menu[disabled]
+{
+	pointer-events: none !important;
+}
+
+.menu-right
+{
+	appearance: none !important;
+	list-style-image: url(menu-right-1x.svg) !important;
+}
+
+menuitem[type=radio][checked=true]
+{
+	list-style-image: url(checkmark-18dp.svg) !important;
+}
+
+menuitem[type=radio] .menu-iconic-icon
+{
+	width: 16px !important;
+	height: 16px !important;
+	margin-inline-start: 0 !important;
+}
