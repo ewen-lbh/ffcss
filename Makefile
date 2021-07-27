@@ -14,7 +14,7 @@ tests:
 # defer tearing down mocks (so that it runs even if the tests fail)
 	trap "$(MAKE) mocks-teardown" EXIT
 # run tests, with $HOME overriden to a mocked directory, and gopath re-set, otherwise the compiler freaks out.
-	GOPATH=$$(go env GOPATH) HOME=testarea/home go test -race -coverprofile=coverage.txt -covermode=atomic -v
+	GOPATH=$$(go env GOPATH) HOME=testarea/home GIT_TERMINAL_PROMPT=0 go test -race -coverprofile=coverage.txt -covermode=atomic -v
 # compute code coverage
 	$(MAKE) coverage
 
