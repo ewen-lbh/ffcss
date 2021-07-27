@@ -36,7 +36,7 @@ func TestResolveURL(t *testing.T) {
 }
 
 func TestDownload(t *testing.T) {
-	_, err := Download("mocks/nomanifest", "git")
+	_, err := Download("testdata/nomanifest", "git")
 	assert.Contains(t, err.Error(), "no manifest found")
 
 	_, err = Download("http://localhost:8080/notfound", "website")

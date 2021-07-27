@@ -41,21 +41,21 @@ mocks-setup:
 # configure git identity (for whatever reason it needs it now)
 	git config --global --get user.name || git config --global user.name "Ewen Le Bihan"
 	git config --global --get user.email || git config --global user.email hey@ewen.works
-# init git repo for mocks/nomanifest
-	cd mocks/nomanifest; git init --quiet; git add .; git commit --quiet -m "a"; cd ../..
+# init git repo for testdata/nomanifest
+	cd testdata/nomanifest; git init --quiet; git add .; git commit --quiet -m "a"; cd ../..
 # local webserver to mock http requests, save its PID to a file so that we can kill it during teardown
-	python -m http.server 8080 --bind localhost --directory mocks/ >/dev/null 2>/dev/null & echo $$! > .mockswebserverpid
+	python -m http.server 8080 --bind localhost --directory testdata/ >/dev/null 2>/dev/null & echo $$! > .mockswebserverpid
 # create directories that are cleaned up after use
 	mkdir -p testarea/{zip-dropoff,cache,home/{.mozilla/firefox/667ekipp.default-release,.{config,cache}/ffcss,.config/ffcss/themes}}
 # copy themes into mock config directory
 	cp themes/*.yaml testarea/home/.config/ffcss/themes/
-# copy static mocks from mocks/ to testarea/
-	cp -R mocks/home/ testarea/
+# copy static mocks from testdata/ to testarea/
+	cp -R testdata/home/ testarea/
 # create coverage directory
 	mkdir -p coverage
 
 mocks-teardown:
-	rm -rf mocks/nomanifest/.git
+	rm -rf testdata/nomanifest/.git
 # remove testing artifacts
 	rm -rf testarea
 # kill mocks webserver
