@@ -1,4 +1,5 @@
-SHELL:=/bin/bash
+export SHELL:=/bin/bash
+export SHELLOPTS:=$(if $(SHELLOPTS),$(SHELLOPTS):)pipefail:errexit
 
 .ONESHELL:
 .PHONY: coverage
