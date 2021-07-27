@@ -39,7 +39,7 @@ format:
 
 mocks-setup:
 # init git repo for mocks/nomanifest
-	cd mocks/nomanifest; git init; git add .; git commit -m "a"; cd ../..
+	cd mocks/nomanifest; git init --quiet; git add .; git commit --quiet -m "a"; cd ../..
 # local webserver to mock http requests, save its PID to a file so that we can kill it during teardown
 	python -m http.server 8080 --bind localhost --directory mocks/ >/dev/null 2>/dev/null & echo $$! > .mockswebserverpid
 # create directories that are cleaned up after use
