@@ -19,8 +19,8 @@ const TempDownloadsDirName = ".download"
 // - a URL to download
 // - a git repo URL to clone
 func ResolveURL(themeName string) (URL string, typ string, err error) {
-	protocolLessURL := regexp.MustCompile(`^\w+\.\w+/.*$`)
-	userSlashRepo := regexp.MustCompile(`^\w+/\w+$`)
+	protocolLessURL := regexp.MustCompile(`^[\w_-]+\.[\w_-]+/.*$`)
+	userSlashRepo := regexp.MustCompile(`^[\w_-]+/[\w_-]+$`)
 	var completeURL string
 
 	// Try OWNER/REPO

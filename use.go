@@ -52,77 +52,46 @@ func RunCommandUse(args docopt.Opts, indentationLevel ...uint) error {
 	operatingSystem := GOOStoOS(runtime.GOOS)
 	// Get all profile directories
 	selectedProfilesString, _ := args.String("--profiles")
-	var selectedProfilePaths []string
-	if selectedProfilesString == "" {
+	var selectedProfiles []FirefoxProfile
+	if selectedProfilesString != "" {
+		for _, profilePath := range strings.Split(selectedProfilesString, ",") {
+			selectedProfiles = append(selectedProfiles, FirefoxProfileFromPath(profilePath))
+		}
+	} else {
 		li(baseIndent+0, "Getting profiles")
 		profilesDir, _ := args.String("--profiles-dir")
-		var profilePaths []string
-		if profilesDir != "" {
-			profilePaths, err = ProfilePaths(operatingSystem, profilesDir)
-		} else {
-			profilePaths, err = ProfilePaths(operatingSystem)
-		}
+		profiles, err := Profiles(profilesDir)
 		if err != nil {
 			return fmt.Errorf("couldn't get profile directories: %w", err)
 		}
-		if manifest.FirefoxVersion != "" {
-			constraint, err := NewFirefoxVersionConstraint(manifest.FirefoxVersion)
-			if err != nil {
-				return fmt.Errorf("invalid firefox version constraint %q: %w", manifest.FirefoxVersion, err)
-			}
-			incompatibleProfileDirs := make([]struct {
-				profile FirefoxProfile
-				version FirefoxVersion
-			}, 0)
-			for _, profilePath := range profilePaths {
-				profile := FirefoxProfileFromPath(profilePath)
-				profileVersion, err := profile.FirefoxVersion()
-				if err != nil {
-					warn("Couldn't get firefox version for profile %s", profilePath)
-				}
-				fulfillsConstraint := constraint.FulfilledBy(profileVersion)
-				if !fulfillsConstraint {
-					incompatibleProfileDirs = append(incompatibleProfileDirs, struct {
-						profile FirefoxProfile
-						version FirefoxVersion
-					}{profile, profileVersion})
-				}
-			}
-			if len(incompatibleProfileDirs) != 0 {
-				li(baseIndent+1, "[yellow]This theme ensures compatibility with firefox [bold]%s[reset][yellow]. The following themes could be incompatible:", constraint.sentence)
-				for _, profile := range incompatibleProfileDirs {
-					li(baseIndent+2, "%s [dim]([reset]version [blue][bold]%s[reset][dim])", profile.profile, profile.version)
-				}
-			}
-		}
-
 		// Choose profiles
 		// TODO smart default (based on {{profileDirectory}}/times.json:firstUse)
 		selectAllProfilePaths, _ := args.Bool("--all-profiles")
 		if selectAllProfilePaths {
 			li(baseIndent+0, "Selecting all profiles")
-			selectedProfilePaths = profilePaths
+			selectedProfiles = profiles
 		} else {
-			// XXX the whole display thing should be put in survey.MultiSelect.Renderer, look into that.
-			selectedProfileDirsDisplay := make([]string, 0)
-			li(baseIndent+0, "Please select profiles to apply the theme on")
-			profileDirsDisplay := apply(func(p string) string { return FirefoxProfileFromPath(p).String() }, profilePaths)
-			survey.AskOne(&survey.MultiSelect{
-				Message: "Select profiles",
-				Options: profileDirsDisplay,
-				VimMode: VimModeEnabled(),
-			}, &selectedProfileDirsDisplay)
-			for _, chosenProfileDisplay := range selectedProfileDirsDisplay {
-				selectedProfilePaths = append(selectedProfilePaths, FirefoxProfileFromDisplayString(chosenProfileDisplay, profilePaths).Path)
-			}
-			// User Ctrl-C'd
-			if len(selectedProfilePaths) == 0 {
-				return nil
-			}
+			selectedProfiles = AskProfiles(profiles, baseIndent)
 		}
-	} else {
-		selectedProfilePaths = strings.Split(selectedProfilesString, ",")
 	}
+
+	if len(selectedProfiles) == 0 {
+		return nil
+	}
+
+
+	incompatibleProfiles, err := manifest.IncompatibleProfiles(selectedProfiles)
+	if err != nil {
+		return  fmt.Errorf("while checking for incompatible profiles: %w",  err)
+	}
+
+	if len(incompatibleProfiles) != 0 {
+		li(baseIndent+1, "[yellow]This theme ensures compatibility with firefox [bold]%s[reset][yellow]. The following themes could be incompatible:", manifest.FirefoxVersionConstraint.sentence)
+		for _, profile := range incompatibleProfiles {
+			li(baseIndent+2, "%s [dim]([reset]version [blue][bold]%s[reset][dim])", profile.profile, profile.version)
+		}
+	}
+
 	// Choose variant
 	variantName, _ := args.String("VARIANT")
 	if len(manifest.AvailableVariants()) > 0 && variantName == "" {
@@ -164,17 +133,16 @@ func RunCommandUse(args docopt.Opts, indentationLevel ...uint) error {
 	}
 
 	// For each profile directory...
-	singleProfile := len(selectedProfilePaths) == 1
+	singleProfile := len(selectedProfiles) == 1
 	if singleProfile {
 		baseIndent--
 	}
-	for _, profileDir := range selectedProfilePaths {
-		profile := FirefoxProfileFromPath(profileDir)
+	for _, profile := range selectedProfiles {
 		if !singleProfile {
-			li(baseIndent+0, "With profile "+filepath.Base(profileDir))
+			li(baseIndent+0, "With profile "+filepath.Base(profile.Path))
 		}
 		li(baseIndent+1, "Backing up the chrome/ folder")
-		err = RenameIfExists(filepath.Join(profileDir, "chrome"), filepath.Join(profileDir, "chrome.bak"))
+		err = RenameIfExists(filepath.Join(profile.Path, "chrome"), filepath.Join(profile.Path, "chrome.bak"))
 		if err != nil {
 			return fmt.Errorf("while backing up chrome directory: %w", err)
 		}
@@ -198,29 +166,29 @@ func RunCommandUse(args docopt.Opts, indentationLevel ...uint) error {
 			)
 		}
 
-		err := os.Mkdir(filepath.Join(profileDir, "chrome"), 0700)
+		err := os.Mkdir(filepath.Join(profile.Path, "chrome"), 0700)
 		if err != nil {
 			return err
 		}
 
 		// Install stuff
 		li(baseIndent+1, "Installing the theme")
-		err = manifest.InstallUserChrome(operatingSystem, variant, profileDir)
+		err = manifest.InstallUserChrome(operatingSystem, variant, profile.Path)
 		if err != nil {
 			return fmt.Errorf("couldn't install userChrome.css: %w", err)
 		}
 
-		err = manifest.InstallUserContent(operatingSystem, variant, profileDir)
+		err = manifest.InstallUserContent(operatingSystem, variant, profile.Path)
 		if err != nil {
 			return fmt.Errorf("couldn't install userContent.css: %w", err)
 		}
 
-		err = manifest.InstallUserJS(operatingSystem, variant, profileDir)
+		err = manifest.InstallUserJS(operatingSystem, variant, profile.Path)
 		if err != nil {
 			return fmt.Errorf("couldn't install user.js: %w", err)
 		}
 
-		err = manifest.InstallAssets(operatingSystem, variant, profileDir)
+		err = manifest.InstallAssets(operatingSystem, variant, profile.Path)
 		if err != nil {
 			return fmt.Errorf("couldn't install assets: %w", err)
 		}
@@ -267,19 +235,19 @@ func RunCommandUse(args docopt.Opts, indentationLevel ...uint) error {
 		}, &acceptOpenExtensionPages)
 
 		if acceptOpenExtensionPages {
-			for _, profile := range selectedProfilePaths {
-				li(baseIndent+0, "With profile "+filepath.Base(profile))
+			for _, profile := range selectedProfiles {
+				li(baseIndent+0, "With profile "+filepath.Base(profile.Path))
 				for _, url := range manifest.Addons {
 					li(baseIndent+1, "Opening [blue][bold]%s", url)
 					li(baseIndent+1, "[yellow]Waiting for you to close Firefox")
 					var command *exec.Cmd
 					switch operatingSystem {
 					case "linux":
-						command = exec.Command("firefox", "--new-tab", url, "--profile", profile)
+						command = exec.Command("firefox", "--new-tab", url, "--profile", profile.Path)
 					case "macos":
-						command = exec.Command("open", "-a", "firefox", url, "--args", "--profile", profile)
+						command = exec.Command("open", "-a", "firefox", url, "--args", "--profile", profile.Path)
 					case "windows":
-						command = exec.Command("start", "firefox", "-profile", profile, url)
+						command = exec.Command("start", "firefox", "-profile", profile.Path, url)
 					default:
 						warn("unrecognized OS %s, cannot open firefox automatically. Open %s in firefox using profile %s", operatingSystem, url, profile)
 					}

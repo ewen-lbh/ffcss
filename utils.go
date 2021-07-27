@@ -1,13 +1,10 @@
 package main
 
 import (
-	"fmt"
 	"net/url"
 	"os"
 	"os/exec"
-	"os/user"
 	"path/filepath"
-	"regexp"
 	"strings"
 	"testing"
 
@@ -58,70 +55,6 @@ func ConfigDir(pathSegments ...string) string {
 // GetManifestPath returns the path of a theme's manifest file
 func GetManifestPath(themeRoot string) string {
 	return filepath.Join(themeRoot, "ffcss.yaml")
-}
-
-// ProfilePaths returns an array of profile directories from the profile folder.
-// 1 arguments: the profiles folder is assumed to be the current OS's default.
-// 2 argument: use the given profiles folder
-// more arguments: panic.
-func ProfilePaths(operatingSystem string, optionalProfilesDir ...string) ([]string, error) {
-	var profilesFolder string
-	if len(optionalProfilesDir) == 0 {
-		// XXX: Weird golang thing, if I assign to profilesFolder directly, it tells me the variable is unused
-		_profilesFolder, err := DefaultProfilesDir(operatingSystem)
-		profilesFolder = _profilesFolder
-		if err != nil {
-			return []string{}, fmt.Errorf("couldn't get the profiles folder: %w. Try to use --profiles-dir", err)
-		}
-	} else if len(optionalProfilesDir) == 1 {
-		profilesFolder = optionalProfilesDir[0]
-	} else {
-		panic(fmt.Sprintf("received %d arguments, expected 1 or 2", len(optionalProfilesDir)+1))
-	}
-	directories, err := os.ReadDir(profilesFolder)
-	releasesPaths := make([]string, 0)
-	patternReleaseID := regexp.MustCompile(`[a-z0-9]{8}\.\w+`)
-	if err != nil {
-		return []string{}, fmt.Errorf("couldn't read %s: %w", profilesFolder, err)
-	}
-	for _, releasePath := range directories {
-		if patternReleaseID.MatchString(releasePath.Name()) {
-			stat, err := os.Stat(filepath.Join(profilesFolder, releasePath.Name()))
-			if err != nil {
-				continue
-			}
-			if stat.IsDir() {
-				releasesPaths = append(releasesPaths, filepath.Join(profilesFolder, releasePath.Name()))
-			}
-		}
-	}
-	return releasesPaths, nil
-}
-
-func DefaultProfilesDir(operatingSystem string) (string, error) {
-	switch operatingSystem {
-	case "linux":
-		homedir, err := os.UserHomeDir()
-		if err != nil {
-			return "", err
-		}
-		return filepath.Join(homedir, ".mozilla", "firefox"), nil
-	case "macos":
-		user, err := user.Current()
-		if err != nil {
-			return "", fmt.Errorf("couldn't get the current user: %w", err)
-		}
-
-		return filepath.Join("/Users", user.Username, "Library", "Application Support", "Firefox", "Profiles"), nil
-	case "windows":
-		homedir, err := os.UserHomeDir()
-		if err != nil {
-			return "", err
-		}
-
-		return filepath.Join(homedir, "AppData", "Roaming", "Mozilla", "Firefox", "Profiles"), nil
-	}
-	return "", fmt.Errorf("unknown operating system %s", operatingSystem)
 }
 
 func cwd() string {
@@ -188,4 +121,15 @@ func prefixEachLine(s string, with string) string {
 		prefixedLines = append(prefixedLines, with+line)
 	}
 	return strings.Join(prefixedLines, "\n")
+}
+
+func GOOStoOS(GOOS string) string {
+	switch GOOS {
+	case "darwin":
+		return "macos"
+	case "plan9":
+		return "linux"
+	default:
+		return GOOS
+	}
 }

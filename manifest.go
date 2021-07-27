@@ -47,13 +47,14 @@ type Manifest struct {
 	DownloadedTo       string `yaml:"-"` // Stores the path to the directory where the theme is cached. Set by .Download().
 
 	// Top-level (non-variant-modifiable)
-	ExplicitName   string `yaml:"name"`
-	Description    string
-	Author         string `yaml:"by"`
-	FfcssVersion   int    `yaml:"ffcss"`
-	FirefoxVersion string `yaml:"firefox"`
-	Variants       map[string]Variant
-	OSNames        map[string]string `yaml:"os"`
+	ExplicitName             string `yaml:"name"`
+	Description              string
+	Author                   string `yaml:"by"`
+	FfcssVersion             int    `yaml:"ffcss"`
+	FirefoxVersion           string `yaml:"firefox"`
+	FirefoxVersionConstraint FirefoxVersionConstraint
+	Variants                 map[string]Variant
+	OSNames                  map[string]string `yaml:"os"`
 
 	// Override-able by variants
 	DownloadAt  string `yaml:"download"`
@@ -138,6 +139,14 @@ func LoadManifest(manifestPath string) (manifest Manifest, err error) {
 		return
 	}
 	manifest.DownloadedTo = CacheDir(manifest.Name(), manifest.CurrentVariantName)
+	if manifest.FirefoxVersion != "" {
+		manifest.FirefoxVersionConstraint, err = NewFirefoxVersionConstraint(manifest.FirefoxVersion)
+		if err != nil {
+			err = fmt.Errorf("while parsing version constraint %q: %w", manifest.FirefoxVersion, err)
+			return
+		}
+
+	}
 	return
 }
 
@@ -311,4 +320,30 @@ func (m Manifest) RunPreInstallHook(profile FirefoxProfile) (output string, err 
 // RunPostInstallHook does the same as RunPreInstallHook but for the manifest's run.after entry.
 func (m Manifest) RunPostInstallHook(profile FirefoxProfile) (output string, err error) {
 	return m.runHook(m.Run.After, profile)
+}
+
+type firefoxProfileWithVersion struct {
+	profile FirefoxProfile
+	version FirefoxVersion
+}
+
+func (m Manifest) IncompatibleProfiles(profiles []FirefoxProfile) ([]firefoxProfileWithVersion, error) {
+	if m.FirefoxVersion != "" {
+		incompatibleProfileDirs := make([]firefoxProfileWithVersion, 0)
+		for _, profile := range profiles {
+			profileVersion, err := profile.FirefoxVersion()
+			if err != nil {
+				warn("Couldn't get firefox version for profile %s", profile)
+			}
+			fulfillsConstraint := m.FirefoxVersionConstraint.FulfilledBy(profileVersion)
+			if !fulfillsConstraint {
+				incompatibleProfileDirs = append(incompatibleProfileDirs, struct {
+					profile FirefoxProfile
+					version FirefoxVersion
+				}{profile, profileVersion})
+			}
+		}
+		return incompatibleProfileDirs, nil
+	}
+	return []firefoxProfileWithVersion{}, nil
 }

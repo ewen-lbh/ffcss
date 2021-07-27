@@ -6,6 +6,7 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/AlecAivazis/survey/v2"
 	chromaQuick "github.com/alecthomas/chroma/quick"
 	"github.com/charmbracelet/glamour"
 	"github.com/mitchellh/colorstring"
@@ -162,4 +163,36 @@ func lic(bulletChar string, indentLevel uint, item string, fmtArgs ...interface{
 
 func (ffp FirefoxProfile) String() string {
 	return colorizer.Color(fmt.Sprintf("[bold]%s [reset][dim](%s)", ffp.Name, ffp.ID))
+}
+
+func AskProfiles(profiles []FirefoxProfile, baseIndentation ...uint) []FirefoxProfile {
+	var baseIndent uint
+	if len(baseIndentation) == 0 {
+		baseIndent = 0
+	}
+	baseIndent = baseIndentation[0]
+
+	var selectedProfiles []FirefoxProfile
+
+	// XXX the whole display thing should be put in survey.MultiSelect.Renderer, look into that.
+	selectedProfileDirsDisplay := make([]string, 0)
+
+	li(baseIndent+0, "Please select profiles to apply the theme on")
+
+	profileDirsDisplay := make([]string, 0)
+	for _, profile := range profiles {
+		profileDirsDisplay = append(profileDirsDisplay, profile.String())
+	}
+
+	survey.AskOne(&survey.MultiSelect{
+		Message: "Select profiles",
+		Options: profileDirsDisplay,
+		VimMode: VimModeEnabled(),
+	}, &selectedProfileDirsDisplay)
+
+	for _, chosenProfileDisplay := range selectedProfileDirsDisplay {
+		selectedProfiles = append(selectedProfiles, FirefoxProfileFromDisplayString(chosenProfileDisplay, profiles))
+	}
+
+	return selectedProfiles
 }

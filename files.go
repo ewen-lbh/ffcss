@@ -13,17 +13,6 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-func GOOStoOS(GOOS string) string {
-	switch GOOS {
-	case "darwin":
-		return "macos"
-	case "plan9":
-		return "linux"
-	default:
-		return GOOS
-	}
-}
-
 func CurrentThemeByProfile() (map[string]string, error) {
 	currentThemesRaw, err := os.ReadFile(ConfigDir("currently.yaml"))
 	if os.IsNotExist(err) {
@@ -42,7 +31,7 @@ func CurrentThemeByProfile() (map[string]string, error) {
 
 // InstallAssets installs the assets in the specified profile directory
 func (m Manifest) InstallAssets(operatingSystem string, variant Variant, profileDir string) (err error) {
-	files, err := m.AssetsPaths(operatingSystem, variant, profileDir)
+	files, err := m.AssetsPaths(operatingSystem, variant)
 	if err != nil {
 		return fmt.Errorf("while gathering assets: %w", err)
 	}
@@ -84,11 +73,13 @@ func (m Manifest) InstallAssets(operatingSystem string, variant Variant, profile
 	return nil
 }
 
-// AssetsPaths returns the individual file paths of all assets
-func (m Manifest) AssetsPaths(os string, variant Variant, profileDirectory string) ([]string, error) {
+// AssetsPaths returns the individual file paths of all assets.
+// profileDirectory is
+func (m Manifest) AssetsPaths(os string, variant Variant) ([]string, error) {
 	resolvedFiles := make([]string, 0)
 	for _, template := range m.Assets {
 		glob := RenderFileTemplate(template, os, variant, m.OSNames)
+		d("looking for assets: globbing %q", filepath.Join(m.DownloadedTo, glob))
 		glob = filepath.Clean(filepath.Join(m.DownloadedTo, glob))
 		files, err := doublestar.Glob(glob)
 		if err != nil {
@@ -99,10 +90,9 @@ func (m Manifest) AssetsPaths(os string, variant Variant, profileDirectory strin
 			// If it's _really_ a glob pattern
 			if strings.Contains(glob, "*") {
 				return resolvedFiles, fmt.Errorf("glob pattern %s matches no files", glob)
-				// If it's just a regular file (that was treated as a glob pattern)
-			} else {
-				return resolvedFiles, fmt.Errorf("file %s not found", glob)
 			}
+			// If it's just a regular file (that was treated as a glob pattern)
+			return resolvedFiles, fmt.Errorf("file %s not found", glob)
 		}
 		// For each match of the glob pattern
 		resolvedFiles = append(resolvedFiles, files...)
@@ -267,54 +257,4 @@ func SwitchGitTag(tagName, clonedTo string) error {
 		return fmt.Errorf("%w: %s", err, output)
 	}
 	return nil
-}
-
-type FirefoxProfile struct {
-	ID   string
-	Name string
-	Path string
-}
-
-func (ffp FirefoxProfile) RegisterCurrentTheme(themeName string) error {
-	currentThemes, err := CurrentThemeByProfile()
-	if err != nil {
-		return err
-	}
-	currentThemes[ffp.FullName()] = themeName
-	currentThemesNewContents, err := yaml.Marshal(currentThemes)
-	if err != nil {
-		return fmt.Errorf("while marshaling into YAML: %w", err)
-	}
-
-	err = os.WriteFile(ConfigDir("currently.yaml"), currentThemesNewContents, 0777)
-	if err != nil {
-		return fmt.Errorf("while writing new contents: %w", err)
-	}
-
-	return nil
-}
-
-func (ffp FirefoxProfile) FullName() string {
-	return filepath.Base(ffp.Path)
-}
-
-func FirefoxProfileFromPath(path string) FirefoxProfile {
-	base := filepath.Base(path)
-	parts := strings.SplitN(base, ".", 2)
-	return FirefoxProfile{
-		Path: path,
-		ID:   parts[0],
-		Name: parts[1],
-	}
-}
-
-func FirefoxProfileFromDisplayString(displayString string, profilePaths []string) FirefoxProfile {
-	for _, profilePath := range profilePaths {
-		ffp := FirefoxProfileFromPath(profilePath)
-		if ffp.String() == displayString {
-			return ffp
-		}
-	}
-	d("while searching for %s in %v", displayString, profilePaths)
-	panic("internal error: can't get profile from display string")
 }
