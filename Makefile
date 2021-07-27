@@ -42,7 +42,7 @@ mocks-setup:
 # create directories that are cleaned up after use
 	mkdir -p testarea/{zip-dropoff,cache,home/{.mozilla/firefox/667ekipp.default-release,.{config,cache}/ffcss,.config/ffcss/themes}}
 # copy themes into mock config directory
-	cp themes/*.yaml mocks/home/.config/ffcss/themes/
+	cp themes/*.yaml testarea/home/.config/ffcss/themes/
 # copy static mocks from mocks/ to testarea/
 	cp -R mocks/home/ testarea/
 # create coverage directory

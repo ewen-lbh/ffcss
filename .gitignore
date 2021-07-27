@@ -42,7 +42,7 @@ coverage.txt
 coverage/lcov.info
 
 # compiled binary
-ffcss
+/ffcss
 
 # Release artifacts & token files
 dist/
@@ -50,4 +50,4 @@ release_notes.md
 .github_token
 
 # Testing artifacts
-testarea
+testarea/
