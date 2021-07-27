@@ -5,7 +5,7 @@
 [![wakatime](https://wakatime.com/badge/github/ewen-lbh/ffcss.svg)](https://wakatime.com/badge/github/ewen-lbh/ffcss)
 ![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/ewen-lbh/ffcss)
 [![Go reference](https://img.shields.io/badge/-reference-grey?logo=go)](https://pkg.go.dev/github.com/ewen-lbh/ffcss)
-![GitHub Workflow Status](https://img.shields.io/github/workflow/status/ewen-lbh/ffcss/Test)
+![GitHub Workflow Status](https://img.shields.io/github/workflow/status/ewen-lbh/ffcss/test)
 ![Codecov](https://img.shields.io/codecov/c/github/ewen-lbh/ffcss)
 
 A CLI interface to apply and configure [Firefox CSS themes](https://reddit.com/r/FirefoxCSS) (also known as userChrome.css themes).
