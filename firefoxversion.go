@@ -117,7 +117,7 @@ func (constraint FirefoxVersionConstraint) FulfilledBy(version FirefoxVersion) b
 // NewFirefoxVersion turns a version string (90 or 90.0 for example) into a FirefoxVersion.
 // defaultMinor is used when parsing a dot-less version string. It defaults to "x" (meaning unspecified).
 func NewFirefoxVersion(stringRepr string, defaultMinor ...string) (FirefoxVersion, error) {
-	fragments := strings.SplitN(stringRepr, ".", 2)
+	fragments := strings.Split(stringRepr, ".")
 	if len(defaultMinor) == 0 {
 		defaultMinor = []string{"x"}
 	}

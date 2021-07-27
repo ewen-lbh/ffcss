@@ -16,7 +16,7 @@ func init() {
 }
 
 func TestFirefoxVersionOfProfile(t *testing.T) {
-	version, err := FirefoxProfileFromPath(filepath.Join(homedir, ".mozilla", "firefox", "gu2q3ct0.default-release")).FirefoxVersion()
+	version, err := FirefoxProfileFromPath(filepath.Join(homedir, ".mozilla", "firefox", "667ekipp.default-release")).FirefoxVersion()
 	assert.NoError(t, err)
 	assert.Equal(t, FirefoxVersion{90, 0}, version)
 }

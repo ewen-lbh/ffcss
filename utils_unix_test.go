@@ -11,7 +11,7 @@ import (
 func TestDefaultProfilesDirUNIX(t *testing.T) {
 	actual, err := DefaultProfilesDir("linux")
 	assert.NoError(t, err)
-	assert.Equal(t, withuser("/home/%s/.mozilla/firefox"), actual)
+	assert.Equal(t, "testarea/home/.mozilla/firefox", actual)
 
 	actual, err = DefaultProfilesDir("macos")
 	assert.NoError(t, err)

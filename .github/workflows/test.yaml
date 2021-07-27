@@ -10,7 +10,7 @@ jobs:
         os:
           - ubuntu-latest
           - macos-latest
-          - windows-latest
+          # - windows-latest
     steps:
       - name: Skip if commit type is skippable
         uses: mstachniuk/ci-skip@v1

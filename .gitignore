@@ -43,9 +43,11 @@ coverage/lcov.info
 
 # compiled binary
 ffcss
+
+# Release artifacts & token files
 dist/
 release_notes.md
 .github_token
 
 # Testing artifacts
-mocks/zip-dropoff/
+testarea

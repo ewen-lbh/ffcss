@@ -50,6 +50,7 @@ func TestRenderFileTemplate(t *testing.T) {
 func TestAssetsPaths(t *testing.T) {
 	simplerentfox := Manifest{
 		ExplicitName: "simplerentfox",
+		DownloadedTo: CacheDir("simplerentfox/_"),
 		Variants: map[string]Variant{
 			"WithoutURLBar": {},
 			"OneLine":       {},
@@ -62,17 +63,18 @@ func TestAssetsPaths(t *testing.T) {
 		},
 	}
 
-	files, err := simplerentfox.AssetsPaths("linux", Variant{Name: "blue"}, testarea)
+	files, err := simplerentfox.AssetsPaths("linux", Variant{Name: "blue"})
 	assert.Regexp(t, "file .+ not found", err.Error())
 	assert.Equal(t, []string{}, files)
 
-	files, err = simplerentfox.AssetsPaths("linux", Variant{Name: "OneLine"}, testarea)
+	files, err = simplerentfox.AssetsPaths("linux", Variant{Name: "OneLine"})
 	assert.NoError(t, err)
-	assert.Equal(t, []string{CacheDir("simplerentfox/Linux/userChrome__OneLine.css")}, files)
+	assert.Equal(t, []string{CacheDir("simplerentfox/_/Linux/userChrome__OneLine.css")}, files)
 }
 
 func TestDestinationPathOf(t *testing.T) {
 	manifest := Manifest{
+		DownloadedTo: CacheDir("simplerentfox/_"),
 		ExplicitName: "materialfox",
 		Variants:     map[string]Variant{},
 		Config:       Config{},
@@ -84,22 +86,26 @@ func TestDestinationPathOf(t *testing.T) {
 	}
 	assert.Equal(t, "", file)
 
-	file, err = manifest.DestinationPathOfAsset("/home/.cache/ffcss/simplerentfox/../../../lol.pdf", testarea, "linux", Variant{})
+	file, err = manifest.DestinationPathOfAsset("testarea/home/.cache/ffcss/simplerentfox/../../../lol.pdf", testarea, "linux", Variant{})
 	if assert.Error(t, err) {
 		assert.Regexp(t, `asset ".+" is outside of the theme's root ".+"`, err.Error())
 	}
 	assert.Equal(t, "", file)
 
 	manifest = Manifest{
+		DownloadedTo: CacheDir("simplerentfox/_"),
 		ExplicitName: "simplerentfox",
 		Variants: map[string]Variant{
 			"WithoutURLBar": {},
 			"OneLine":       {},
 		},
 		CopyFrom: "{{ os }}/",
+		OSNames: map[string]string{
+			"linux": "Linux",
+		},
 	}
 
-	file, err = manifest.DestinationPathOfAsset(CacheDir("simplerentfox/linux/userChrome__OneLine.css"), testarea, "linux", Variant{Name: "OneLine"})
+	file, err = manifest.DestinationPathOfAsset(CacheDir("simplerentfox/_/Linux/userChrome__OneLine.css"), testarea, "linux", Variant{Name: "OneLine"})
 	assert.NoError(t, err)
 	assert.Equal(t, filepath.Join(testarea, "chrome", "userChrome__OneLine.css"), file)
 }

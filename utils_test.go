@@ -24,7 +24,7 @@ func withuser(s string) string {
 
 func TestProfilePaths(t *testing.T) {
 	cwd, _ := os.Getwd()
-	mockedHomedir := filepath.Join(cwd, "mocks", "homedir")
+	mockedHomedir := filepath.Join(cwd, "testarea", "home")
 
 	paths, err := ProfilePaths("linux", filepath.Join(mockedHomedir, ".mozilla", "firefox"))
 	if err != nil {
@@ -32,12 +32,8 @@ func TestProfilePaths(t *testing.T) {
 	}
 	assert.Equal(t, []string{filepath.Join(mockedHomedir, ".mozilla", "firefox", "667ekipp.default-release")}, paths)
 
-	// FIXME needs firefox installed with default profiles location (~/.mozilla/firefox/)
 	paths, err = ProfilePaths("linux")
-	assert.GreaterOrEqual(t, len(paths), 1)
-	if len(paths) >= 1 {
-		assert.Regexp(t, withuser(`/home/%s/.mozilla/firefox/[a-z0-9]{8}\.\w+`), paths[0])
-	}
+	assert.Equal(t, []string{"testarea/home/.mozilla/firefox/667ekipp.default-release"}, paths)
 }
 
 func TestIsURLClonable(t *testing.T) {
