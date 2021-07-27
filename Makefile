@@ -38,6 +38,9 @@ format:
 	gofmt -s -w **.go
 
 mocks-setup:
+# configure git identity (for whatever reason it needs it now)
+	git config user.name "Ewen Le Bihan"
+	git config user.email hey@ewen.works
 # init git repo for mocks/nomanifest
 	cd mocks/nomanifest; git init --quiet; git add .; git commit --quiet -m "a"; cd ../..
 # local webserver to mock http requests, save its PID to a file so that we can kill it during teardown
