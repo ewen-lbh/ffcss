@@ -1,26 +1,12 @@
 package main
 
 import (
-	"fmt"
 	"os"
-	"os/user"
 	"path/filepath"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
-
-var currentUser user.User
-
-func init() {
-	usr, _ := user.Current()
-	currentUser = *usr
-}
-
-// withUser Replaces %s with currentUser.Username in s
-func withuser(s string) string {
-	return fmt.Sprintf(s, currentUser.Username)
-}
 
 func TestProfilePaths(t *testing.T) {
 	cwd, _ := os.Getwd()

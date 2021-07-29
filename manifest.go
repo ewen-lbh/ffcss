@@ -3,19 +3,18 @@ package main
 import (
 	"fmt"
 	"os"
-	"os/exec"
 	"path/filepath"
-	"regexp"
 	"strings"
 
 	"github.com/charmbracelet/glamour"
-	"github.com/hbollon/go-edlib"
-	"github.com/hoisie/mustache"
-	"golang.org/x/text/unicode/norm"
 	"gopkg.in/yaml.v2"
 )
 
 var ThemeCompatWarningShown = VersionMajor > 0
+
+type Config map[string]interface{}
+
+type FileTemplate = string
 
 type Variant struct {
 	// Properties exclusive to variants
@@ -40,7 +39,7 @@ type Variant struct {
 	}
 }
 
-type Manifest struct {
+type Theme struct {
 	// Internal, cannot be set in the YAML file
 	CurrentVariantName string `yaml:"-"` // Used to construct the directory where the theme will be cached
 	Raw                string `yaml:"-"` // Contains the raw yaml file contents
@@ -75,23 +74,8 @@ type Manifest struct {
 	Addons  []string
 }
 
-func (m Manifest) Name() string {
-	if m.ExplicitName != "" {
-		return strings.ToLower(m.ExplicitName)
-	}
-	if strings.HasPrefix(m.DownloadAt, "https://github.com") {
-		fragments := strings.Split(m.DownloadAt, "/")
-		return strings.ToLower(fragments[len(fragments)-1])
-	}
-	return ""
-}
-
-type Config map[string]interface{}
-
-type FileTemplate = string
-
-func NewManifest() Manifest {
-	return Manifest{
+func NewTheme() Theme {
+	return Theme{
 		Config: Config{
 			"toolkit.legacyUserProfileCustomizations.stylesheets": true,
 		},
@@ -103,14 +87,14 @@ func NewManifest() Manifest {
 	}
 }
 
-// LoadManifest loads a ffcss.yaml file into a Manifest object.
-func LoadManifest(manifestPath string) (manifest Manifest, err error) {
+// LoadManifest loads a ffcss.yaml file into a Theme object.
+func LoadManifest(manifestPath string) (manifest Theme, err error) {
 	raw, err := os.ReadFile(manifestPath)
 	if err != nil {
 		err = fmt.Errorf("while reading manifest %s: %w", manifestPath, err)
 		return
 	}
-	manifest = NewManifest()
+	manifest = NewTheme()
 	manifest.Raw = string(raw)
 	err = yaml.Unmarshal(raw, &manifest)
 
@@ -156,126 +140,82 @@ func LoadManifest(manifestPath string) (manifest Manifest, err error) {
 // and the value of Config is combined with the variant's.
 // Some variants change the git branch, the entire repository or other settings that require external actions.
 // Those are returned in actionsNeeded as a struct of booleans with descriptive field names.
-func (m Manifest) WithVariant(variant Variant) (newManifest Manifest, actionsNeeded struct{ switchBranch, reDownload bool }) {
+func (t Theme) WithVariant(variant Variant) (newTheme Theme, actionsNeeded struct{ switchBranch, reDownload bool }) {
 	// TODO might clean this up with reflection, selecting fields that are both in Manifest & Variant
-	newManifest = m
-	newManifest.CurrentVariantName = variant.Name
+	newTheme = t
+	newTheme.CurrentVariantName = variant.Name
 	if variant.UserChrome != "" {
-		newManifest.UserChrome = variant.UserChrome
+		newTheme.UserChrome = variant.UserChrome
 	}
 	if variant.UserContent != "" {
-		newManifest.UserContent = variant.UserContent
+		newTheme.UserContent = variant.UserContent
 	}
 	if variant.UserJS != "" {
-		newManifest.UserJS = variant.UserJS
+		newTheme.UserJS = variant.UserJS
 	}
 	if variant.Message != "" {
-		newManifest.Message = variant.Message
+		newTheme.Message = variant.Message
 	}
 	if len(variant.Assets) > 0 {
-		newManifest.Assets = variant.Assets
+		newTheme.Assets = variant.Assets
 	}
 	if variant.Repository != "" {
 		actionsNeeded.reDownload = true
-		newManifest.DownloadAt = variant.Repository
+		newTheme.DownloadAt = variant.Repository
 	}
 	if variant.Branch != "" {
 		actionsNeeded.switchBranch = true
-		newManifest.Branch = variant.Branch
+		newTheme.Branch = variant.Branch
 	}
 	if variant.Commit != "" {
-		newManifest.Commit = variant.Commit
+		newTheme.Commit = variant.Commit
 	}
 	if variant.Tag != "" {
-		newManifest.Tag = variant.Tag
+		newTheme.Tag = variant.Tag
 	}
 	if variant.Run.Before != "" {
-		newManifest.Run.Before = variant.Run.Before
+		newTheme.Run.Before = variant.Run.Before
 	}
 	if variant.Run.After != "" {
-		newManifest.Run.After = variant.Run.After
+		newTheme.Run.After = variant.Run.After
 	}
 	for key, val := range variant.Config {
-		newManifest.Config[key] = val
+		newTheme.Config[key] = val
 	}
 	if actionsNeeded.reDownload || actionsNeeded.switchBranch {
-		newManifest.DownloadedTo = CacheDir(newManifest.Name(), newManifest.CurrentVariantName)
+		newTheme.DownloadedTo = CacheDir(newTheme.Name(), newTheme.CurrentVariantName)
 	}
-	return newManifest, actionsNeeded
+	return newTheme, actionsNeeded
 }
 
-// ThemeStore represents a collection of themes
-type ThemeStore map[string]Manifest
-
-// Lookup looks up a theme by its name in the theme store.
-// It also returns an error starting with "did you mean:" when
-// a theme name is not found but themes with similar names exist.
-func (store ThemeStore) Lookup(query string) (Manifest, error) {
-	originalQuery := query
-	query = lookupPreprocess(query)
-	processedThemeNames := make([]string, 0, len(store))
-	for name, theme := range store {
-		if lookupPreprocess(name) == query {
-			return theme, nil
-		}
-		processedThemeNames = append(processedThemeNames, lookupPreprocess(name))
+func (t Theme) Name() string {
+	if t.ExplicitName != "" {
+		return strings.ToLower(t.ExplicitName)
 	}
-	// Use fuzzy search for did-you-mean errors
-	suggestion, _ := edlib.FuzzySearchThreshold(query, processedThemeNames, 0.75, edlib.Levenshtein)
-
-	if suggestion != "" {
-		return Manifest{}, fmt.Errorf("theme %q not found. did you mean [blue][bold]%s[reset]?", originalQuery, suggestion)
+	if strings.HasPrefix(t.DownloadAt, "https://github.com") {
+		fragments := strings.Split(t.DownloadAt, "/")
+		return strings.ToLower(fragments[len(fragments)-1])
 	}
-	return Manifest{}, fmt.Errorf("theme %q not found", originalQuery)
-}
-
-// lookupPreprocess applies transformations to s so that it can be compared
-// to search for something.
-// For example, it is used by (ThemeStore).Lookup
-func lookupPreprocess(s string) string {
-	return strings.ToLower(norm.NFC.String(strings.Trim(s, "-_ .")))
-}
-
-// LoadThemeCatalog loads a directory of theme manifests.
-// Keys are theme names (files' basenames with the .yaml removed).
-func LoadThemeCatalog(storeDirectory string) (themes ThemeStore, err error) {
-	themeNamePattern := regexp.MustCompile(`^(.+)\.ya?ml$`)
-	themes = make(ThemeStore)
-	manifests, err := os.ReadDir(storeDirectory)
-	if err != nil {
-		return
-	}
-	for _, manifest := range manifests {
-		if !themeNamePattern.MatchString(manifest.Name()) {
-			continue
-		}
-		themeName := themeNamePattern.FindStringSubmatch(manifest.Name())[1]
-		theme, err := LoadManifest(filepath.Join(storeDirectory, manifest.Name()))
-		if err != nil {
-			return nil, err
-		}
-		themes[themeName] = theme
-	}
-	return
+	return ""
 }
 
 // AvailableVariants lists the possible variant names to choose from
-func (m Manifest) AvailableVariants() []string {
-	names := make([]string, 0, len(m.Variants))
-	for name := range m.Variants {
+func (t Theme) AvailableVariants() []string {
+	names := make([]string, 0, len(t.Variants))
+	for name := range t.Variants {
 		names = append(names, name)
 	}
 	return names
 }
 
 // ShowMessage renders the message and prints it to the user
-func (m Manifest) ShowMessage() error {
+func (t Theme) ShowMessage() error {
 	scheme := os.Getenv("COLORSCHEME")
 	if scheme != "light" && scheme != "dark" {
 		// TODO: detect with the terminal's current background color as a fallback
 		scheme = "dark"
 	}
-	rendered, err := glamour.Render(m.Message, scheme)
+	rendered, err := glamour.Render(t.Message, scheme)
 	if err != nil {
 		return fmt.Errorf("while rendering message: %w", err)
 	}
@@ -286,64 +226,7 @@ func (m Manifest) ShowMessage() error {
 	return nil
 }
 
-// runHook runs a provided command for a specific profile. See any of the (Manifest).Run*Hook methods
-// for a list of available {{mustache}} placeholders.
-func (m Manifest) runHook(commandline string, profile FirefoxProfile) (output string, err error) {
-	ffversion, err := profile.FirefoxVersion()
-	if err != nil {
-		return "", fmt.Errorf("while getting firefox version for current profile: %w", err)
-	}
-
-	command := exec.Command("bash", "-c", mustache.Render(commandline, map[string]interface{}{
-		"profile_path":    profile.Path,
-		"firefox_version": ffversion.String(),
-	}))
-
-	outputBytes, err := command.CombinedOutput()
-	output = string(outputBytes)
-	if err != nil {
-		return "", fmt.Errorf("while running %q: %s: %w", command.String(), output, err)
-	}
-
-	return
-}
-
-// RunPreInstallHook passes the pre-install hook specified in the manifest's run.before entry to bash.
-// Several {{mustache}} placeholders are available:
-//
-//	profile_path        The current profile's path
-//	firefox_version     The current profile's Firefox version
-func (m Manifest) RunPreInstallHook(profile FirefoxProfile) (output string, err error) {
-	return m.runHook(m.Run.Before, profile)
-}
-
-// RunPostInstallHook does the same as RunPreInstallHook but for the manifest's run.after entry.
-func (m Manifest) RunPostInstallHook(profile FirefoxProfile) (output string, err error) {
-	return m.runHook(m.Run.After, profile)
-}
-
-type firefoxProfileWithVersion struct {
-	profile FirefoxProfile
-	version FirefoxVersion
-}
-
-func (m Manifest) IncompatibleProfiles(profiles []FirefoxProfile) ([]firefoxProfileWithVersion, error) {
-	if m.FirefoxVersion != "" {
-		incompatibleProfileDirs := make([]firefoxProfileWithVersion, 0)
-		for _, profile := range profiles {
-			profileVersion, err := profile.FirefoxVersion()
-			if err != nil {
-				warn("Couldn't get firefox version for profile %s", profile)
-			}
-			fulfillsConstraint := m.FirefoxVersionConstraint.FulfilledBy(profileVersion)
-			if !fulfillsConstraint {
-				incompatibleProfileDirs = append(incompatibleProfileDirs, struct {
-					profile FirefoxProfile
-					version FirefoxVersion
-				}{profile, profileVersion})
-			}
-		}
-		return incompatibleProfileDirs, nil
-	}
-	return []firefoxProfileWithVersion{}, nil
+// GetManifestPath returns the path of a theme's manifest file
+func GetManifestPath(themeRoot string) string {
+	return filepath.Join(themeRoot, "ffcss.yaml")
 }

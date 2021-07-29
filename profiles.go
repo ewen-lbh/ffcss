@@ -17,6 +17,10 @@ type FirefoxProfile struct {
 	Name string
 	Path string
 }
+type firefoxProfileWithVersion struct {
+	profile FirefoxProfile
+	version FirefoxVersion
+}
 
 func (ffp FirefoxProfile) RegisterCurrentTheme(themeName string) error {
 	currentThemes, err := CurrentThemeByProfile()
@@ -41,7 +45,11 @@ func (ffp FirefoxProfile) FullName() string {
 	return filepath.Base(ffp.Path)
 }
 
-func FirefoxProfileFromPath(path string) FirefoxProfile {
+func (ffp FirefoxProfile) String() string {
+	return fmt.Sprintf("%s (%s)", ffp.Name, ffp.ID)
+}
+
+func NewFirefoxProfileFromPath(path string) FirefoxProfile {
 	base := filepath.Base(path)
 	parts := strings.Split(base, ".")
 	return FirefoxProfile{
@@ -51,10 +59,10 @@ func FirefoxProfileFromPath(path string) FirefoxProfile {
 	}
 }
 
-func FirefoxProfileFromDisplayString(displayString string, profiles []FirefoxProfile) FirefoxProfile {
+func NewFirefoxProfileFromDisplay(displayString string, profiles []FirefoxProfile) FirefoxProfile {
 	for _, profile := range profiles {
-		ffp := FirefoxProfileFromPath(profile.Path)
-		if ffp.String() == displayString {
+		ffp := NewFirefoxProfileFromPath(profile.Path)
+		if ffp.Display() == displayString {
 			return ffp
 		}
 	}
@@ -118,7 +126,7 @@ func Profiles(optionalProfilesDir string) ([]FirefoxProfile, error) {
 	}
 
 	for _, profilePath := range profilePaths {
-		profiles = append(profiles, FirefoxProfileFromPath(profilePath))
+		profiles = append(profiles, NewFirefoxProfileFromPath(profilePath))
 	}
 
 	return profiles, nil
@@ -148,4 +156,25 @@ func DefaultProfilesDir(operatingSystem string) (string, error) {
 		return filepath.Join(homedir, "AppData", "Roaming", "Mozilla", "Firefox", "Profiles"), nil
 	}
 	return "", fmt.Errorf("unknown operating system %s", operatingSystem)
+}
+
+func (t Theme) IncompatibleProfiles(profiles []FirefoxProfile) ([]firefoxProfileWithVersion, error) {
+	if t.FirefoxVersion != "" {
+		incompatibleProfileDirs := make([]firefoxProfileWithVersion, 0)
+		for _, profile := range profiles {
+			profileVersion, err := profile.FirefoxVersion()
+			if err != nil {
+				warn("Couldn't get firefox version for profile %s", profile)
+			}
+			fulfillsConstraint := t.FirefoxVersionConstraint.FulfilledBy(profileVersion)
+			if !fulfillsConstraint {
+				incompatibleProfileDirs = append(incompatibleProfileDirs, struct {
+					profile FirefoxProfile
+					version FirefoxVersion
+				}{profile, profileVersion})
+			}
+		}
+		return incompatibleProfileDirs, nil
+	}
+	return []firefoxProfileWithVersion{}, nil
 }

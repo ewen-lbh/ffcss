@@ -35,7 +35,7 @@ func init() {
 }
 
 // Show the introduction message before installation
-func intro(theme Manifest, indentLevel uint) {
+func intro(theme Theme, indentLevel uint) {
 	fmt.Print("\n")
 	indentation := strings.Repeat(indent, int(indentLevel))
 
@@ -90,7 +90,7 @@ func intro(theme Manifest, indentLevel uint) {
 
 }
 
-func showSource(theme Manifest) {
+func showManifestSource(theme Theme) {
 	fmt.Print("\n")
 	fmt.Println(colorizer.Color("[italic][dim]" + theme.Name() + "'s manifest"))
 	chromaQuick.Highlight(os.Stdout, theme.Raw, "YAML", "terminal16m", "pygments")
@@ -161,7 +161,7 @@ func lic(bulletChar string, indentLevel uint, item string, fmtArgs ...interface{
 	fmt.Println(bullet + " " + colorizer.Color(strings.TrimSpace(fmt.Sprintf(item, fmtArgs...))))
 }
 
-func (ffp FirefoxProfile) String() string {
+func (ffp FirefoxProfile) Display() string {
 	return colorizer.Color(fmt.Sprintf("[bold]%s [reset][dim](%s)", ffp.Name, ffp.ID))
 }
 
@@ -181,7 +181,7 @@ func AskProfiles(profiles []FirefoxProfile, baseIndentation ...uint) []FirefoxPr
 
 	profileDirsDisplay := make([]string, 0)
 	for _, profile := range profiles {
-		profileDirsDisplay = append(profileDirsDisplay, profile.String())
+		profileDirsDisplay = append(profileDirsDisplay, profile.Display())
 	}
 
 	survey.AskOne(&survey.MultiSelect{
@@ -191,7 +191,7 @@ func AskProfiles(profiles []FirefoxProfile, baseIndentation ...uint) []FirefoxPr
 	}, &selectedProfileDirsDisplay)
 
 	for _, chosenProfileDisplay := range selectedProfileDirsDisplay {
-		selectedProfiles = append(selectedProfiles, FirefoxProfileFromDisplayString(chosenProfileDisplay, profiles))
+		selectedProfiles = append(selectedProfiles, NewFirefoxProfileFromDisplay(chosenProfileDisplay, profiles))
 	}
 
 	return selectedProfiles

@@ -22,8 +22,8 @@ func ToUserJSFile(config map[string]interface{}) (string, error) {
 	return strings.Join(lines, "\n"), nil
 }
 
-func (m Manifest) UserJSFileContent() (string, error) {
-	return ToUserJSFile(m.Config)
+func (t Theme) UserJSFileContent() (string, error) {
+	return ToUserJSFile(t.Config)
 }
 
 // ValueOfUserPrefCall returns the value of configuration entry, given its key and the contents of

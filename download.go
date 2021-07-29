@@ -54,7 +54,7 @@ func ResolveURL(themeName string) (URL string, typ string, err error) {
 // If typ is bare, then it tries to find the URL in ~/.config/ffcss/themes/{{URL}}.yaml
 // In all cases, the theme is downloaded to ~/.cache/ffcss/{{themeName}}.
 // If themeName is not provided, the theme will first be downloaded to a temporary location to get the name from the manifest.
-func Download(URL string, typ string, themeManifest ...Manifest) (manifest Manifest, err error) {
+func Download(URL string, typ string, themeManifest ...Theme) (manifest Theme, err error) {
 	d("typ is %s", typ)
 	if len(themeManifest) >= 1 {
 		manifest = themeManifest[0]
@@ -87,7 +87,7 @@ func Download(URL string, typ string, themeManifest ...Manifest) (manifest Manif
 			return manifest, fmt.Errorf("couldn't use the repository %s: %w", URL, err)
 		}
 	case "bare":
-		themes, err := LoadThemeCatalog(ConfigDir("themes"))
+		themes, err := LoadCatalog(ConfigDir("themes"))
 		if err != nil {
 			return manifest, fmt.Errorf("while : %w", err)
 		}
@@ -110,7 +110,7 @@ func Download(URL string, typ string, themeManifest ...Manifest) (manifest Manif
 // DownloadRepository downloads the repository at URL to {{cloneTo}}/{{ffcss.yaml:name}}/{{current variant's name}}
 // It first clones the repo to tempCloneTo, then loads the manifest to determine where to move it.
 // the manifest can be provided in case the repository does not contain it.
-func DownloadRepository(URL string, tempCloneTo string, cloneTo string, themeManifest ...Manifest) (manifest Manifest, err error) {
+func DownloadRepository(URL string, tempCloneTo string, cloneTo string, themeManifest ...Theme) (manifest Theme, err error) {
 	hasManifest := len(themeManifest) >= 1
 	if hasManifest {
 		manifest = themeManifest[0]
@@ -192,7 +192,7 @@ func DownloadRepository(URL string, tempCloneTo string, cloneTo string, themeMan
 // The zip file will be downloaded and extracted to {{tempDownloadTo}}, then, after loading the manifest,
 // the folder will then be moved to {{finalDownloadTo}}/{{ffcss.yaml:name}}.
 // the manifest can be provided in case the zip does not contain it.
-func DownloadFromZip(URL string, tempDownloadTo string, finalDownloadTo string, themeManifest ...Manifest) (manifest Manifest, err error) {
+func DownloadFromZip(URL string, tempDownloadTo string, finalDownloadTo string, themeManifest ...Theme) (manifest Theme, err error) {
 	tempDownloadTo = tempDownloadTo + "/theme.zip"
 	hasManifest := len(themeManifest) >= 1
 	if hasManifest {
@@ -252,12 +252,18 @@ func DownloadFromZip(URL string, tempDownloadTo string, finalDownloadTo string, 
 	return
 }
 
-// CleanDownloadArea removes the temporary download area used to download themes before knowing their name from their manifest
-func CleanDownloadArea() error {
-	return os.RemoveAll(CacheDir(TempDownloadsDirName))
-}
-
-// ClearWholeCache destroys the cache directory
-func ClearWholeCache() error {
-	return os.RemoveAll(CacheDir())
+// isURLClonable determines if the given URL points to a git repository
+func isURLClonable(URL string) bool {
+	output, err := exec.Command("git", "ls-remote", URL).CombinedOutput()
+	if err == nil {
+		return true
+	}
+	switch err.(type) {
+	case *exec.ExitError:
+		if err.(*exec.ExitError).ExitCode() == 128 {
+			return false
+		}
+	}
+	warn("could not determine clonability of %s: while running git-ls-remote: %w: %s\n", URL, err, output)
+	return false
 }

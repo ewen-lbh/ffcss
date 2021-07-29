@@ -1,11 +1,9 @@
 package main
 
 import (
-	"bytes"
 	"fmt"
 	"io/ioutil"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"strings"
 
@@ -56,19 +54,4 @@ func RunCommandInit(args docopt.Opts) error {
 	}
 
 	return nil
-}
-
-// getCurrentRepoRemote returns the git repo's origin remote URL
-// if any error occured while getting the URL, the empty string is returned.
-func getCurrentRepoRemote() string {
-	var out bytes.Buffer
-	command := exec.Command("git", "config", "--get", "remote.origin.url")
-	command.Stdout = &out
-
-	err := command.Run()
-	if err != nil {
-		warn("Could not get the current git remote origin's URL. Leaving repository entry blank.\n")
-		return ""
-	}
-	return out.String()
 }

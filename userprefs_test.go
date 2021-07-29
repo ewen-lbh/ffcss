@@ -196,9 +196,10 @@ func TestToUserJS(t *testing.T) {
 	if err != nil {
 		panic(err)
 	}
-	Assert(t, sortLines(value),
+	assert.Equal(t,
 		`user_pref("browser.tabs.tabClipWidth", 90);
 user_pref("svg.context-properties.content.enabled", true);`,
+		sortLines(value),
 	)
 }
 

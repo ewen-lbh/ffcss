@@ -36,10 +36,10 @@ func RunCommandReapply(args docopt.Opts) error {
 	for _, profilePath := range profilesPaths {
 		themeName, exists := currentThemes[filepath.Base(profilePath)]
 		if !exists {
-			li(0, "[yellow]Profile %s[reset][yellow] has no ffcss theme applied, skipping.", FirefoxProfileFromPath(profilePath).String())
+			li(0, "[yellow]Profile %s[reset][yellow] has no ffcss theme applied, skipping.", NewFirefoxProfileFromPath(profilePath).Display())
 			continue
 		}
-		li(0, "Apply theme [blue][bold]%s[reset] to profile %s", themeName, FirefoxProfileFromPath(profilePath).String())
+		li(0, "Apply theme [blue][bold]%s[reset] to profile %s", themeName, NewFirefoxProfileFromPath(profilePath).Display())
 
 		useArgs, _ := docopt.ParseArgs(Usage, []string{"use", string(themeName), "--profiles", profilePath, "--skip-manifest-source"}, VersionString)
 		err = RunCommandUse(useArgs, 1)

@@ -7,48 +7,46 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var testarea = filepath.Join(cwd(), "testarea")
-
 func TestRenderFileTemplate(t *testing.T) {
-	Assert(t, RenderFileTemplate(
+	assert.Equal(t, "userChrome.css", RenderFileTemplate(
 		"userChrome.css",
 		"linux",
 		Variant{},
 		map[string]string{},
-	), "userChrome.css")
+	))
 
-	Assert(t, RenderFileTemplate(
+	assert.Equal(t, "linux.css", RenderFileTemplate(
 		"linux.css",
 		"linux",
 		Variant{},
 		map[string]string{"linux": "Linux"},
-	), "linux.css")
+	))
 
-	Assert(t, RenderFileTemplate(
+	assert.Equal(t, "GNU/Linux.css", RenderFileTemplate(
 		"{{os}}.css",
 		"linux",
 		Variant{},
 		map[string]string{"linux": "GNU/Linux"},
-	), "GNU/Linux.css")
+	))
 
-	Assert(t, RenderFileTemplate(
+	assert.Equal(t, "linux.css", RenderFileTemplate(
 		"linux.css",
 		"windows",
 		Variant{},
 		map[string]string{},
-	), "linux.css")
+	))
 
-	Assert(t, RenderFileTemplate(
+	assert.Equal(t, "./macos/rainbow.css", RenderFileTemplate(
 		"./{{ os }}/{{variant}}.css",
 		"macos",
 		Variant{Name: "rainbow"},
 		map[string]string{},
-	), "./macos/rainbow.css")
+	))
 
 }
 
 func TestAssetsPaths(t *testing.T) {
-	simplerentfox := Manifest{
+	simplerentfox := Theme{
 		ExplicitName: "simplerentfox",
 		DownloadedTo: CacheDir("simplerentfox/_"),
 		Variants: map[string]Variant{
@@ -73,7 +71,7 @@ func TestAssetsPaths(t *testing.T) {
 }
 
 func TestDestinationPathOf(t *testing.T) {
-	manifest := Manifest{
+	manifest := Theme{
 		DownloadedTo: CacheDir("simplerentfox/_"),
 		ExplicitName: "materialfox",
 		Variants:     map[string]Variant{},
@@ -92,7 +90,7 @@ func TestDestinationPathOf(t *testing.T) {
 	}
 	assert.Equal(t, "", file)
 
-	manifest = Manifest{
+	manifest = Theme{
 		DownloadedTo: CacheDir("simplerentfox/_"),
 		ExplicitName: "simplerentfox",
 		Variants: map[string]Variant{

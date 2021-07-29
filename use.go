@@ -45,7 +45,7 @@ func RunCommandUse(args docopt.Opts, indentationLevel ...uint) error {
 		}, &wantsSource)
 	}
 	if wantsSource {
-		showSource(manifest)
+		showManifestSource(manifest)
 	}
 
 	// Detect OS
@@ -55,7 +55,7 @@ func RunCommandUse(args docopt.Opts, indentationLevel ...uint) error {
 	var selectedProfiles []FirefoxProfile
 	if selectedProfilesString != "" {
 		for _, profilePath := range strings.Split(selectedProfilesString, ",") {
-			selectedProfiles = append(selectedProfiles, FirefoxProfileFromPath(profilePath))
+			selectedProfiles = append(selectedProfiles, NewFirefoxProfileFromPath(profilePath))
 		}
 	} else {
 		li(baseIndent+0, "Getting profiles")
@@ -79,10 +79,9 @@ func RunCommandUse(args docopt.Opts, indentationLevel ...uint) error {
 		return nil
 	}
 
-
 	incompatibleProfiles, err := manifest.IncompatibleProfiles(selectedProfiles)
 	if err != nil {
-		return  fmt.Errorf("while checking for incompatible profiles: %w",  err)
+		return fmt.Errorf("while checking for incompatible profiles: %w", err)
 	}
 
 	if len(incompatibleProfiles) != 0 {

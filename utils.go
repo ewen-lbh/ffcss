@@ -3,12 +3,8 @@ package main
 import (
 	"net/url"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"strings"
-	"testing"
-
-	"github.com/stretchr/testify/assert"
 )
 
 // isValidURL tests a string to determine if it is a well-structured url or not.
@@ -24,10 +20,6 @@ func isValidURL(toTest string) bool {
 	}
 
 	return true
-}
-
-func Assert(t *testing.T, got interface{}, expected interface{}) {
-	assert.Equal(t, expected, got)
 }
 
 // GetConfigDir returns the absolute path of ffcss's configuration directory
@@ -52,33 +44,12 @@ func ConfigDir(pathSegments ...string) string {
 	return filepath.Join(GetConfigDir(), filepath.Join(pathSegments...))
 }
 
-// GetManifestPath returns the path of a theme's manifest file
-func GetManifestPath(themeRoot string) string {
-	return filepath.Join(themeRoot, "ffcss.yaml")
-}
-
 func cwd() string {
 	wd, err := os.Getwd()
 	if err != nil {
 		panic(err)
 	}
 	return wd
-}
-
-// isURLClonable determines if the given URL points to a git repository
-func isURLClonable(URL string) bool {
-	output, err := exec.Command("git", "ls-remote", URL).CombinedOutput()
-	if err == nil {
-		return true
-	}
-	switch err.(type) {
-	case *exec.ExitError:
-		if err.(*exec.ExitError).ExitCode() == 128 {
-			return false
-		}
-	}
-	warn("could not determine clonability of %s: while running git-ls-remote: %w: %s\n", URL, err, output)
-	return false
 }
 
 // RenameIfExists renames from to to if from exists. If it doesn't, don't attempt renaming.
