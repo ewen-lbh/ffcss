@@ -15,7 +15,7 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-var ThemeCompatWarningShown = false
+var ThemeCompatWarningShown = VersionMajor > 0
 
 type Variant struct {
 	// Properties exclusive to variants
