@@ -76,7 +76,7 @@ release:
 	sd '^- #' '#' CHANGELOG.md
 # extract release notes for the new version only,
 # and bump the version in go code
-	./make_release_notes.rb $$(read -p bump=; echo $$REPLY)
+	tools/make_release_notes.rb $$(read -p bump=; echo $$REPLY)
 # recompile so that the binary shows the new version when doing ffcss version
 	$(MAKE) build
 	$(MAKE) install
