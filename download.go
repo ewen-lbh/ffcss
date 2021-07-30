@@ -133,7 +133,7 @@ func DownloadRepository(URL string, tempCloneTo string, cloneTo string, themeMan
 	}
 	d("Cloning repo...")
 	process := exec.Command("git", cloneArgs...)
-	//TODO print this in verbose mode: fmt.Printf("DEBUG $ %s\n", process.String())
+	//TODO print this in verbose mode: fmt.Fprintf(out, "DEBUG $ %s\n", process.String())
 	output, err := process.CombinedOutput()
 	if err != nil {
 		return manifest, fmt.Errorf("%w: %s", err, output)

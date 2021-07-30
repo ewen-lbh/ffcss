@@ -96,7 +96,8 @@ func RunCommandUse(args docopt.Opts) error {
 			if err != nil {
 				return fmt.Errorf("while running pre-install script: %w", err)
 			}
-			fmt.Print(
+			fmt.Fprint(
+				out,
 				"\n",
 				prefixEachLine(
 					strings.TrimSpace(output),
@@ -142,7 +143,7 @@ func RunCommandUse(args docopt.Opts) error {
 			if err != nil {
 				return fmt.Errorf("while running post-install script: %w", err)
 			}
-			fmt.Print(
+			fmt.Fprint(out,
 				"\n",
 				prefixEachLine(
 					strings.TrimSpace(output),

@@ -221,7 +221,7 @@ func (t Theme) ShowMessage() error {
 	}
 
 	if strings.TrimSpace(rendered) != "" {
-		fmt.Println(rendered)
+		fmt.Fprintln(out, rendered)
 	}
 	return nil
 }

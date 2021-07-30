@@ -3,6 +3,7 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"os"
 	"strings"
 
@@ -44,6 +45,8 @@ Options:
 
 var (
 	VersionString = fmt.Sprintf("%d.%d.%d", VersionMajor, VersionMinor, VersionPatch)
+	// Used to capture stdout instead of printing in tests
+	out io.Writer = os.Stdout
 )
 
 func main() {
@@ -60,9 +63,9 @@ func main() {
 	}
 
 	if err := dispatchCommand(args); err != nil {
-		fmt.Println()
+		fmt.Fprintln(out)
 		showError("Woops! An error occurred:")
-		fmt.Println()
+		fmt.Fprintln(out)
 		for idx, errorFragment := range strings.Split(err.Error(), ": ") {
 			li(uint(idx), errorFragment)
 		}
@@ -100,13 +103,13 @@ func dispatchCommand(args docopt.Opts) error {
 		component, _ := args.String("COMPONENT")
 		switch component {
 		case "major":
-			fmt.Println(VersionMajor)
+			fmt.Fprintln(out, VersionMajor)
 		case "minor":
-			fmt.Println(VersionMinor)
+			fmt.Fprintln(out, VersionMinor)
 		case "patch":
-			fmt.Println(VersionPatch)
+			fmt.Fprintln(out, VersionPatch)
 		default:
-			fmt.Println(VersionString)
+			fmt.Fprintln(out, VersionString)
 		}
 	}
 	return nil
