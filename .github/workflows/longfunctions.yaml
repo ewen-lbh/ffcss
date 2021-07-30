@@ -1,0 +1,11 @@
+on: [pull_request]
+name: longfunctions
+
+jobs:
+  longfunctions:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup ruby
+        uses: ruby/setup-ruby@v1.78.0
+      - name: Scan for functions with more than 30 lines
+        run: tools/longfuncs.rb 30
