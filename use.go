@@ -34,7 +34,7 @@ func RunCommandUse(args docopt.Opts) error {
 	}
 
 	intro(manifest, BaseIndentLevel)
-	skipSource, err := args.Bool("--skip-manifest-source")
+	skipSource, _ := args.Bool("--skip-manifest-source")
 	manifest.AskToSeeManifestSource(skipSource)
 
 	// Detect OS

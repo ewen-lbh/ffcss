@@ -7,7 +7,7 @@ import (
 )
 
 // getCurrentRepoRemote returns the git repo's origin remote URL
-// if any error occured while getting the URL, the empty string is returned.
+// if any error occurred while getting the URL, the empty string is returned.
 func getCurrentRepoRemote() string {
 	var out bytes.Buffer
 	command := exec.Command("git", "config", "--get", "remote.origin.url")

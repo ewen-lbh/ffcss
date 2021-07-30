@@ -13,12 +13,11 @@ func TestProfilePaths(t *testing.T) {
 	mockedHomedir := filepath.Join(cwd, "testarea", "home")
 
 	paths, err := ProfilePaths("linux", filepath.Join(mockedHomedir, ".mozilla", "firefox"))
-	if err != nil {
-		panic(err)
-	}
+	assert.NoError(t, err)
 	assert.Equal(t, []string{filepath.Join(mockedHomedir, ".mozilla", "firefox", "667ekipp.default-release")}, paths)
 
 	paths, err = ProfilePaths("linux")
+	assert.NoError(t, err)
 	assert.Equal(t, []string{"testarea/home/.mozilla/firefox/667ekipp.default-release"}, paths)
 }
 
