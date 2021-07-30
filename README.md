@@ -1,6 +1,6 @@
 # ffcss
 
-![a demo of ffcss](./demo.gif)
+![a demo of ffcss](./DEMO.gif)
 
 [![wakatime](https://wakatime.com/badge/github/ewen-lbh/ffcss.svg)](https://wakatime.com/badge/github/ewen-lbh/ffcss)
 ![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/ewen-lbh/ffcss)
