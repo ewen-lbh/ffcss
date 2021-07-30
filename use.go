@@ -10,7 +10,7 @@ import (
 	"github.com/docopt/docopt-go"
 )
 
-var baseIndent uint = 0
+var BaseIndentLevel uint = 0
 
 // RunCommandUse runs the command "use"
 func RunCommandUse(args docopt.Opts) error {
@@ -21,19 +21,19 @@ func RunCommandUse(args docopt.Opts) error {
 		return err
 	}
 
-	li(baseIndent+0, "Resolving the theme's name")
+	li(BaseIndentLevel+0, "Resolving the theme's name")
 	uri, typ, err := ResolveURL(themeName)
 	if err != nil {
 		return fmt.Errorf("while resolving name %s: %w", themeName, err)
 	}
 
-	li(baseIndent+0, "Downloading the theme")
+	li(BaseIndentLevel+0, "Downloading the theme")
 	manifest, err := Download(uri, typ)
 	if err != nil {
 		return err
 	}
 
-	intro(manifest, baseIndent)
+	intro(manifest, BaseIndentLevel)
 	skipSource, err := args.Bool("--skip-manifest-source")
 	manifest.AskToSeeManifestSource(skipSource)
 
@@ -56,9 +56,9 @@ func RunCommandUse(args docopt.Opts) error {
 	}
 
 	if len(incompatibleProfiles) != 0 {
-		li(baseIndent+1, "[yellow]This theme ensures compatibility with firefox [bold]%s[reset][yellow]. The following themes could be incompatible:", manifest.FirefoxVersionConstraint.sentence)
+		li(BaseIndentLevel+1, "[yellow]This theme ensures compatibility with firefox [bold]%s[reset][yellow]. The following themes could be incompatible:", manifest.FirefoxVersionConstraint.sentence)
 		for _, profile := range incompatibleProfiles {
-			li(baseIndent+2, "%s [dim]([reset]version [blue][bold]%s[reset][dim])", profile.profile, profile.version)
+			li(BaseIndentLevel+2, "%s [dim]([reset]version [blue][bold]%s[reset][dim])", profile.profile, profile.version)
 		}
 	}
 
@@ -76,13 +76,13 @@ func RunCommandUse(args docopt.Opts) error {
 	// For each profile directory...
 	singleProfile := len(selectedProfiles) == 1
 	if singleProfile {
-		baseIndent--
+		BaseIndentLevel--
 	}
 	for _, profile := range selectedProfiles {
 		if !singleProfile {
-			li(baseIndent+0, "With profile "+filepath.Base(profile.Path))
+			li(BaseIndentLevel+0, "With profile "+filepath.Base(profile.Path))
 		}
-		li(baseIndent+1, "Backing up the chrome/ folder")
+		li(BaseIndentLevel+1, "Backing up the chrome/ folder")
 		err = RenameIfExists(filepath.Join(profile.Path, "chrome"), filepath.Join(profile.Path, "chrome.bak"))
 		if err != nil {
 			return fmt.Errorf("while backing up chrome directory: %w", err)
@@ -90,7 +90,7 @@ func RunCommandUse(args docopt.Opts) error {
 
 		// Run pre-install script
 		if manifest.Run.Before != "" {
-			li(baseIndent+1, "Running pre-install script")
+			li(BaseIndentLevel+1, "Running pre-install script")
 			// TODO for this to be useful, print commandline _with mustaches replaced_:  li(baseIndent+2, "[dim]$ bash -c [reset][bold]%s", manifest.Run.Before)
 			output, err := manifest.RunPreInstallHook(profile)
 			if err != nil {
@@ -100,7 +100,7 @@ func RunCommandUse(args docopt.Opts) error {
 				"\n",
 				prefixEachLine(
 					strings.TrimSpace(output),
-					strings.Repeat(indent, int(baseIndent)+2),
+					strings.Repeat(indent, int(BaseIndentLevel)+2),
 				),
 				"\n",
 				"\n",
@@ -113,7 +113,7 @@ func RunCommandUse(args docopt.Opts) error {
 		}
 
 		// Install stuff
-		li(baseIndent+1, "Installing the theme")
+		li(BaseIndentLevel+1, "Installing the theme")
 		err = manifest.InstallUserChrome(operatingSystem, variant, profile.Path)
 		if err != nil {
 			return fmt.Errorf("couldn't install userChrome.css: %w", err)
@@ -136,7 +136,7 @@ func RunCommandUse(args docopt.Opts) error {
 
 		// Run post-install script
 		if manifest.Run.After != "" {
-			li(baseIndent+1, "Running post-install script")
+			li(BaseIndentLevel+1, "Running post-install script")
 			// TODO for this to be useful, print commandline _with mustaches replaced_:  li(baseIndent+2, "[dim]$ bash -c [reset][bold]%s", manifest.Run.After)
 			output, err := manifest.RunPostInstallHook(profile)
 			if err != nil {
@@ -146,7 +146,7 @@ func RunCommandUse(args docopt.Opts) error {
 				"\n",
 				prefixEachLine(
 					strings.TrimSpace(output),
-					strings.Repeat(indent, int(baseIndent)+2),
+					strings.Repeat(indent, int(BaseIndentLevel)+2),
 				),
 				"\n",
 				"\n",
@@ -160,14 +160,14 @@ func RunCommandUse(args docopt.Opts) error {
 
 	}
 	if singleProfile {
-		baseIndent++
+		BaseIndentLevel++
 	}
 
 	// Ask to open extensions' pages
 	if len(manifest.Addons) > 0 {
 		if ConfirmInstallAddons(manifest.Addons) {
 			for _, profile := range selectedProfiles {
-				li(baseIndent+0, "With profile "+filepath.Base(profile.Path))
+				li(BaseIndentLevel+0, "With profile "+filepath.Base(profile.Path))
 				for _, addonURL := range manifest.Addons {
 					profile.InstallAddon(operatingSystem, addonURL)
 				}

@@ -171,7 +171,7 @@ func AskProfiles(profiles []FirefoxProfile) []FirefoxProfile {
 	// XXX the whole display thing should be put in survey.MultiSelect.Renderer, look into that.
 	selectedProfileDirsDisplay := make([]string, 0)
 
-	li(baseIndent+0, "Please select profiles to apply the theme on")
+	li(BaseIndentLevel+0, "Please select profiles to apply the theme on")
 
 	profileDirsDisplay := make([]string, 0)
 	for _, profile := range profiles {
@@ -211,7 +211,7 @@ func SelectProfiles(args docopt.Opts) ([]FirefoxProfile, error) {
 			selectedProfiles = append(selectedProfiles, NewFirefoxProfileFromPath(profilePath))
 		}
 	} else {
-		li(baseIndent+0, "Getting profiles")
+		li(BaseIndentLevel+0, "Getting profiles")
 		profilesDir, _ := args.String("--profiles-dir")
 		profiles, err := Profiles(profilesDir)
 		if err != nil {
@@ -221,7 +221,7 @@ func SelectProfiles(args docopt.Opts) ([]FirefoxProfile, error) {
 		// TODO smart default (based on {{profileDirectory}}/times.json:firstUse)
 		selectAllProfilePaths, _ := args.Bool("--all-profiles")
 		if selectAllProfilePaths {
-			li(baseIndent+0, "Selecting all profiles")
+			li(BaseIndentLevel+0, "Selecting all profiles")
 			selectedProfiles = profiles
 		} else {
 			selectedProfiles = AskProfiles(profiles)
@@ -233,7 +233,7 @@ func SelectProfiles(args docopt.Opts) ([]FirefoxProfile, error) {
 func (t Theme) ChooseVariant(args docopt.Opts) (chosen Variant, cancel bool) {
 	variantName, _ := args.String("VARIANT")
 	if len(t.AvailableVariants()) > 0 && variantName == "" {
-		li(baseIndent+0, "Please choose the theme's variant")
+		li(BaseIndentLevel+0, "Please choose the theme's variant")
 		variantPrompt := &survey.Select{
 			Message: "Install variant",
 			Options: t.AvailableVariants(),

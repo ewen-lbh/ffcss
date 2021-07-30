@@ -42,7 +42,7 @@ func RunCommandReapply(args docopt.Opts) error {
 		li(0, "Apply theme [blue][bold]%s[reset] to profile %s", themeName, NewFirefoxProfileFromPath(profilePath).Display())
 
 		useArgs, _ := docopt.ParseArgs(Usage, []string{"use", string(themeName), "--profiles", profilePath, "--skip-manifest-source"}, VersionString)
-		baseIndent += 1
+		BaseIndentLevel += 1
 		err = RunCommandUse(useArgs)
 		if err != nil {
 			return err

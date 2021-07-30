@@ -278,7 +278,7 @@ func (t Theme) ReDownloadIfNeeded(actionsNeeded struct {
 	// FIXME for now switching branches just re-downloads the entire thing to a new dir with the new branch
 	// ideal thing would be to copy from the root variant to the new variant, cd into it then `git switch` there.
 	if actionsNeeded.reDownload || actionsNeeded.switchBranch {
-		li(baseIndent+0, "Downloading the variant")
+		li(BaseIndentLevel+0, "Downloading the variant")
 		d("re-downloading: new repo is %s", t.DownloadAt)
 		uri, typ, err := ResolveURL(t.DownloadAt)
 		if err != nil {
