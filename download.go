@@ -271,7 +271,7 @@ func isURLClonable(URL string) bool {
 
 // ReDownloadIfNeeded re-downloads the repo, actionNeeded.reDownload
 // is true
-func (t Theme) ReDownloadIfNeeded(baseIndent uint, actionsNeeded struct {
+func (t Theme) ReDownloadIfNeeded(actionsNeeded struct {
 	switchBranch bool
 	reDownload   bool
 }) error {

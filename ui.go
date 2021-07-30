@@ -70,7 +70,6 @@ func intro(theme Theme, indentLevel uint) {
 	if theme.Description != "" {
 		fmt.Print("\n")
 		gutter := colorstring.Color(indentation + "[blue]│")
-		// gutter := colorstring.Color(indent + "[blue]|")
 		d("gutter is %q", gutter)
 		markdownRendered, err := glamour.Render(theme.Description, "dark")
 		if err != nil {
@@ -166,13 +165,7 @@ func (ffp FirefoxProfile) Display() string {
 	return colorizer.Color(fmt.Sprintf("[bold]%s [reset][dim](%s)", ffp.Name, ffp.ID))
 }
 
-func AskProfiles(profiles []FirefoxProfile, baseIndentation ...uint) []FirefoxProfile {
-	var baseIndent uint
-	if len(baseIndentation) == 0 {
-		baseIndent = 0
-	}
-	baseIndent = baseIndentation[0]
-
+func AskProfiles(profiles []FirefoxProfile) []FirefoxProfile {
 	var selectedProfiles []FirefoxProfile
 
 	// XXX the whole display thing should be put in survey.MultiSelect.Renderer, look into that.
@@ -210,7 +203,7 @@ func (t Theme) AskToSeeManifestSource(skip bool) {
 	}
 }
 
-func SelectProfiles(baseIndent uint, args docopt.Opts) ([]FirefoxProfile, error) {
+func SelectProfiles(args docopt.Opts) ([]FirefoxProfile, error) {
 	selectedProfilesString, _ := args.String("--profiles")
 	var selectedProfiles []FirefoxProfile
 	if selectedProfilesString != "" {
@@ -231,13 +224,13 @@ func SelectProfiles(baseIndent uint, args docopt.Opts) ([]FirefoxProfile, error)
 			li(baseIndent+0, "Selecting all profiles")
 			selectedProfiles = profiles
 		} else {
-			selectedProfiles = AskProfiles(profiles, baseIndent)
+			selectedProfiles = AskProfiles(profiles)
 		}
 	}
 	return selectedProfiles, nil
 }
 
-func (t Theme) ChooseVariant(baseIndent uint, args docopt.Opts) (chosen Variant, cancel bool) {
+func (t Theme) ChooseVariant(args docopt.Opts) (chosen Variant, cancel bool) {
 	variantName, _ := args.String("VARIANT")
 	if len(t.AvailableVariants()) > 0 && variantName == "" {
 		li(baseIndent+0, "Please choose the theme's variant")

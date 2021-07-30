@@ -10,13 +10,10 @@ import (
 	"github.com/docopt/docopt-go"
 )
 
-// RunCommandUse runs the command "use"
-func RunCommandUse(args docopt.Opts, indentationLevel ...uint) error {
-	var baseIndent uint
-	if len(indentationLevel) >= 1 {
-		baseIndent = indentationLevel[0]
-	}
+var baseIndent uint = 0
 
+// RunCommandUse runs the command "use"
+func RunCommandUse(args docopt.Opts) error {
 	themeName, _ := args.String("THEME_NAME")
 
 	err := CreateDataDirectories()
@@ -44,7 +41,7 @@ func RunCommandUse(args docopt.Opts, indentationLevel ...uint) error {
 	operatingSystem := GOOStoOS(runtime.GOOS)
 
 	// Get all profile directories
-	selectedProfiles, err := SelectProfiles(baseIndent, args)
+	selectedProfiles, err := SelectProfiles(args)
 	if err != nil {
 		return err
 	}
@@ -66,12 +63,12 @@ func RunCommandUse(args docopt.Opts, indentationLevel ...uint) error {
 	}
 
 	// Choose variant
-	variant, cancel := manifest.ChooseVariant(baseIndent, args)
+	variant, cancel := manifest.ChooseVariant(args)
 	if cancel {
 		return nil
 	}
 	manifest, actionsNeeded := manifest.WithVariant(variant)
-	manifest.ReDownloadIfNeeded(baseIndent, actionsNeeded)
+	manifest.ReDownloadIfNeeded(actionsNeeded)
 
 	// Check for OS compatibility
 	manifest.WarnIfIncompatibleWithOS()
@@ -172,7 +169,7 @@ func RunCommandUse(args docopt.Opts, indentationLevel ...uint) error {
 			for _, profile := range selectedProfiles {
 				li(baseIndent+0, "With profile "+filepath.Base(profile.Path))
 				for _, addonURL := range manifest.Addons {
-					profile.InstallAddon(baseIndent, operatingSystem, addonURL)
+					profile.InstallAddon(operatingSystem, addonURL)
 				}
 			}
 		}
