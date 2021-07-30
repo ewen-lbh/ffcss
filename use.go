@@ -3,12 +3,10 @@ package main
 import (
 	"fmt"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"runtime"
 	"strings"
 
-	"github.com/AlecAivazis/survey/v2"
 	"github.com/docopt/docopt-go"
 )
 
@@ -18,12 +16,14 @@ func RunCommandUse(args docopt.Opts, indentationLevel ...uint) error {
 	if len(indentationLevel) >= 1 {
 		baseIndent = indentationLevel[0]
 	}
+
 	themeName, _ := args.String("THEME_NAME")
-	// variant, _ := args.String("VARIANT")
-	err := os.MkdirAll(filepath.Join(GetConfigDir(), "themes"), 0777)
+
+	err := CreateDataDirectories()
 	if err != nil {
-		return fmt.Errorf("couldn't create data directories: %w", err)
+		return err
 	}
+
 	li(baseIndent+0, "Resolving the theme's name")
 	uri, typ, err := ResolveURL(themeName)
 	if err != nil {
@@ -37,42 +37,16 @@ func RunCommandUse(args docopt.Opts, indentationLevel ...uint) error {
 	}
 
 	intro(manifest, baseIndent)
-	wantsSource := false
-	skipQuestion, _ := args.Bool("--skip-manifest-source")
-	if !skipQuestion {
-		survey.AskOne(&survey.Confirm{
-			Message: "Show the manifest source?",
-		}, &wantsSource)
-	}
-	if wantsSource {
-		showManifestSource(manifest)
-	}
+	skipSource, err := args.Bool("--skip-manifest-source")
+	manifest.AskToSeeManifestSource(skipSource)
 
 	// Detect OS
 	operatingSystem := GOOStoOS(runtime.GOOS)
+
 	// Get all profile directories
-	selectedProfilesString, _ := args.String("--profiles")
-	var selectedProfiles []FirefoxProfile
-	if selectedProfilesString != "" {
-		for _, profilePath := range strings.Split(selectedProfilesString, ",") {
-			selectedProfiles = append(selectedProfiles, NewFirefoxProfileFromPath(profilePath))
-		}
-	} else {
-		li(baseIndent+0, "Getting profiles")
-		profilesDir, _ := args.String("--profiles-dir")
-		profiles, err := Profiles(profilesDir)
-		if err != nil {
-			return fmt.Errorf("couldn't get profile directories: %w", err)
-		}
-		// Choose profiles
-		// TODO smart default (based on {{profileDirectory}}/times.json:firstUse)
-		selectAllProfilePaths, _ := args.Bool("--all-profiles")
-		if selectAllProfilePaths {
-			li(baseIndent+0, "Selecting all profiles")
-			selectedProfiles = profiles
-		} else {
-			selectedProfiles = AskProfiles(profiles, baseIndent)
-		}
+	selectedProfiles, err := SelectProfiles(baseIndent, args)
+	if err != nil {
+		return err
 	}
 
 	if len(selectedProfiles) == 0 {
@@ -92,44 +66,15 @@ func RunCommandUse(args docopt.Opts, indentationLevel ...uint) error {
 	}
 
 	// Choose variant
-	variantName, _ := args.String("VARIANT")
-	if len(manifest.AvailableVariants()) > 0 && variantName == "" {
-		li(baseIndent+0, "Please choose the theme's variant")
-		variantPrompt := &survey.Select{
-			Message: "Install variant",
-			Options: manifest.AvailableVariants(),
-			VimMode: VimModeEnabled(),
-		}
-		survey.AskOne(variantPrompt, &variantName)
-		// user Ctrl-C'd
-		if variantName == "" {
-			return nil
-		}
+	variant, cancel := manifest.ChooseVariant(baseIndent, args)
+	if cancel {
+		return nil
 	}
-	variant := manifest.Variants[variantName]
 	manifest, actionsNeeded := manifest.WithVariant(variant)
-	// FIXME for now switching branches just re-downloads the entire thing to a new dir with the new branch
-	// ideal thing would be to copy from the root variant to the new variant, cd into it then `git switch` there.
-	if actionsNeeded.reDownload || actionsNeeded.switchBranch {
-		li(baseIndent+0, "Downloading the variant")
-		d("re-downloading: new repo is %s", manifest.DownloadAt)
-		uri, typ, err := ResolveURL(manifest.DownloadAt)
-		if err != nil {
-			return fmt.Errorf("while resolving URL %s: %w", manifest.DownloadAt, err)
-		}
-
-		_, err = Download(uri, typ, manifest)
-		if err != nil {
-			return fmt.Errorf("couldn't download the variant at %s: %w", uri, err)
-		}
-	}
+	manifest.ReDownloadIfNeeded(baseIndent, actionsNeeded)
 
 	// Check for OS compatibility
-	for k, v := range manifest.OSNames {
-		if k == operatingSystem && v == "" {
-			warn("This theme is marked as incompatible with %s. Things might not work.", operatingSystem)
-		}
-	}
+	manifest.WarnIfIncompatibleWithOS()
 
 	// For each profile directory...
 	singleProfile := len(selectedProfiles) == 1
@@ -223,38 +168,11 @@ func RunCommandUse(args docopt.Opts, indentationLevel ...uint) error {
 
 	// Ask to open extensions' pages
 	if len(manifest.Addons) > 0 {
-		acceptOpenExtensionPages := false
-		survey.AskOne(&survey.Confirm{
-			Message: fmt.Sprintf("This theme suggests installing %d %s. Open %s?",
-				len(manifest.Addons),
-				plural("addon", len(manifest.Addons)),
-				plural("its page", len(manifest.Addons), "their pages"),
-			),
-			Default: acceptOpenExtensionPages,
-		}, &acceptOpenExtensionPages)
-
-		if acceptOpenExtensionPages {
+		if ConfirmInstallAddons(manifest.Addons) {
 			for _, profile := range selectedProfiles {
 				li(baseIndent+0, "With profile "+filepath.Base(profile.Path))
-				for _, url := range manifest.Addons {
-					li(baseIndent+1, "Opening [blue][bold]%s", url)
-					li(baseIndent+1, "[yellow]Waiting for you to close Firefox")
-					var command *exec.Cmd
-					switch operatingSystem {
-					case "linux":
-						command = exec.Command("firefox", "--new-tab", url, "--profile", profile.Path)
-					case "macos":
-						command = exec.Command("open", "-a", "firefox", url, "--args", "--profile", profile.Path)
-					case "windows":
-						command = exec.Command("start", "firefox", "-profile", profile.Path, url)
-					default:
-						warn("unrecognized OS %s, cannot open firefox automatically. Open %s in firefox using profile %s", operatingSystem, url, profile)
-					}
-					err = command.Run()
-					if err != nil {
-						return fmt.Errorf("couldn't open %q: while running %s: %w", url, command.String(), err)
-					}
-					break
+				for _, addonURL := range manifest.Addons {
+					profile.InstallAddon(baseIndent, operatingSystem, addonURL)
 				}
 			}
 		}

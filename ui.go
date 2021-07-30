@@ -9,6 +9,7 @@ import (
 	"github.com/AlecAivazis/survey/v2"
 	chromaQuick "github.com/alecthomas/chroma/quick"
 	"github.com/charmbracelet/glamour"
+	"github.com/docopt/docopt-go"
 	"github.com/mitchellh/colorstring"
 )
 
@@ -195,4 +196,74 @@ func AskProfiles(profiles []FirefoxProfile, baseIndentation ...uint) []FirefoxPr
 	}
 
 	return selectedProfiles
+}
+
+func (t Theme) AskToSeeManifestSource(skip bool) {
+	wantsSource := false
+	if !skip {
+		survey.AskOne(&survey.Confirm{
+			Message: "Show the manifest source?",
+		}, &wantsSource)
+	}
+	if wantsSource {
+		showManifestSource(t)
+	}
+}
+
+func SelectProfiles(baseIndent uint, args docopt.Opts) ([]FirefoxProfile, error) {
+	selectedProfilesString, _ := args.String("--profiles")
+	var selectedProfiles []FirefoxProfile
+	if selectedProfilesString != "" {
+		for _, profilePath := range strings.Split(selectedProfilesString, ",") {
+			selectedProfiles = append(selectedProfiles, NewFirefoxProfileFromPath(profilePath))
+		}
+	} else {
+		li(baseIndent+0, "Getting profiles")
+		profilesDir, _ := args.String("--profiles-dir")
+		profiles, err := Profiles(profilesDir)
+		if err != nil {
+			return []FirefoxProfile{}, fmt.Errorf("couldn't get profile directories: %w", err)
+		}
+		// Choose profiles
+		// TODO smart default (based on {{profileDirectory}}/times.json:firstUse)
+		selectAllProfilePaths, _ := args.Bool("--all-profiles")
+		if selectAllProfilePaths {
+			li(baseIndent+0, "Selecting all profiles")
+			selectedProfiles = profiles
+		} else {
+			selectedProfiles = AskProfiles(profiles, baseIndent)
+		}
+	}
+	return selectedProfiles, nil
+}
+
+func (t Theme) ChooseVariant(baseIndent uint, args docopt.Opts) (chosen Variant, cancel bool) {
+	variantName, _ := args.String("VARIANT")
+	if len(t.AvailableVariants()) > 0 && variantName == "" {
+		li(baseIndent+0, "Please choose the theme's variant")
+		variantPrompt := &survey.Select{
+			Message: "Install variant",
+			Options: t.AvailableVariants(),
+			VimMode: VimModeEnabled(),
+		}
+		survey.AskOne(variantPrompt, &variantName)
+		// user Ctrl-C'd
+		if variantName == "" {
+			return Variant{}, true
+		}
+	}
+	return t.Variants[variantName], false
+}
+
+func ConfirmInstallAddons(addons []string) bool {
+	acceptOpenExtensionPages := false
+	survey.AskOne(&survey.Confirm{
+		Message: fmt.Sprintf("This theme suggests installing %d %s. Open %s?",
+			len(addons),
+			plural("addon", len(addons)),
+			plural("its page", len(addons), "their pages"),
+		),
+		Default: acceptOpenExtensionPages,
+	}, &acceptOpenExtensionPages)
+	return acceptOpenExtensionPages
 }

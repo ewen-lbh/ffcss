@@ -8,6 +8,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"regexp"
+	"runtime"
 
 	"github.com/evilsocket/islazy/zip"
 )
@@ -266,4 +267,37 @@ func isURLClonable(URL string) bool {
 	}
 	warn("could not determine clonability of %s: while running git-ls-remote: %w: %s\n", URL, err, output)
 	return false
+}
+
+// ReDownloadIfNeeded re-downloads the repo, actionNeeded.reDownload
+// is true
+func (t Theme) ReDownloadIfNeeded(baseIndent uint, actionsNeeded struct {
+	switchBranch bool
+	reDownload   bool
+}) error {
+	// FIXME for now switching branches just re-downloads the entire thing to a new dir with the new branch
+	// ideal thing would be to copy from the root variant to the new variant, cd into it then `git switch` there.
+	if actionsNeeded.reDownload || actionsNeeded.switchBranch {
+		li(baseIndent+0, "Downloading the variant")
+		d("re-downloading: new repo is %s", t.DownloadAt)
+		uri, typ, err := ResolveURL(t.DownloadAt)
+		if err != nil {
+			return fmt.Errorf("while resolving URL %s: %w", t.DownloadAt, err)
+		}
+
+		_, err = Download(uri, typ, t)
+		if err != nil {
+			return fmt.Errorf("couldn't download the variant at %s: %w", uri, err)
+		}
+	}
+	return nil
+}
+
+func (t Theme) WarnIfIncompatibleWithOS() {
+	operatingSystem := GOOStoOS(runtime.GOOS)
+	for k, v := range t.OSNames {
+		if k == operatingSystem && v == "" {
+			warn("This theme is marked as incompatible with %s. Things might not work.", operatingSystem)
+		}
+	}
 }
