@@ -45,7 +45,7 @@ func TestRenderFileTemplate(t *testing.T) {
 
 }
 
-func TestDestinationPathOf(t *testing.T) {
+func TestDestinationPathOfAsset(t *testing.T) {
 	manifest := Theme{
 		DownloadedTo: CacheDir("simplerentfox/_"),
 		ExplicitName: "materialfox",

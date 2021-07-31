@@ -9,6 +9,7 @@ import (
 )
 
 var currentUser user.User
+var realHomedir string
 var mockedHomedir string
 var mockedProfile FirefoxProfile
 var mockedStdout bytes.Buffer
@@ -17,7 +18,8 @@ var testarea = filepath.Join(cwd(), "testarea")
 func init() {
 	usr, _ := user.Current()
 	currentUser = *usr
-	mockedHomedir, _ = os.UserHomeDir()
+	realHomedir, _ = os.UserHomeDir()
+	mockedHomedir = os.Getenv("HOME")
 	mockedProfile = NewFirefoxProfileFromPath(filepath.Join(mockedHomedir, ".mozilla", "firefox", "667ekipp.default-release"))
 	out = &mockedStdout
 }
