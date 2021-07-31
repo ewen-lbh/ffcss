@@ -18,6 +18,7 @@ func (ffp FirefoxProfile) InstallAddon(operatingSystem string, addonURL string) 
 		command = exec.Command("start", "firefox", "-profile", ffp.Path, addonURL)
 	default:
 		warn("unrecognized OS %s, cannot open firefox automatically. Open %s in firefox using profile %s", operatingSystem, addonURL, ffp)
+		return nil
 	}
 	err := command.Run()
 	if err != nil {
