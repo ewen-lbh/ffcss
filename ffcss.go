@@ -15,6 +15,6 @@ const (
 var (
 	VersionString = fmt.Sprintf("%d.%d.%d", VersionMajor, VersionMinor, VersionPatch)
 	// Used to capture stdout instead of printing in tests
-	out io.Writer = os.Stdout
-	BaseIndentLevel uint = 0
+	out             io.Writer = os.Stdout
+	BaseIndentLevel uint      = 0
 )
