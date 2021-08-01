@@ -121,10 +121,10 @@ func plural(singular string, amount int, optionalPlural ...string) string {
 	return plural
 }
 
-// d prints a debug log line
+// d prints a debug log line. This one always prints to the real stdout, ignoring a possibly mocked stdout
 func d(s string, fmtArgs ...interface{}) {
 	if os.Getenv("DEBUG") != "" {
-		printf(colorizer.Color("[dim][ DEBUG ] "+s+"\n"), fmtArgs...)
+		fmt.Printf(colorizer.Color("[dim][ DEBUG ] "+s+"\n"), fmtArgs...)
 	}
 }
 
