@@ -21,11 +21,11 @@ func (store Catalog) Lookup(query string) (Theme, error) {
 	originalQuery := query
 	query = lookupPreprocess(query)
 	processedThemeNames := make([]string, 0, len(store))
-	for name, theme := range store {
-		if lookupPreprocess(name) == query {
+	for _, theme := range store {
+		if lookupPreprocess(theme.Name()) == query {
 			return theme, nil
 		}
-		processedThemeNames = append(processedThemeNames, lookupPreprocess(name))
+		processedThemeNames = append(processedThemeNames, lookupPreprocess(theme.Name()))
 	}
 	// Use fuzzy search for did-you-mean errors
 	suggestion, _ := edlib.FuzzySearchThreshold(query, processedThemeNames, 0.75, edlib.Levenshtein)
