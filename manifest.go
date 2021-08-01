@@ -276,7 +276,7 @@ func (t Theme) GenerateManifest() (string, error) {
 
 // WriteManifest writes the contents of t as a YAML file named ffcss.yaml
 // inside inDirectory.
-// It adds a comment mentionning the documentation at the top of the file.
+// It adds a comment mentioning the documentation at the top of the file.
 // See GenerateManifest to see how the contents of the file are generated.
 func (t Theme) WriteManifest(inDirectory string) error {
 	content, err := t.GenerateManifest()

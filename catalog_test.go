@@ -45,7 +45,7 @@ func TestLookupPreprocess(t *testing.T) {
 		{"you. shall. not. pass.", "youshallnotpass"},
 		{"wHaTevER", "whatever"},
 		{"all-thE.puncT_uAtio    n", "allthepunctuation"},
-		{"with great power\u037e comes great responsability.", "withgreatpower;comesgreatresponsability"},
+		{"with great power\u037e comes great responsibility.", "withgreatpower;comesgreatresponsibility"},
 		{"𝔽𝔸ℕℂ𝕐", "fancy"},
 	}
 
