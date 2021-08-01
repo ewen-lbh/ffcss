@@ -82,8 +82,9 @@ func RunCommandUse(args docopt.Opts) error {
 		if !singleProfile {
 			li(0, "With profile "+filepath.Base(profile.Path))
 		}
-		err = RenameIfExists(filepath.Join(profile.Path, "chrome"), filepath.Join(profile.Path, "chrome.bak"))
+
 		li(1, "Backing up the chrome/ folder")
+		err = profile.BackupChrome()
 		if err != nil {
 			return fmt.Errorf("while backing up chrome directory: %w", err)
 		}

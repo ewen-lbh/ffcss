@@ -178,3 +178,8 @@ func (t Theme) IncompatibleProfiles(profiles []FirefoxProfile) ([]firefoxProfile
 	}
 	return []firefoxProfileWithVersion{}, nil
 }
+
+// BackupChrome moves the chrome/ folder to chrome.bak/
+func (ffp FirefoxProfile) BackupChrome() error {
+	return RenameIfExists(filepath.Join(ffp.Path, "chrome"), filepath.Join(ffp.Path, "chrome.bak"))
+}
