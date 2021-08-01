@@ -1,0 +1,16 @@
+ffcss: 0
+
+name: lepton
+download: https://github.com/black7375/Firefox-UI-Fix
+
+user.js: user.js
+userChrome: userChrome.css
+userContent: userContent.css
+
+asssets:
+  - icons/**
+
+variants:
+  default: {}
+  photon-style:
+    branch: photon-style
