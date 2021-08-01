@@ -40,7 +40,7 @@ func (store Catalog) Lookup(query string) (Theme, error) {
 // to search for something.
 // For example, it is used by (ThemeStore).Lookup
 func lookupPreprocess(s string) string {
-	return strings.ToLower(norm.NFC.String(strings.Trim(s, "-_ .")))
+	return strings.ToLower(norm.NFKD.String(regexp.MustCompile(`[-_ .]`).ReplaceAllString(s, "")))
 }
 
 // LoadCatalog loads a directory of theme manifests.
