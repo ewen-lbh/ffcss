@@ -6,7 +6,7 @@ export SHELLOPTS:=$(if $(SHELLOPTS),$(SHELLOPTS):)pipefail:errexit
 
 build:
 	go mod tidy
-	go build
+	cd cmd/ffcss && go build
 
 tests:
 # setup mocks
@@ -32,7 +32,7 @@ install:
 # copy builtin themes
 	cp themes/*.yaml ~/.config/ffcss/themes/
 # copy binary to some standard place that's in $PATH most of the time
-	cp ffcss ~/.local/bin/ffcss
+	cp cmd/ffcss/ffcss ~/.local/bin/ffcss
 
 format:
 	gofmt -s -w **.go

@@ -1,4 +1,4 @@
-package main
+package ffcss
 
 import (
 	"fmt"
@@ -115,7 +115,7 @@ func LoadManifest(manifestPath string) (manifest Theme, err error) {
 	err = yaml.Unmarshal(raw, &manifest)
 
 	if manifest.FfcssVersion != VersionMajor && !ThemeCompatWarningShown && manifest.FfcssVersion != 0 {
-		warn("ffcss %s is installed, but you are using a theme made for ffcss %d.X.X. Some things may not work.\n", VersionString, manifest.FfcssVersion)
+		Warn("ffcss %s is installed, but you are using a theme made for ffcss %d.X.X. Some things may not work.\n", VersionString, manifest.FfcssVersion)
 		ThemeCompatWarningShown = true
 	}
 

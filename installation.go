@@ -1,4 +1,4 @@
-package main
+package ffcss
 
 import (
 	"fmt"
@@ -13,7 +13,7 @@ func (t Theme) InstallAssets(operatingSystem string, variant Variant, profileDir
 	if err != nil {
 		return fmt.Errorf("while gathering assets: %w", err)
 	}
-	d("gathered %d asset(s)", len(files))
+	D("gathered %d asset(s)", len(files))
 
 	for _, file := range files {
 		stat, err := os.Stat(file)
@@ -45,7 +45,7 @@ func (t Theme) InstallAssets(operatingSystem string, variant Variant, profileDir
 		if err != nil {
 			return fmt.Errorf("while writing to %s: %w", destPath, err)
 		}
-		d("wrote %s", destPath)
+		D("wrote %s", destPath)
 
 	}
 	return nil
@@ -78,7 +78,7 @@ func (t Theme) InstallUserJS(operatingSystem string, variant Variant, profileDir
 
 	if additionalContent != "" {
 		content = []byte(string(content) + "\n" + additionalContent)
-		d("generated additional user.js content from config entries: %q", additionalContent)
+		D("generated additional user.js content from config entries: %q", additionalContent)
 	}
 
 	if string(content) == "" {
@@ -90,7 +90,7 @@ func (t Theme) InstallUserJS(operatingSystem string, variant Variant, profileDir
 		return fmt.Errorf("while writing: %w", err)
 	}
 
-	d("installed user.js @ %s", filepath.Join(profileDir, "user.js"))
+	D("installed user.js @ %s", filepath.Join(profileDir, "user.js"))
 
 	return nil
 }
@@ -111,7 +111,7 @@ func (t Theme) InstallUserChrome(os string, variant Variant, profileDir string) 
 		return fmt.Errorf("while writing: %w", err)
 	}
 
-	d("installed userChrome.css @ %s", filepath.Join(profileDir, "chrome", "userChrome.css"))
+	D("installed userChrome.css @ %s", filepath.Join(profileDir, "chrome", "userChrome.css"))
 
 	return nil
 }
@@ -132,7 +132,7 @@ func (t Theme) InstallUserContent(os string, variant Variant, profileDir string)
 		return fmt.Errorf("while writing: %w", err)
 	}
 
-	d("installed userContent.css @ %s", filepath.Join(profileDir, "chrome", "userContent.css"))
+	D("installed userContent.css @ %s", filepath.Join(profileDir, "chrome", "userContent.css"))
 
 	return nil
 }

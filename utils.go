@@ -1,4 +1,4 @@
-package main
+package ffcss
 
 import (
 	"net/url"
@@ -74,14 +74,6 @@ func VimModeEnabled() bool {
 	}
 	progname := filepath.Base(os.Getenv("EDITOR"))
 	return progname == "vim" || progname == "nvim"
-}
-
-func apply(f func(string) string, in []string) []string {
-	out := make([]string, 0, len(in))
-	for _, item := range in {
-		out = append(out, f(item))
-	}
-	return out
 }
 
 // prefixEachLine prepends each line of s with the provided prefix (with).

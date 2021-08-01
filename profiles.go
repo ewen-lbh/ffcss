@@ -1,4 +1,4 @@
-package main
+package ffcss
 
 import (
 	"fmt"
@@ -18,8 +18,8 @@ type FirefoxProfile struct {
 	Path string
 }
 type firefoxProfileWithVersion struct {
-	profile FirefoxProfile
-	version FirefoxVersion
+	Profile FirefoxProfile
+	Version FirefoxVersion
 }
 
 func (ffp FirefoxProfile) RegisterCurrentTheme(themeName string) error {
@@ -66,7 +66,7 @@ func NewFirefoxProfileFromDisplay(displayString string, profiles []FirefoxProfil
 			return ffp
 		}
 	}
-	d("while searching for %s in %v", displayString, profiles)
+	D("while searching for %s in %v", displayString, profiles)
 	panic("internal error: can't get profile from display string")
 }
 
@@ -164,14 +164,11 @@ func (t Theme) IncompatibleProfiles(profiles []FirefoxProfile) ([]firefoxProfile
 		for _, profile := range profiles {
 			profileVersion, err := profile.FirefoxVersion()
 			if err != nil {
-				warn("Couldn't get firefox version for profile %s", profile)
+				Warn("Couldn't get firefox version for profile %s", profile)
 			}
 			fulfillsConstraint := t.FirefoxVersionConstraint.FulfilledBy(profileVersion)
 			if !fulfillsConstraint {
-				incompatibleProfileDirs = append(incompatibleProfileDirs, struct {
-					profile FirefoxProfile
-					version FirefoxVersion
-				}{profile, profileVersion})
+				incompatibleProfileDirs = append(incompatibleProfileDirs, firefoxProfileWithVersion{profile, profileVersion})
 			}
 		}
 		return incompatibleProfileDirs, nil

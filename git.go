@@ -1,4 +1,4 @@
-package main
+package ffcss
 
 import (
 	"bytes"
@@ -15,7 +15,7 @@ func getCurrentRepoRemote() string {
 
 	err := command.Run()
 	if err != nil {
-		warn("Could not get the current git remote origin's URL. Leaving repository entry blank.\n")
+		Warn("Could not get the current git remote origin's URL. Leaving repository entry blank.\n")
 		return ""
 	}
 	return out.String()

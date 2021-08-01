@@ -1,4 +1,4 @@
-package main
+package ffcss
 
 import (
 	"io/fs"
@@ -11,7 +11,7 @@ import (
 
 func fillCache() {
 	exec.Command("cp", "-r", "testdata/home/.cache", "testarea/home")
-	d("filled mock cache")
+	D("filled mock cache")
 }
 
 func TestCleanDownloadArea(t *testing.T) {

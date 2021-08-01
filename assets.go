@@ -1,4 +1,4 @@
-package main
+package ffcss
 
 import (
 	"fmt"
@@ -11,7 +11,7 @@ import (
 
 func RenderFileTemplate(f FileTemplate, operatingSystem string, variant Variant, osRenameMap map[string]string) string {
 	if strings.Contains(strings.Trim(f, " "), "{{variant}}") && variant.Name == "" {
-		warn("%q uses {{variant}} which is empty\n", f)
+		Warn("%q uses {{variant}} which is empty\n", f)
 	}
 	var osName string
 	if osRenameMap[operatingSystem] == "" {
@@ -50,7 +50,7 @@ func (t Theme) AssetsPaths(os string, variant Variant) ([]string, error) {
 	resolvedFiles := make([]string, 0)
 	for _, template := range t.Assets {
 		glob := RenderFileTemplate(template, os, variant, t.OSNames)
-		d("looking for assets: globbing %q", filepath.Join(t.DownloadedTo, glob))
+		D("looking for assets: globbing %q", filepath.Join(t.DownloadedTo, glob))
 		glob = filepath.Clean(filepath.Join(t.DownloadedTo, glob))
 		files, err := doublestar.Glob(glob)
 		if err != nil {

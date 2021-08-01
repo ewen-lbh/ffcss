@@ -1,4 +1,4 @@
-package main
+package ffcss
 
 import (
 	"fmt"
@@ -43,14 +43,14 @@ func printfln(s string, args ...interface{}) {
 	printf(s+"\n", args...)
 }
 
-// Show the introduction message before installation
-func intro(theme Theme, indentLevel uint) {
+// DescribeTheme shows the introduction message before installation
+func DescribeTheme(theme Theme, indentLevel uint) {
 	printf("\n")
 	indentation := strings.Repeat(indent, int(indentLevel))
 
 	var author string
 	urlParts := strings.Split(theme.DownloadAt, "/")
-	d("urlParts is %#v", urlParts)
+	D("urlParts is %#v", urlParts)
 	if theme.Author != "" {
 		author = theme.Author
 	} else if strings.Contains(theme.DownloadAt, "github.com") && len(urlParts) == 5 {
@@ -78,13 +78,13 @@ func intro(theme Theme, indentLevel uint) {
 	if theme.Description != "" {
 		printf("\n")
 		gutter := colorstring.Color(indentation + "[blue]│")
-		d("gutter is %q", gutter)
+		D("gutter is %q", gutter)
 		markdownRendered, err := glamour.Render(theme.Description, "dark")
 		if err != nil {
 			markdownRendered = theme.Description
 		}
 		printf("\n")
-		d("splitted is %#v", strings.Split(markdownRendered, "\n"))
+		D("splitted is %#v", strings.Split(markdownRendered, "\n"))
 		for _, line := range strings.Split(markdownRendered, "\n") {
 			if strings.TrimSpace(line) == "" {
 				continue
@@ -121,29 +121,30 @@ func plural(singular string, amount int, optionalPlural ...string) string {
 	return plural
 }
 
-// d prints a debug log line. This one always prints to the real stdout, ignoring a possibly mocked stdout
-func d(s string, fmtArgs ...interface{}) {
+// D prints a debug log line. This one always prints to the real stdout, ignoring a possibly mocked stdout
+func D(s string, fmtArgs ...interface{}) {
 	if os.Getenv("DEBUG") != "" {
 		fmt.Printf(colorizer.Color("[dim][ DEBUG ] "+s+"\n"), fmtArgs...)
 	}
 }
 
-// warn prints a log line with "warning" styling
-func warn(s string, fmtArgs ...interface{}) {
+// Warn prints a log line with "warning" styling
+func Warn(s string, fmtArgs ...interface{}) {
 	printf(colorizer.Color("[yellow][bold]"+s+"\n"), fmtArgs...)
 }
 
-// showError is like warn but with "error" styling
-func showError(s string, fmtArgs ...interface{}) {
+// Error is like warn but with "error" styling
+func Error(s string, fmtArgs ...interface{}) {
 	printf(colorizer.Color("[red][bold]"+s+"\n"), fmtArgs...)
 }
 
-// display a list item
-func li(indentLevel uint, item string, fmtArgs ...interface{}) {
-	lic("•", indentLevel, item, fmtArgs...)
+// Step displays a list item
+func Step(indentLevel uint, item string, fmtArgs ...interface{}) {
+	StepC("•", indentLevel, item, fmtArgs...)
 }
 
-func lic(bulletChar string, indentLevel uint, item string, fmtArgs ...interface{}) {
+// StepC is like Step, but the bullet point characters is customizable
+func StepC(bulletChar string, indentLevel uint, item string, fmtArgs ...interface{}) {
 	indentLevel += BaseIndentLevel
 	var color string
 	if int(indentLevel) > len(BulletColorsByIndentLevel)-1 {
@@ -168,7 +169,7 @@ func AskProfiles(profiles []FirefoxProfile) []FirefoxProfile {
 	// XXX the whole display thing should be put in survey.MultiSelect.Renderer, look into that.
 	selectedProfileDirsDisplay := make([]string, 0)
 
-	li(0, "Please select profiles to apply the theme on")
+	Step(0, "Please select profiles to apply the theme on")
 
 	profileDirsDisplay := make([]string, 0)
 	for _, profile := range profiles {
@@ -208,7 +209,7 @@ func SelectProfiles(args docopt.Opts) ([]FirefoxProfile, error) {
 			selectedProfiles = append(selectedProfiles, NewFirefoxProfileFromPath(profilePath))
 		}
 	} else {
-		li(0, "Getting profiles")
+		Step(0, "Getting profiles")
 		profilesDir, _ := args.String("--profiles-dir")
 		profiles, err := Profiles(profilesDir)
 		if err != nil {
@@ -218,7 +219,7 @@ func SelectProfiles(args docopt.Opts) ([]FirefoxProfile, error) {
 		// TODO smart default (based on {{profileDirectory}}/times.json:firstUse)
 		selectAllProfilePaths, _ := args.Bool("--all-profiles")
 		if selectAllProfilePaths {
-			li(0, "Selecting all profiles")
+			Step(0, "Selecting all profiles")
 			selectedProfiles = profiles
 		} else {
 			selectedProfiles = AskProfiles(profiles)
@@ -230,7 +231,7 @@ func SelectProfiles(args docopt.Opts) ([]FirefoxProfile, error) {
 func (t Theme) ChooseVariant(args docopt.Opts) (chosen Variant, cancel bool) {
 	variantName, _ := args.String("VARIANT")
 	if len(t.AvailableVariants()) > 0 && variantName == "" {
-		li(0, "Please choose the theme's variant")
+		Step(0, "Please choose the theme's variant")
 		variantPrompt := &survey.Select{
 			Message: "Install variant",
 			Options: t.AvailableVariants(),

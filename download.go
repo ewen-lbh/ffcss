@@ -1,4 +1,4 @@
-package main
+package ffcss
 
 import (
 	"errors"
@@ -56,15 +56,15 @@ func ResolveURL(themeName string) (URL string, typ string, err error) {
 // In all cases, the theme is downloaded to ~/.cache/ffcss/{{themeName}}.
 // If themeName is not provided, the theme will first be downloaded to a temporary location to get the name from the manifest.
 func Download(URL string, typ string, themeManifest ...Theme) (manifest Theme, err error) {
-	d("typ is %s", typ)
+	D("typ is %s", typ)
 	if len(themeManifest) >= 1 {
 		manifest = themeManifest[0]
-		d("manifest is provided")
+		D("manifest is provided")
 		// Don't re-download if it already exists
-		d("checking if theme is in cache @ %s", manifest.DownloadedTo)
+		D("checking if theme is in cache @ %s", manifest.DownloadedTo)
 		stat, err := os.Stat(manifest.DownloadedTo)
 		if err == nil && stat.IsDir() {
-			d("skipped downloading of %s [%s#%s]", URL, manifest.Name(), manifest.CurrentVariantName)
+			D("skipped downloading of %s [%s#%s]", URL, manifest.Name(), manifest.CurrentVariantName)
 			return manifest, nil
 		}
 	}
@@ -131,7 +131,7 @@ func DownloadRepository(URL string, tempCloneTo string, cloneTo string, themeMan
 	if hasManifest && manifest.Branch != "" {
 		cloneArgs = append(cloneArgs, "--branch", manifest.Branch)
 	}
-	d("Cloning repo...")
+	D("Cloning repo...")
 	process := exec.Command("git", cloneArgs...)
 	//TODO print this in verbose mode: fmt.Fprintf(out, "DEBUG $ %s\n", process.String())
 	output, err := process.CombinedOutput()
@@ -148,7 +148,7 @@ func DownloadRepository(URL string, tempCloneTo string, cloneTo string, themeMan
 			return manifest, fmt.Errorf("could not load manifest: %w", err)
 		}
 		if manifest.Branch != "" {
-			d("switching to branch %q", manifest.Branch)
+			D("switching to branch %q", manifest.Branch)
 			err = SwitchGitBranch(manifest.Branch, tempCloneTo)
 			if err != nil {
 				return manifest, fmt.Errorf("while switching to branch %q: %w", manifest.Branch, err)
@@ -157,14 +157,14 @@ func DownloadRepository(URL string, tempCloneTo string, cloneTo string, themeMan
 	}
 
 	if manifest.Commit != "" {
-		d("switching to commit %q", manifest.Commit)
+		D("switching to commit %q", manifest.Commit)
 		err = SwitchGitCommit(manifest.Commit, tempCloneTo)
 		if err != nil {
 			return manifest, fmt.Errorf("while checking out commit %q: %w", manifest.Commit, err)
 		}
 	}
 	if manifest.Tag != "" {
-		d("switching to tag %q", manifest.Tag)
+		D("switching to tag %q", manifest.Tag)
 		err = SwitchGitTag(manifest.Tag, tempCloneTo)
 		if err != nil {
 			return manifest, fmt.Errorf("while checking out tag %q: %w", manifest.Tag, err)
@@ -214,14 +214,14 @@ func DownloadFromZip(URL string, tempDownloadTo string, finalDownloadTo string, 
 
 	// Download it
 	process := exec.Command("wget", URL, "-O", tempDownloadTo)
-	d("Running %s", process.String())
+	D("Running %s", process.String())
 	output, err := process.CombinedOutput()
 	if err != nil {
 		return manifest, fmt.Errorf("couldn't download zip file: %w: %s", err, output)
 	}
 
 	// Unzip it, check contents
-	d("Unzipping %s to %s", tempDownloadTo, filepath.Dir(tempDownloadTo))
+	D("Unzipping %s to %s", tempDownloadTo, filepath.Dir(tempDownloadTo))
 	unzipped, err := zip.Unzip(tempDownloadTo, filepath.Dir(tempDownloadTo))
 	if err != nil {
 		return manifest, fmt.Errorf("while unzipping %s: %w", tempDownloadTo, err)
@@ -265,7 +265,7 @@ func isURLClonable(URL string) bool {
 			return false
 		}
 	}
-	warn("could not determine clonability of %s: while running git-ls-remote: %w: %s\n", URL, err, output)
+	Warn("could not determine clonability of %s: while running git-ls-remote: %w: %s\n", URL, err, output)
 	return false
 }
 
@@ -278,8 +278,8 @@ func (t Theme) ReDownloadIfNeeded(actionsNeeded struct {
 	// FIXME for now switching branches just re-downloads the entire thing to a new dir with the new branch
 	// ideal thing would be to copy from the root variant to the new variant, cd into it then `git switch` there.
 	if actionsNeeded.reDownload || actionsNeeded.switchBranch {
-		li(0, "Downloading the variant")
-		d("re-downloading: new repo is %s", t.DownloadAt)
+		Step(0, "Downloading the variant")
+		D("re-downloading: new repo is %s", t.DownloadAt)
 		uri, typ, err := ResolveURL(t.DownloadAt)
 		if err != nil {
 			return fmt.Errorf("while resolving URL %s: %w", t.DownloadAt, err)
@@ -297,7 +297,7 @@ func (t Theme) WarnIfIncompatibleWithOS() {
 	operatingSystem := GOOStoOS(runtime.GOOS)
 	for k, v := range t.OSNames {
 		if k == operatingSystem && v == "" {
-			warn("This theme is marked as incompatible with %s. Things might not work.", operatingSystem)
+			Warn("This theme is marked as incompatible with %s. Things might not work.", operatingSystem)
 		}
 	}
 }
