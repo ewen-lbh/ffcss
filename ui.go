@@ -130,20 +130,12 @@ func d(s string, fmtArgs ...interface{}) {
 
 // warn prints a log line with "warning" styling
 func warn(s string, fmtArgs ...interface{}) {
-	if os.Getenv("DEBUG") != "" {
-		printf(colorizer.Color("[yellow][bold][WARNING] "+s+"\n"), fmtArgs...)
-	} else {
-		printf(colorizer.Color("[yellow][bold]"+s+"\n"), fmtArgs...)
-	}
+	printf(colorizer.Color("[yellow][bold]"+s+"\n"), fmtArgs...)
 }
 
 // showError is like warn but with "error" styling
 func showError(s string, fmtArgs ...interface{}) {
-	if os.Getenv("DEBUG") != "" {
-		printf(colorizer.Color("[red][bold][ ERROR ] "+s+"\n"), fmtArgs...)
-	} else {
-		printf(colorizer.Color("[red][bold]"+s+"\n"), fmtArgs...)
-	}
+	printf(colorizer.Color("[red][bold]"+s+"\n"), fmtArgs...)
 }
 
 // display a list item
@@ -161,10 +153,6 @@ func lic(bulletChar string, indentLevel uint, item string, fmtArgs ...interface{
 
 	bullet := strings.Repeat(indent, int(indentLevel)) +
 		colorizer.Color("["+color+"]"+bulletChar)
-
-	if os.Getenv("DEBUG") != "" {
-		bullet = "[  LOG  ]"
-	}
 
 	printfln(bullet + " " + colorizer.Color(strings.TrimSpace(fmt.Sprintf(item, fmtArgs...))))
 }
