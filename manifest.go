@@ -15,6 +15,15 @@ var ThemeCompatWarningShown = VersionMajor > 0
 
 type Config map[string]interface{}
 
+func (c Config) Equal(other Config) bool {
+	for k, v := range c {
+		if v != other[k] {
+			return false
+		}
+	}
+	return true
+}
+
 type FileTemplate = string
 
 type Variant struct {
@@ -47,33 +56,39 @@ type Theme struct {
 	DownloadedTo       string `yaml:"-"` // Stores the path to the directory where the theme is cached. Set by .Download().
 
 	// Top-level (non-variant-modifiable)
-	ExplicitName             string `yaml:"name"`
+	FfcssVersion             int                      `yaml:"ffcss"`
+	FirefoxVersion           string                   `yaml:"firefox,omitempty"`
+	FirefoxVersionConstraint FirefoxVersionConstraint `yaml:"-"`
+	ExplicitName             string                   `yaml:"name"`
+	Author                   string                   `yaml:"by"`
 	Description              string
-	Author                   string `yaml:"by"`
-	FfcssVersion             int    `yaml:"ffcss"`
-	FirefoxVersion           string `yaml:"firefox"`
-	FirefoxVersionConstraint FirefoxVersionConstraint
 	Variants                 map[string]Variant
-	OSNames                  map[string]string `yaml:"os"`
+	OSNames                  map[string]string `yaml:"os,omitempty"`
 
 	// Override-able by variants
 	DownloadAt  string `yaml:"download"`
 	Branch      string
-	Commit      string
-	Tag         string
-	CopyFrom    string `yaml:"copy from"`
+	Commit      string `yaml:",omitempty"`
+	Tag         string `yaml:",omitempty"`
 	Config      Config
 	UserChrome  FileTemplate `yaml:"userChrome"`
 	UserContent FileTemplate `yaml:"userContent"`
 	UserJS      FileTemplate `yaml:"user.js"`
 	Assets      []FileTemplate
+	CopyFrom    string `yaml:"copy from,omitempty"`
+	Addons      []string
 	Run         struct {
 		Before string
 		After  string
 	}
 	Message string
-	Addons  []string
 }
+
+// ManifestKeyGroupsStarts specifies at which keys a group of related keys starts.
+// This assumes that the YAML keys are displayed/written in the order they are defined in (see Theme).
+//
+// It is used to add blank lines in generated manifests: for example, above the 'variant' key, a blank line should be added to add grouping.
+var ManifestKeyGroupsStarts = [...]string{"name", "variants", "os", "download", "config", "run", "message"}
 
 func NewTheme() Theme {
 	return Theme{
@@ -235,22 +250,41 @@ func GetManifestPath(themeRoot string) string {
 // GenerateManifest returns the YAML contents of the manifest corresponding to the given theme.
 // If t.Raw is set, it'll return it.
 // Otherwise, it serializes the values into YAML, following the Theme struct.
-func (t Theme) GenerateManifest() ([]byte, error) {
+func (t Theme) GenerateManifest() (string, error) {
 	if t.Raw != "" {
-		return []byte(t.Raw), nil
+		return t.Raw, nil
 	}
 	t.ExplicitName = t.Name()
-	return yaml.Marshal(t)
+	// Remove redundant keys
+	if t.Config.Equal(NewTheme().Config) {
+		t.Config = Config{}
+	}
+	contentBytes, err := yaml.Marshal(t)
+	if err != nil {
+		return "", err
+	}
+
+	content := string(contentBytes)
+
+	for _, key := range ManifestKeyGroupsStarts {
+		content = strings.Replace(content, key+": ", "\n"+key+": ", 1)
+		content = strings.Replace(content, key+":\n", "\n"+key+":\n", 1)
+	}
+
+	return content, nil
 }
 
 // WriteManifest writes the contents of t as a YAML file named ffcss.yaml
 // inside inDirectory.
+// It adds a comment mentionning the documentation at the top of the file.
 // See GenerateManifest to see how the contents of the file are generated.
 func (t Theme) WriteManifest(inDirectory string) error {
 	content, err := t.GenerateManifest()
 	if err != nil {
 		return fmt.Errorf("while generating manifest contents for %s: %w", t.Name(), err)
 	}
+
+	content = "# This is a manifest for a FirefoxCSS theme. \n# See https://github.com/ewen-lbh/ffcss for more information.\n" + content
 
 	err = ioutil.WriteFile(filepath.Join(inDirectory, "ffcss.yaml"), []byte(content), 0700)
 	if err != nil {
@@ -261,7 +295,7 @@ func (t Theme) WriteManifest(inDirectory string) error {
 }
 
 // InitializeTheme returns a new, blank theme, but with some values guessed from the current context.
-// Meant to be used by "ffcss init"
+// Meant to be used by "ffcss init".
 func InitializeTheme(workingDir string) (Theme, error) {
 	theme := NewTheme()
 
