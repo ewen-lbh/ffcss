@@ -305,7 +305,7 @@ func InitializeTheme(workingDir string) (Theme, error) {
 	}
 
 	if !strings.Contains(theme.DownloadAt, "https://github.com") {
-		theme.ExplicitName = filepath.Dir(workingDir)
+		theme.ExplicitName = filepath.Base(workingDir)
 	}
 
 	return theme, nil
