@@ -5,7 +5,6 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
-	"strings"
 
 	"github.com/docopt/docopt-go"
 )
@@ -34,13 +33,13 @@ func RunCommandUse(args docopt.Opts) error {
 	}
 
 	intro(manifest, BaseIndentLevel)
+
 	skipSource, _ := args.Bool("--skip-manifest-source")
 	manifest.AskToSeeManifestSource(skipSource)
 
 	// Detect OS
 	operatingSystem := GOOStoOS(runtime.GOOS)
 
-	// Get all profile directories
 	selectedProfiles, err := SelectProfiles(args)
 	if err != nil {
 		return err
@@ -49,6 +48,7 @@ func RunCommandUse(args docopt.Opts) error {
 	if len(selectedProfiles) == 0 {
 		return nil
 	}
+	singleProfile := len(selectedProfiles) == 1
 
 	incompatibleProfiles, err := manifest.IncompatibleProfiles(selectedProfiles)
 	if err != nil {
@@ -74,7 +74,6 @@ func RunCommandUse(args docopt.Opts) error {
 	manifest.WarnIfIncompatibleWithOS()
 
 	// For each profile directory...
-	singleProfile := len(selectedProfiles) == 1
 	if singleProfile {
 		BaseIndentLevel--
 	}
@@ -97,16 +96,7 @@ func RunCommandUse(args docopt.Opts) error {
 			if err != nil {
 				return fmt.Errorf("while running pre-install script: %w", err)
 			}
-			fmt.Fprint(
-				out,
-				"\n",
-				prefixEachLine(
-					strings.TrimSpace(output),
-					strings.Repeat(indent, int(BaseIndentLevel)+2),
-				),
-				"\n",
-				"\n",
-			)
+			ShowHookOutput(output)
 		}
 
 		err := os.Mkdir(filepath.Join(profile.Path, "chrome"), 0700)
@@ -144,15 +134,7 @@ func RunCommandUse(args docopt.Opts) error {
 			if err != nil {
 				return fmt.Errorf("while running post-install script: %w", err)
 			}
-			fmt.Fprint(out,
-				"\n",
-				prefixEachLine(
-					strings.TrimSpace(output),
-					strings.Repeat(indent, int(BaseIndentLevel)+2),
-				),
-				"\n",
-				"\n",
-			)
+			ShowHookOutput(output)
 		}
 
 		err = profile.RegisterCurrentTheme(themeName)

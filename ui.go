@@ -257,3 +257,16 @@ func ConfirmInstallAddons(addons []string) bool {
 	}, &acceptOpenExtensionPages)
 	return acceptOpenExtensionPages
 }
+
+func ShowHookOutput(output string) {
+	fmt.Fprint(
+		out,
+		"\n",
+		prefixEachLine(
+			strings.TrimSpace(output),
+			strings.Repeat(indent, int(BaseIndentLevel)+2),
+		),
+		"\n",
+		"\n",
+	)
+}
