@@ -20,8 +20,10 @@ type Catalog map[string]Theme
 func (store Catalog) Lookup(query string) (Theme, error) {
 	originalQuery := query
 	query = lookupPreprocess(query)
+	d("using query %q", query)
 	processedThemeNames := make([]string, 0, len(store))
 	for _, theme := range store {
+		d("\tlooking up against %q (%q)", lookupPreprocess(theme.Name()), theme.Name())
 		if lookupPreprocess(theme.Name()) == query {
 			return theme, nil
 		}
@@ -52,6 +54,13 @@ func LoadCatalog(storeDirectory string) (themes Catalog, err error) {
 	if err != nil {
 		return
 	}
+	d("loading potential themes %v into catalog", func() []string {
+		dirNames := make([]string, 0, len(manifests))
+		for _, dir := range manifests {
+			dirNames = append(dirNames, dir.Name())
+		}
+		return dirNames
+	}())
 	for _, manifest := range manifests {
 		if !themeNamePattern.MatchString(manifest.Name()) {
 			continue
@@ -61,6 +70,7 @@ func LoadCatalog(storeDirectory string) (themes Catalog, err error) {
 		if err != nil {
 			return nil, err
 		}
+		d("\tadding theme from manifest %q", manifest.Name())
 		themes[themeName] = theme
 	}
 	return
