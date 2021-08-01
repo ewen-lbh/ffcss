@@ -19,7 +19,7 @@ func ClearWholeCache() error {
 
 	err = os.Mkdir(CacheDir(), 0777)
 	if err != nil {
-		return  fmt.Errorf("while re-creating empty cache directory at %q: %w", CacheDir(), err)
+		return fmt.Errorf("while re-creating empty cache directory at %q: %w", CacheDir(), err)
 	}
 
 	return nil

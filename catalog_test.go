@@ -39,7 +39,7 @@ func TestCatalogLookup(t *testing.T) {
 }
 
 func TestLookupPreprocess(t *testing.T) {
-	cases := []struct{in, out string}{
+	cases := []struct{ in, out string }{
 		{"same", "same"},
 		{"B  O   N    K", "bonk"},
 		{"you. shall. not. pass.", "youshallnotpass"},
@@ -62,8 +62,8 @@ func TestLoadCatalog(t *testing.T) {
 	actual, err = LoadCatalog(filepath.Join(testarea, "catalogs/various"))
 	assert.NoError(t, err)
 	actualNames := make([]string, 0, len(actual))
-	for name, _ := range actual {
-		actualNames  =append(actualNames, name)
+	for name := range actual {
+		actualNames = append(actualNames, name)
 	}
 	assert.Equal(t, []string{"alpenblue", "flyingfox", "montereyfox", "sometheme"}, actualNames)
 }

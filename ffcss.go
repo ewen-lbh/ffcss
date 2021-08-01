@@ -126,7 +126,7 @@ func RunCommandInit(args docopt.Opts) error {
 
 	theme, err := InitializeTheme(workingDir)
 	if err != nil {
-		return  fmt.Errorf("while initializing theme: %w",  err)
+		return fmt.Errorf("while initializing theme: %w", err)
 	}
 
 	return theme.WriteManifest(workingDir)
