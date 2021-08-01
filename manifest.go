@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -229,4 +230,49 @@ func (t Theme) ShowMessage() error {
 // GetManifestPath returns the path of a theme's manifest file
 func GetManifestPath(themeRoot string) string {
 	return filepath.Join(themeRoot, "ffcss.yaml")
+}
+
+// GenerateManifest returns the YAML contents of the manifest corresponding to the given theme.
+// If t.Raw is set, it'll return it.
+// Otherwise, it serializes the values into YAML, following the Theme struct.
+func (t Theme) GenerateManifest() ([]byte, error) {
+	if t.Raw != "" {
+		return []byte(t.Raw), nil
+	}
+	t.ExplicitName = t.Name()
+	return yaml.Marshal(t)
+}
+
+// WriteManifest writes the contents of t as a YAML file named ffcss.yaml
+// inside inDirectory.
+// See GenerateManifest to see how the contents of the file are generated.
+func (t Theme) WriteManifest(inDirectory string) error {
+	content, err := t.GenerateManifest()
+	if err != nil {
+		return fmt.Errorf("while generating manifest contents for %s: %w", t.Name(), err)
+	}
+
+	err = ioutil.WriteFile(filepath.Join(inDirectory, "ffcss.yaml"), []byte(content), 0700)
+	if err != nil {
+		return fmt.Errorf("while writing the manifest: %w", err)
+	}
+
+	return nil
+}
+
+// InitializeTheme returns a new, blank theme, but with some values guessed from the current context.
+// Meant to be used by "ffcss init"
+func InitializeTheme(workingDir string) (Theme, error) {
+	theme := NewTheme()
+
+	theme.DownloadAt = strings.TrimSuffix(getCurrentRepoRemote(), ".git")
+	if theme.DownloadAt == "" {
+		theme.DownloadAt = "# TODO"
+	}
+
+	if !strings.Contains(theme.DownloadAt, "https://github.com") {
+		theme.ExplicitName = filepath.Dir(workingDir)
+	}
+
+	return theme, nil
 }

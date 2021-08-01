@@ -114,3 +114,20 @@ func dispatchCommand(args docopt.Opts) error {
 	}
 	return nil
 }
+
+// RunCommandInit runs the command "init"
+func RunCommandInit(args docopt.Opts) error {
+	// TODO: set user{Chrome,Content,.js} by finding their path
+	// TODO: only set assets if chrome/ actually exists
+	workingDir, err := os.Getwd()
+	if err != nil {
+		return fmt.Errorf("could not get working directory: %w", err)
+	}
+
+	theme, err := InitializeTheme(workingDir)
+	if err != nil {
+		return  fmt.Errorf("while initializing theme: %w",  err)
+	}
+
+	return theme.WriteManifest(workingDir)
+}
