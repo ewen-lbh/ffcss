@@ -6,8 +6,8 @@ import (
 )
 
 func (ffp FirefoxProfile) InstallAddon(operatingSystem string, addonURL string) error {
-	li(BaseIndentLevel+1, "Opening [blue][bold]%s", addonURL)
-	li(BaseIndentLevel+1, "[yellow]Waiting for you to close Firefox")
+	li(1, "Opening [blue][bold]%s", addonURL)
+	li(1, "[yellow]Waiting for you to close Firefox")
 	var command *exec.Cmd
 	switch operatingSystem {
 	case "linux":

@@ -144,6 +144,7 @@ func li(indentLevel uint, item string, fmtArgs ...interface{}) {
 }
 
 func lic(bulletChar string, indentLevel uint, item string, fmtArgs ...interface{}) {
+	indentLevel += BaseIndentLevel
 	var color string
 	if int(indentLevel) > len(BulletColorsByIndentLevel)-1 {
 		color = BulletColorsByIndentLevel[len(BulletColorsByIndentLevel)-1]
@@ -167,7 +168,7 @@ func AskProfiles(profiles []FirefoxProfile) []FirefoxProfile {
 	// XXX the whole display thing should be put in survey.MultiSelect.Renderer, look into that.
 	selectedProfileDirsDisplay := make([]string, 0)
 
-	li(BaseIndentLevel+0, "Please select profiles to apply the theme on")
+	li(0, "Please select profiles to apply the theme on")
 
 	profileDirsDisplay := make([]string, 0)
 	for _, profile := range profiles {
@@ -207,7 +208,7 @@ func SelectProfiles(args docopt.Opts) ([]FirefoxProfile, error) {
 			selectedProfiles = append(selectedProfiles, NewFirefoxProfileFromPath(profilePath))
 		}
 	} else {
-		li(BaseIndentLevel+0, "Getting profiles")
+		li(0, "Getting profiles")
 		profilesDir, _ := args.String("--profiles-dir")
 		profiles, err := Profiles(profilesDir)
 		if err != nil {
@@ -217,7 +218,7 @@ func SelectProfiles(args docopt.Opts) ([]FirefoxProfile, error) {
 		// TODO smart default (based on {{profileDirectory}}/times.json:firstUse)
 		selectAllProfilePaths, _ := args.Bool("--all-profiles")
 		if selectAllProfilePaths {
-			li(BaseIndentLevel+0, "Selecting all profiles")
+			li(0, "Selecting all profiles")
 			selectedProfiles = profiles
 		} else {
 			selectedProfiles = AskProfiles(profiles)
@@ -229,7 +230,7 @@ func SelectProfiles(args docopt.Opts) ([]FirefoxProfile, error) {
 func (t Theme) ChooseVariant(args docopt.Opts) (chosen Variant, cancel bool) {
 	variantName, _ := args.String("VARIANT")
 	if len(t.AvailableVariants()) > 0 && variantName == "" {
-		li(BaseIndentLevel+0, "Please choose the theme's variant")
+		li(0, "Please choose the theme's variant")
 		variantPrompt := &survey.Select{
 			Message: "Install variant",
 			Options: t.AvailableVariants(),
