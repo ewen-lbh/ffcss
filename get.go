@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"os"
 
 	"github.com/docopt/docopt-go"
 )
@@ -10,10 +9,12 @@ import (
 func RunCommandGet(args docopt.Opts) error {
 	themeName, _ := args.String("THEME_NAME")
 	// variant, _ := args.String("VARIANT")
-	err := os.MkdirAll(ConfigDir("themes"), 0777)
+
+	err := CreateDataDirectories()
 	if err != nil {
-		return fmt.Errorf("couldn't create data directories: %w", err)
+		return err
 	}
+
 	li(0, "Resolving the theme's name")
 	uri, typ, err := ResolveURL(themeName)
 	if err != nil {
