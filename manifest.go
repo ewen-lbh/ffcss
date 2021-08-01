@@ -301,7 +301,7 @@ func InitializeTheme(workingDir string) (Theme, error) {
 
 	theme.DownloadAt = strings.TrimSuffix(getCurrentRepoRemote(), ".git")
 	if theme.DownloadAt == "" {
-		theme.DownloadAt = "# TODO"
+		theme.DownloadAt = "TODO"
 	}
 
 	if !strings.Contains(theme.DownloadAt, "https://github.com") {
