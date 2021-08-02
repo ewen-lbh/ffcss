@@ -12,7 +12,7 @@ start_at = end_at = 0
 
 lines = File.read(from).split "\n"
 
-signature_at = lines.find_index { |line| /^func\s+(\([^\)]+\)\s+)?\s*#{name}\s*\([^\)]*\).+\{$/ =~ line }
+signature_at = lines.find_index { |line| /^func\s+(\([^\)]+\)\s+)?\s*#{name}\s*\([^\)]*\).+\{$/i =~ line }
 
 if signature_at.nil?
 	puts "signature for #{name} not found"
