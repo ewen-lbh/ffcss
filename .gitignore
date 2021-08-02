@@ -51,3 +51,5 @@ release_notes.md
 
 # Testing artifacts
 testarea/
+
+cmd/ffcss/ffcss
