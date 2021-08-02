@@ -15,6 +15,7 @@ import (
 // RootVariantName is the name of the default variant, when none were applied.
 // This is used when computing the location of the cached theme: a variant-less theme is downloaded to <theme name>/_.
 const RootVariantName = "_"
+
 // TempDownloadsDirName is the name of the directory used to download themes when the theme's name is not known.
 // See the source code of Download for more insights.
 // A theme cannot have that name.
