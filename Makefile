@@ -36,6 +36,7 @@ install:
 
 format:
 	gofmt -s -w **.go
+	cd cmd/ffcss; gofmt -s -w *.go
 
 mocks-setup:
 # configure git identity (for whatever reason it needs it now)
