@@ -41,11 +41,10 @@ type FileTemplate = string
 // Variant represents a theme's variant. Most of the properties are identical to Theme's, because they overwrite the default values.
 type Variant struct {
 	// Properties exclusive to variants
-	Name    string
-	Message string
+	Name string
 
 	// Properties that modify the "default variant"
-	Repository  string
+	DownloadAt  string `yaml:"download"`
 	Branch      string
 	Commit      string
 	Tag         string
@@ -60,6 +59,7 @@ type Variant struct {
 		Before string
 		After  string
 	}
+	Message string
 }
 
 // Theme represents a FirefoxCSS theme, read from a manifest YAML file. (See LoadManifest).
@@ -203,9 +203,9 @@ func (t Theme) WithVariant(variant Variant) (newTheme Theme, actionsNeeded struc
 	if len(variant.Assets) > 0 {
 		newTheme.Assets = variant.Assets
 	}
-	if variant.Repository != "" {
+	if variant.DownloadAt != "" {
 		actionsNeeded.reDownload = true
-		newTheme.DownloadAt = variant.Repository
+		newTheme.DownloadAt = variant.DownloadAt
 	}
 	if variant.Branch != "" {
 		actionsNeeded.switchBranch = true
