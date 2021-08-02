@@ -146,7 +146,7 @@ func LoadManifest(manifestPath string) (manifest Theme, err error) {
 		return
 	}
 
-	for key, _ := range manifest.OSNames {
+	for key := range manifest.OSNames {
 		if key != "linux" && key != "macos" && key != "windows" {
 			return Theme{}, fmt.Errorf("%s is not a valid os replacement target. Targets are macos, windows and linux", key)
 		}

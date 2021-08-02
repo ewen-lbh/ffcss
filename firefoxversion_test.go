@@ -83,7 +83,10 @@ func TestNewFirefoxVersionConstraint(t *testing.T) {
 
 func TestNewFirefoxVersion(t *testing.T) {
 	type v = FirefoxVersion
-	cases := []struct{in, defaultMinor string; out FirefoxVersion}{
+	cases := []struct {
+		in, defaultMinor string
+		out              FirefoxVersion
+	}{
 		{"1.12", "", v{1, 12}},
 		{"465", "5", v{465, 5}},
 		{"465.7", "5", v{465, 7}},

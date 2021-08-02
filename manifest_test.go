@@ -13,7 +13,7 @@ func TestNewTheme(t *testing.T) {
 			"toolkit.legacyUserProfileCustomizations.stylesheets": true,
 		},
 		Variants: map[string]Variant{},
-		Assets: []string{},
+		Assets:   []string{},
 	}, NewTheme())
 }
 
@@ -34,7 +34,7 @@ func TestLoadManifest(t *testing.T) {
 
 	for _, caze := range errorCases {
 		_, err := LoadManifest(filepath.Join(testarea, "manifests", caze.manifestName+".yaml"))
-		assert.Error(t,err, "case %s needs to contain %q in error message", caze.manifestName, caze.errorPart)
+		assert.Error(t, err, "case %s needs to contain %q in error message", caze.manifestName, caze.errorPart)
 		if err != nil {
 			assert.Contains(t, err.Error(), caze.errorPart)
 		}
