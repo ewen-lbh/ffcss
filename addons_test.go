@@ -7,7 +7,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestInstallAddonLinux(t *testing.T) {
+func TestInstallAddon(t *testing.T) {
 	// Empty the buffer
 	mockedStdout = bytes.Buffer{}
 	BaseIndentLevel = 0
@@ -17,9 +17,7 @@ func TestInstallAddonLinux(t *testing.T) {
 		"  \x1b[36m•\x1b[0m Opening \x1b[34m\x1b[1mhttps://example.com\x1b[0m\n  \x1b[36m•\x1b[0m \x1b[33mWaiting for you to close Firefox\x1b[0m\n",
 		mockedStdout.String(),
 	)
-}
 
-func TestInstallAddonUnknownOS(t *testing.T) {
 	// Empty the buffer
 	mockedStdout = bytes.Buffer{}
 	BaseIndentLevel = 0

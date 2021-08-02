@@ -57,6 +57,9 @@ func NewFirefoxVersionConstraint(constraint string) (FirefoxVersionConstraint, e
 		if err != nil {
 			return FirefoxVersionConstraint{}, fmt.Errorf("while parsing upper bound of range constraint %q: %w", constraint, err)
 		}
+		if min.GreaterOrEqual(max) && !min.Equal(max) {
+			return FirefoxVersionConstraint{}, fmt.Errorf("lower bound (%s) is higher than upper bound (%s)", min, max)
+		}
 		sentence = min.String() + "–" + max.String()
 	} else if strings.HasPrefix(constraint, "up to ") {
 		LogDebug("constraint type is upto")
@@ -99,6 +102,11 @@ func (ffv FirefoxVersion) LessOrEqual(other FirefoxVersion) bool {
 	return ffv.Major < other.Major || (ffv.Major == other.Major && ffv.Minor <= other.Minor)
 }
 
+// Equal checks if the two versions are equal.
+func (ffv FirefoxVersion) Equal(other FirefoxVersion) bool {
+	return ffv.Major == other.Major && ffv.Minor == other.Minor
+}
+
 // String returns a string representation of the version
 // If the minor part is -1, it is rendered as a 'x' character.
 func (ffv FirefoxVersion) String() string {
@@ -126,21 +134,26 @@ func NewFirefoxVersion(stringRepr string, defaultMinor ...string) (FirefoxVersio
 	}
 	LogDebug("parsing version %s: fragments is %#v", stringRepr, fragments)
 	major, err := strconv.ParseInt(fragments[0], 10, 64)
+	if major < 0 {
+		return FirefoxVersion{}, fmt.Errorf("version number cannot be negative")
+	}
 	if err != nil {
 		return FirefoxVersion{}, fmt.Errorf("while converting major segment: %w", err)
 	}
-	var minor int
+	var minor int64
 	if fragments[1] == "x" {
 		minor = -1
 	} else {
-		minor, err := strconv.ParseInt(fragments[1], 10, 64)
+		var err error
+		minor, err = strconv.ParseInt(fragments[1], 10, 64)
 		if err != nil {
 			return FirefoxVersion{}, fmt.Errorf("while converting minor segment: %w", err)
 		}
-		if major < 0 || minor < 0 {
+		if minor < 0 {
 			return FirefoxVersion{}, fmt.Errorf("version number cannot be negative")
 		}
 	}
+	LogDebug("parsed as major=%d minor=%d", major, minor)
 	return FirefoxVersion{
 		Major: int(major),
 		Minor: int(minor),

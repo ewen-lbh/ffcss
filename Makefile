@@ -51,8 +51,7 @@ mocks-setup:
 # copy themes into mock config directory
 	cp themes/*.yaml testarea/home/.config/ffcss/themes/
 # copy static mocks from testdata/ to testarea/
-	cp -R testdata/home/ testarea/
-	cp -R testdata/catalogs/ testarea/
+	cp -R testdata/{home,catalogs,manifests}/ testarea/
 # create coverage directory
 	mkdir -p coverage
 

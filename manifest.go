@@ -126,6 +126,11 @@ func LoadManifest(manifestPath string) (manifest Theme, err error) {
 	manifest.raw = string(raw)
 	err = yaml.Unmarshal(raw, &manifest)
 
+	if manifest.FfcssVersion < 0 {
+		err = fmt.Errorf("ffcss version cannot be negative but is set to %d", manifest.FfcssVersion)
+		return
+	}
+
 	if manifest.FfcssVersion != VersionMajor && !ThemeCompatWarningShown && manifest.FfcssVersion != 0 {
 		LogWarning("ffcss %s is installed, but you are using a theme made for ffcss %d.X.X. Some things may not work.\n", VersionString, manifest.FfcssVersion)
 		ThemeCompatWarningShown = true
@@ -134,6 +139,17 @@ func LoadManifest(manifestPath string) (manifest Theme, err error) {
 	if manifest.Name() == TempDownloadsDirName {
 		err = fmt.Errorf("invalid theme name %q", TempDownloadsDirName)
 		return
+	}
+
+	if manifest.Name() == "" {
+		err = fmt.Errorf("theme has no name")
+		return
+	}
+
+	for key, _ := range manifest.OSNames {
+		if key != "linux" && key != "macos" && key != "windows" {
+			return Theme{}, fmt.Errorf("%s is not a valid os replacement target. Targets are macos, windows and linux", key)
+		}
 	}
 
 	for name, variant := range manifest.Variants {
@@ -154,7 +170,7 @@ func LoadManifest(manifestPath string) (manifest Theme, err error) {
 	if manifest.FirefoxVersion != "" {
 		manifest.FirefoxVersionConstraint, err = NewFirefoxVersionConstraint(manifest.FirefoxVersion)
 		if err != nil {
-			err = fmt.Errorf("while parsing version constraint %q: %w", manifest.FirefoxVersion, err)
+			err = fmt.Errorf("invalid Firefox version constraint %q: %w", manifest.FirefoxVersion, err)
 			return
 		}
 
