@@ -8,37 +8,37 @@ import (
 	"strings"
 
 	"github.com/docopt/docopt-go"
-	. "github.com/ewen-lbh/ffcss"
+	"github.com/ewen-lbh/ffcss"
+	"gopkg.in/yaml.v2"
 )
 
-// RunCommandUse runs the command "use"
-func RunCommandUse(args docopt.Opts) error {
+func runCommandUse(args docopt.Opts) error {
 	themeName, _ := args.String("THEME_NAME")
 
-	err := CreateDataDirectories()
+	err := ffcss.CreateDataDirectories()
 	if err != nil {
 		return err
 	}
 
-	LogStep(0, "Resolving the theme's name")
-	uri, typ, err := ResolveURL(themeName)
+	ffcss.LogStep(0, "Resolving the theme's name")
+	uri, typ, err := ffcss.ResolveURL(themeName)
 	if err != nil {
 		return fmt.Errorf("while resolving name %s: %w", themeName, err)
 	}
 
-	LogStep(0, "Downloading the theme")
-	manifest, err := Download(uri, typ)
+	ffcss.LogStep(0, "Downloading the theme")
+	manifest, err := ffcss.Download(uri, typ)
 	if err != nil {
 		return err
 	}
 
-	DescribeTheme(manifest, BaseIndentLevel)
+	ffcss.DescribeTheme(manifest, ffcss.BaseIndentLevel)
 
 	skipSource, _ := args.Bool("--skip-manifest-source")
 	manifest.AskToSeeManifestSource(skipSource)
 
 	// Detect OS
-	operatingSystem := GOOStoOS(runtime.GOOS)
+	operatingSystem := ffcss.GOOStoOS(runtime.GOOS)
 
 	selectedProfiles, err := SelectProfiles(args)
 	if err != nil {
@@ -56,14 +56,14 @@ func RunCommandUse(args docopt.Opts) error {
 	}
 
 	if len(incompatibleProfiles) != 0 {
-		LogStep(1, "[yellow]This theme ensures compatibility with firefox [bold]%s[reset][yellow]. The following themes could be incompatible:", manifest.FirefoxVersionConstraint.Sentence)
+		ffcss.LogStep(1, "[yellow]This theme ensures compatibility with firefox [bold]%s[reset][yellow]. The following themes could be incompatible:", manifest.FirefoxVersionConstraint.Sentence)
 		for _, profile := range incompatibleProfiles {
-			LogStep(2, "%s [dim]([reset]version [blue][bold]%s[reset][dim])", profile.Profile, profile.Version)
+			ffcss.LogStep(2, "%s [dim]([reset]version [blue][bold]%s[reset][dim])", profile.Profile, profile.Version)
 		}
 	}
 
 	// Choose variant
-	variant := Variant{}
+	variant := ffcss.Variant{}
 	if len(manifest.AvailableVariants()) > 0 {
 		variantName, _ := args.String("VARIANT")
 		if variantName == "" {
@@ -88,14 +88,14 @@ func RunCommandUse(args docopt.Opts) error {
 
 	// For each profile directory...
 	if singleProfile {
-		BaseIndentLevel--
+		ffcss.BaseIndentLevel--
 	}
 	for _, profile := range selectedProfiles {
 		if !singleProfile {
-			LogStep(0, "With profile "+filepath.Base(profile.Path))
+			ffcss.LogStep(0, "With profile "+filepath.Base(profile.Path))
 		}
 
-		LogStep(1, "Backing up the chrome/ folder")
+		ffcss.LogStep(1, "Backing up the chrome/ folder")
 		err = profile.BackupChrome()
 		if err != nil {
 			return fmt.Errorf("while backing up chrome directory: %w", err)
@@ -103,13 +103,13 @@ func RunCommandUse(args docopt.Opts) error {
 
 		// Run pre-install script
 		if manifest.Run.Before != "" {
-			LogStep(1, "Running pre-install script")
+			ffcss.LogStep(1, "Running pre-install script")
 			// TODO for this to be useful, print commandline _with mustaches replaced_:  Step(baseIndent+2, "[dim]$ bash -c [reset][bold]%s", manifest.Run.Before)
 			output, err := manifest.RunPreInstallHook(profile)
 			if err != nil {
 				return fmt.Errorf("while running pre-install script: %w", err)
 			}
-			ShowHookOutput(output)
+			ffcss.ShowHookOutput(output)
 		}
 
 		err := os.Mkdir(filepath.Join(profile.Path, "chrome"), 0700)
@@ -118,7 +118,7 @@ func RunCommandUse(args docopt.Opts) error {
 		}
 
 		// Install stuff
-		LogStep(1, "Installing the theme")
+		ffcss.LogStep(1, "Installing the theme")
 		err = manifest.InstallUserChrome(operatingSystem, variant, profile.Path)
 		if err != nil {
 			return fmt.Errorf("couldn't install userChrome.css: %w", err)
@@ -141,13 +141,13 @@ func RunCommandUse(args docopt.Opts) error {
 
 		// Run post-install script
 		if manifest.Run.After != "" {
-			LogStep(1, "Running post-install script")
+			ffcss.LogStep(1, "Running post-install script")
 			// TODO for this to be useful, print commandline _with mustaches replaced_:  Step(baseIndent+2, "[dim]$ bash -c [reset][bold]%s", manifest.Run.After)
 			output, err := manifest.RunPostInstallHook(profile)
 			if err != nil {
 				return fmt.Errorf("while running post-install script: %w", err)
 			}
-			ShowHookOutput(output)
+			ffcss.ShowHookOutput(output)
 		}
 
 		err = profile.RegisterCurrentTheme(themeName)
@@ -157,14 +157,14 @@ func RunCommandUse(args docopt.Opts) error {
 
 	}
 	if singleProfile {
-		BaseIndentLevel++
+		ffcss.BaseIndentLevel++
 	}
 
 	// Ask to open extensions' pages
 	if len(manifest.Addons) > 0 {
-		if ConfirmInstallAddons(manifest.Addons) {
+		if ffcss.ConfirmInstallAddons(manifest.Addons) {
 			for _, profile := range selectedProfiles {
-				LogStep(0, "With profile "+filepath.Base(profile.Path))
+				ffcss.LogStep(0, "With profile "+filepath.Base(profile.Path))
 				for _, addonURL := range manifest.Addons {
 					profile.InstallAddon(operatingSystem, addonURL)
 				}
@@ -178,4 +178,85 @@ func RunCommandUse(args docopt.Opts) error {
 		return fmt.Errorf("couldn't display the message: %w", err)
 	}
 	return nil
+}
+
+func runCommandGet(args docopt.Opts) error {
+	themeName, _ := args.String("THEME_NAME")
+	// variant, _ := args.String("VARIANT")
+
+	err := ffcss.CreateDataDirectories()
+	if err != nil {
+		return err
+	}
+
+	ffcss.LogStep(0, "Resolving the theme's name")
+	uri, typ, err := ffcss.ResolveURL(themeName)
+	if err != nil {
+		return fmt.Errorf("while resolving name %s: %w", themeName, err)
+	}
+
+	ffcss.LogStep(0, "Downloading the theme")
+	manifest, err := ffcss.Download(uri, typ)
+	if err != nil {
+		return err
+	}
+
+	ffcss.LogStepC("✓", 0, "Downloaded [blue][bold]%s[reset] [dim](to %s)", manifest.Name(), manifest.DownloadedTo)
+	return nil
+}
+
+func runCommandReapply(args docopt.Opts) error {
+	operatingSystem := ffcss.GOOStoOS(runtime.GOOS)
+	profilesDir, _ := args.String("--profiles-dir")
+	var profilesPaths []string
+	var err error
+	if profilesDir != "" {
+		profilesPaths, err = ffcss.ProfilePaths(operatingSystem, profilesDir)
+	} else {
+		profilesPaths, err = ffcss.ProfilePaths(operatingSystem)
+	}
+	if err != nil {
+		return fmt.Errorf("while getting profiles: %w", err)
+	}
+
+	currentThemesFileContents, err := os.ReadFile(ffcss.ConfigDir("currently.yaml"))
+	if err != nil {
+		return fmt.Errorf("while reading current themes list: %w", err)
+	}
+
+	currentThemes := make(map[string]string)
+	yaml.Unmarshal(currentThemesFileContents, &currentThemes)
+
+	for _, profilePath := range profilesPaths {
+		themeName, exists := currentThemes[filepath.Base(profilePath)]
+		if !exists {
+			ffcss.LogStep(0, "[yellow]Profile %s[reset][yellow] has no ffcss theme applied, skipping.", ffcss.NewFirefoxProfileFromPath(profilePath).Display())
+			continue
+		}
+		ffcss.LogStep(0, "Apply theme [blue][bold]%s[reset] to profile %s", themeName, ffcss.NewFirefoxProfileFromPath(profilePath).Display())
+
+		useArgs, _ := docopt.ParseArgs(Usage, []string{"use", string(themeName), "--profiles", profilePath, "--skip-manifest-source"}, ffcss.VersionString)
+		ffcss.BaseIndentLevel += 1
+		err = runCommandUse(useArgs)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func runCommandInit(args docopt.Opts) error {
+	// TODO: set user{Chrome,Content,.js} by finding their path
+	// TODO: only set assets if chrome/ actually exists
+	workingDir, err := os.Getwd()
+	if err != nil {
+		return fmt.Errorf("could not get working directory: %w", err)
+	}
+
+	theme, err := ffcss.InitializeTheme(workingDir)
+	if err != nil {
+		return fmt.Errorf("while initializing theme: %w", err)
+	}
+
+	return theme.WriteManifest(workingDir)
 }

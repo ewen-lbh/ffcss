@@ -8,7 +8,7 @@ import (
 	"strings"
 
 	"github.com/docopt/docopt-go"
-	. "github.com/ewen-lbh/ffcss"
+	"github.com/ewen-lbh/ffcss"
 )
 
 const (
@@ -47,108 +47,88 @@ var (
 func main() {
 	args, _ := docopt.ParseDoc(Usage)
 
-	err := os.MkdirAll(CacheDir(), 0700)
+	err := os.MkdirAll(ffcss.CacheDir(), 0700)
 	if err != nil {
 		panic(err)
 	}
 
-	err = os.MkdirAll(ConfigDir(), 0700)
+	err = os.MkdirAll(ffcss.ConfigDir(), 0700)
 	if err != nil {
 		panic(err)
 	}
 
 	if err := dispatchCommand(args); err != nil {
 		fmt.Fprintln(out)
-		LogError("Woops! An error occurred:")
+		ffcss.LogError("Woops! An error occurred:")
 		fmt.Fprintln(out)
-		for idx, errorFragment := range strings.Split(err.Error(), ": ") {
-			LogStep(uint(idx), errorFragment)
-		}
+		ffcss.DisplayErrorMessage(err)
 	}
 }
 
 func dispatchCommand(args docopt.Opts) error {
-	LogDebug("dispatching %#v", args)
+	ffcss.LogDebug("dispatching %#v", args)
 	if val, _ := args.Bool("configure"); val {
-		err := RunCommandConfigure(args)
-		return err
+		return fmt.Errorf("not implemented")
 	}
 	if val, _ := args.Bool("use"); val {
-		err := RunCommandUse(args)
+		err := runCommandUse(args)
 		return err
 	}
 	if val, _ := args.Bool("get"); val {
-		err := RunCommandGet(args)
+		err := runCommandGet(args)
 		return err
 	}
 	if val, _ := args.Bool("reapply"); val {
-		err := RunCommandReapply(args)
+		err := runCommandReapply(args)
 		return err
 	}
 	if val, _ := args.Bool("init"); val {
-		err := RunCommandInit(args)
+		err := runCommandInit(args)
 		return err
 	}
 	if val, _ := args.Bool("cache"); val {
 		if val, _ := args.Bool("clear"); val {
-			return ClearWholeCache()
+			return ffcss.ClearWholeCache()
 		}
 	}
 	if val, _ := args.Bool("version"); val {
 		component, _ := args.String("COMPONENT")
 		switch component {
 		case "major":
-			fmt.Fprintln(out, VersionMajor)
+			fmt.Fprintln(out, ffcss.VersionMajor)
 		case "minor":
-			fmt.Fprintln(out, VersionMinor)
+			fmt.Fprintln(out, ffcss.VersionMinor)
 		case "patch":
-			fmt.Fprintln(out, VersionPatch)
+			fmt.Fprintln(out, ffcss.VersionPatch)
 		default:
-			fmt.Fprintln(out, VersionString)
+			fmt.Fprintln(out, ffcss.VersionString)
 		}
 	}
 	return nil
 }
 
-// RunCommandInit runs the command "init"
-func RunCommandInit(args docopt.Opts) error {
-	// TODO: set user{Chrome,Content,.js} by finding their path
-	// TODO: only set assets if chrome/ actually exists
-	workingDir, err := os.Getwd()
-	if err != nil {
-		return fmt.Errorf("could not get working directory: %w", err)
-	}
-
-	theme, err := InitializeTheme(workingDir)
-	if err != nil {
-		return fmt.Errorf("while initializing theme: %w", err)
-	}
-
-	return theme.WriteManifest(workingDir)
-}
-
-func SelectProfiles(args docopt.Opts) ([]FirefoxProfile, error) {
+func SelectProfiles(args docopt.Opts) ([]ffcss.FirefoxProfile, error) {
 	selectedProfilesString, _ := args.String("--profiles")
-	var selectedProfiles []FirefoxProfile
+	var selectedProfiles []ffcss.FirefoxProfile
 	if selectedProfilesString != "" {
 		for _, profilePath := range strings.Split(selectedProfilesString, ",") {
-			selectedProfiles = append(selectedProfiles, NewFirefoxProfileFromPath(profilePath))
+			selectedProfiles = append(selectedProfiles, ffcss.NewFirefoxProfileFromPath(profilePath))
 		}
 	} else {
-		LogStep(0, "Getting profiles")
+		ffcss.LogStep(0, "Getting profiles")
 		profilesDir, _ := args.String("--profiles-dir")
-		profiles, err := Profiles(profilesDir)
+		profiles, err := ffcss.Profiles(profilesDir)
 		if err != nil {
-			return []FirefoxProfile{}, fmt.Errorf("couldn't get profile directories: %w", err)
+			return []ffcss.FirefoxProfile{}, fmt.Errorf("couldn't get profile directories: %w", err)
 		}
 		// Choose profiles
 		// TODO smart default (based on {{profileDirectory}}/times.json:firstUse)
 		selectAllProfilePaths, _ := args.Bool("--all-profiles")
 		if selectAllProfilePaths {
-			LogStep(0, "Selecting all profiles")
+			ffcss.LogStep(0, "Selecting all profiles")
 			selectedProfiles = profiles
 		} else {
-			selectedProfiles = AskProfiles(profiles)
+			selectedProfiles = ffcss.AskProfiles(profiles)
 		}
 	}
 	return selectedProfiles, nil

@@ -255,3 +255,10 @@ func ShowHookOutput(output string) {
 		"\n",
 	)
 }
+
+// DisplayErrorMessage displays a nested error message (split on colons)
+func DisplayErrorMessage(err error) {
+	for idx, errorFragment := range strings.Split(err.Error(), ":") {
+		LogStep(uint(idx), errorFragment)
+	}
+}
