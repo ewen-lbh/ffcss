@@ -1,0 +1,16 @@
+ffcss: 0
+
+name: compactmode
+download: https://github.com/Godiesc/compactmodefirefoxcss
+
+user.js: user.js
+userChrome: chrome/userChrome.css
+
+addons:
+  - https://addons.mozilla.org/en-US/firefox/addon/beautifultotaldark/
+
+variants:
+  default: {}
+  photon-tabs:
+    user.js: OtherCss/user.js
+    userChrome: OtherCss/chrome/userChrome.css

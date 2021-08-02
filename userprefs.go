@@ -1,4 +1,4 @@
-package main
+package ffcss
 
 import (
 	"encoding/json"
@@ -8,11 +8,11 @@ import (
 	"strings"
 )
 
-// ToUserJSFile returns a string of JS source code that represents config.
-// It can be used directly to write a user.js file
-func ToUserJSFile(config map[string]interface{}) (string, error) {
+// UserJSFileContent returns a string of JS source code that represents the theme's config.
+// It can be used directly to write a user.js file.
+func (t Theme) UserJSFileContent() (string, error) {
 	lines := make([]string, 0)
-	for name, value := range config {
+	for name, value := range t.Config {
 		valueJSON, err := json.Marshal(value)
 		if err != nil {
 			return "", fmt.Errorf("can't serialize %#v: %w", value, err)
@@ -20,10 +20,6 @@ func ToUserJSFile(config map[string]interface{}) (string, error) {
 		lines = append(lines, fmt.Sprintf(`user_pref(%q, %s);`, name, string(valueJSON)))
 	}
 	return strings.Join(lines, "\n"), nil
-}
-
-func (m Manifest) UserJSFileContent() (string, error) {
-	return ToUserJSFile(m.Config)
 }
 
 // ValueOfUserPrefCall returns the value of configuration entry, given its key and the contents of

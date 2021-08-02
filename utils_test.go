@@ -1,38 +1,23 @@
-package main
+package ffcss
 
 import (
-	"fmt"
 	"os"
-	"os/user"
 	"path/filepath"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
 
-var currentUser user.User
-
-func init() {
-	usr, _ := user.Current()
-	currentUser = *usr
-}
-
-// withUser Replaces %s with currentUser.Username in s
-func withuser(s string) string {
-	return fmt.Sprintf(s, currentUser.Username)
-}
-
 func TestProfilePaths(t *testing.T) {
 	cwd, _ := os.Getwd()
 	mockedHomedir := filepath.Join(cwd, "testarea", "home")
 
 	paths, err := ProfilePaths("linux", filepath.Join(mockedHomedir, ".mozilla", "firefox"))
-	if err != nil {
-		panic(err)
-	}
+	assert.NoError(t, err)
 	assert.Equal(t, []string{filepath.Join(mockedHomedir, ".mozilla", "firefox", "667ekipp.default-release")}, paths)
 
 	paths, err = ProfilePaths("linux")
+	assert.NoError(t, err)
 	assert.Equal(t, []string{"testarea/home/.mozilla/firefox/667ekipp.default-release"}, paths)
 }
 

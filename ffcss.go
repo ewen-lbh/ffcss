@@ -1,113 +1,30 @@
-// Apply and configure FirefoxCSS themes
-package main
+package ffcss
 
 import (
 	"fmt"
+	"io"
 	"os"
-	"strings"
-
-	"github.com/docopt/docopt-go"
 )
 
 const (
-	Usage = `ffcss - Apply and configure FirefoxCSS themes
-
-Usage:
-	ffcss [options] use THEME_NAME [VARIANT]
-	ffcss [options] get THEME_NAME
-	ffcss [options] cache clear
-	ffcss [options] init
-	ffcss [options] reapply
-	ffcss version [COMPONENT]
-
-Where:
-	THEME_NAME  a theme name or URL (see README.md)
-	COMPONENT   is either major, minor or patch (to get a single digit)
-
-Options:
-	-a --all-profiles           Apply the theme to all profiles
-	-p --profiles=PATHS      Select which profiles to apply the theme to.
-	                         Can be absolute or relative to --profiles-dir.
-							 Comma-separated.
-	--profiles-dir=PATH      Directory that contains profile directories.
-	                         Default value is platform-specific:
-	                         - $HOME/.mozilla/firefox                                on Linux
-	                         - $HOME/Library/Application Support/Firefox/Profiles    on MacOS
-	                         - %appdata%/Roaming/Mozilla/Firefox/Profiles            on Windows
-	--skip-manifest-source   Don't ask to show the manifest source
-	`
-
+	// VersionMajor is the major semver component of the current version, X._._.
+	// It is incremented on breaking changes. Incrementing sets others to zero.
 	VersionMajor = 0
+	// VersionMinor is the semver minor component of the current version, _.Y._.
+	// It is incremented on feature changes. Incrementing sets VersionPatch to zero.
 	VersionMinor = 2
+	// VersionPatch is the semver patch component of the current version, _._.Z.
+	// It is incremented on bug fixes
 	VersionPatch = 0
 )
 
 var (
+	// VersionString is the full version string, constructed from the component constants Version{Major,Minor,Patch}.
 	VersionString = fmt.Sprintf("%d.%d.%d", VersionMajor, VersionMinor, VersionPatch)
+	// out is an IO writer used to capture stdout instead of printing in unit tests
+	out io.Writer = os.Stdout
+	// BaseIndentLevel is the base level of indentation for LogStep and others.
+	// Can be incremented when a whole section of code is run in the context of another
+	// (For an example usage, see reapply in the cmd/ffcss package, that effectively runs the use command on each profile).
+	BaseIndentLevel uint
 )
-
-func main() {
-	args, _ := docopt.ParseDoc(Usage)
-
-	err := os.MkdirAll(CacheDir(), 0700)
-	if err != nil {
-		panic(err)
-	}
-
-	err = os.MkdirAll(ConfigDir(), 0700)
-	if err != nil {
-		panic(err)
-	}
-
-	if err := dispatchCommand(args); err != nil {
-		fmt.Println()
-		showError("Woops! An error occured:")
-		fmt.Println()
-		for idx, errorFragment := range strings.Split(err.Error(), ": ") {
-			li(uint(idx), errorFragment)
-		}
-	}
-}
-
-func dispatchCommand(args docopt.Opts) error {
-	d("dispatching %#v", args)
-	if val, _ := args.Bool("configure"); val {
-		err := RunCommandConfigure(args)
-		return err
-	}
-	if val, _ := args.Bool("use"); val {
-		err := RunCommandUse(args)
-		return err
-	}
-	if val, _ := args.Bool("get"); val {
-		err := RunCommandGet(args)
-		return err
-	}
-	if val, _ := args.Bool("reapply"); val {
-		err := RunCommandReapply(args)
-		return err
-	}
-	if val, _ := args.Bool("init"); val {
-		err := RunCommandInit(args)
-		return err
-	}
-	if val, _ := args.Bool("cache"); val {
-		if val, _ := args.Bool("clear"); val {
-			return ClearWholeCache()
-		}
-	}
-	if val, _ := args.Bool("version"); val {
-		component, _ := args.String("COMPONENT")
-		switch component {
-		case "major":
-			fmt.Println(VersionMajor)
-		case "minor":
-			fmt.Println(VersionMinor)
-		case "patch":
-			fmt.Println(VersionPatch)
-		default:
-			fmt.Println(VersionString)
-		}
-	}
-	return nil
-}

@@ -1,4 +1,4 @@
-package main
+package ffcss
 
 import (
 	"fmt"
@@ -8,40 +8,33 @@ import (
 	"regexp"
 	"runtime"
 	"strings"
-
-	"gopkg.in/yaml.v2"
 )
 
+// FirefoxProfile represents a Firefox Profile stored at Path. Each Firefox Profile is a separate instance of Firefox settings and other user data.
+// See https://support.mozilla.org/en-US/kb/profiles-where-firefox-stores-user-data for more information.
 type FirefoxProfile struct {
 	ID   string
 	Name string
 	Path string
 }
 
-func (ffp FirefoxProfile) RegisterCurrentTheme(themeName string) error {
-	currentThemes, err := CurrentThemeByProfile()
-	if err != nil {
-		return err
-	}
-	currentThemes[ffp.FullName()] = themeName
-	currentThemesNewContents, err := yaml.Marshal(currentThemes)
-	if err != nil {
-		return fmt.Errorf("while marshaling into YAML: %w", err)
-	}
-
-	err = os.WriteFile(ConfigDir("currently.yaml"), currentThemesNewContents, 0777)
-	if err != nil {
-		return fmt.Errorf("while writing new contents: %w", err)
-	}
-
-	return nil
+type firefoxProfileWithVersion = struct {
+	Profile FirefoxProfile
+	Version FirefoxVersion
 }
 
+// FullName returns the basename of ffp.Path
 func (ffp FirefoxProfile) FullName() string {
 	return filepath.Base(ffp.Path)
 }
 
-func FirefoxProfileFromPath(path string) FirefoxProfile {
+// String returns a string representation of the profile.
+func (ffp FirefoxProfile) String() string {
+	return fmt.Sprintf("%s (%s)", ffp.Name, ffp.ID)
+}
+
+// NewFirefoxProfileFromPath returns a FirefoxProfile by parsing the path into and ID and a Name.
+func NewFirefoxProfileFromPath(path string) FirefoxProfile {
 	base := filepath.Base(path)
 	parts := strings.Split(base, ".")
 	return FirefoxProfile{
@@ -51,14 +44,16 @@ func FirefoxProfileFromPath(path string) FirefoxProfile {
 	}
 }
 
-func FirefoxProfileFromDisplayString(displayString string, profiles []FirefoxProfile) FirefoxProfile {
+// NewFirefoxProfileFromDisplay returns a FirefoxProfile by matching the given displayString against profiles'.
+// See (FirefoxProfile).Display for the definition of a display string.
+func NewFirefoxProfileFromDisplay(displayString string, profiles []FirefoxProfile) FirefoxProfile {
 	for _, profile := range profiles {
-		ffp := FirefoxProfileFromPath(profile.Path)
-		if ffp.String() == displayString {
+		ffp := NewFirefoxProfileFromPath(profile.Path)
+		if ffp.Display() == displayString {
 			return ffp
 		}
 	}
-	d("while searching for %s in %v", displayString, profiles)
+	LogDebug("while searching for %s in %v", displayString, profiles)
 	panic("internal error: can't get profile from display string")
 }
 
@@ -118,12 +113,13 @@ func Profiles(optionalProfilesDir string) ([]FirefoxProfile, error) {
 	}
 
 	for _, profilePath := range profilePaths {
-		profiles = append(profiles, FirefoxProfileFromPath(profilePath))
+		profiles = append(profiles, NewFirefoxProfileFromPath(profilePath))
 	}
 
 	return profiles, nil
 }
 
+// DefaultProfilesDir returns the operating-system-dependent default location for the Firefox profiles' directories.
 func DefaultProfilesDir(operatingSystem string) (string, error) {
 	switch operatingSystem {
 	case "linux":
@@ -148,4 +144,28 @@ func DefaultProfilesDir(operatingSystem string) (string, error) {
 		return filepath.Join(homedir, "AppData", "Roaming", "Mozilla", "Firefox", "Profiles"), nil
 	}
 	return "", fmt.Errorf("unknown operating system %s", operatingSystem)
+}
+
+// IncompatibleProfiles returns the list of profiles that don't meet the Firefox version constraint specified by the theme, along with the detect Firefox version of each profile.
+func (t Theme) IncompatibleProfiles(profiles []FirefoxProfile) ([]firefoxProfileWithVersion, error) {
+	if t.FirefoxVersion != "" {
+		incompatibleProfileDirs := make([]firefoxProfileWithVersion, 0)
+		for _, profile := range profiles {
+			profileVersion, err := profile.FirefoxVersion()
+			if err != nil {
+				LogWarning("Couldn't get firefox version for profile %s", profile)
+			}
+			fulfillsConstraint := t.FirefoxVersionConstraint.FulfilledBy(profileVersion)
+			if !fulfillsConstraint {
+				incompatibleProfileDirs = append(incompatibleProfileDirs, firefoxProfileWithVersion{profile, profileVersion})
+			}
+		}
+		return incompatibleProfileDirs, nil
+	}
+	return []firefoxProfileWithVersion{}, nil
+}
+
+// BackupChrome moves the chrome/ folder to chrome.bak/
+func (ffp FirefoxProfile) BackupChrome() error {
+	return renameIfExists(filepath.Join(ffp.Path, "chrome"), filepath.Join(ffp.Path, "chrome.bak"))
 }

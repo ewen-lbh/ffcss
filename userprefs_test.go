@@ -1,4 +1,4 @@
-package main
+package ffcss
 
 import (
 	"sort"
@@ -188,17 +188,20 @@ user_pref("trailhead.firstrun.didSeeAboutWelcome", true);
 	`)
 )
 
-func TestToUserJS(t *testing.T) {
-	value, err := ToUserJSFile(map[string]interface{}{
+func TestUserJSFileContent(t *testing.T) {
+	value, err := Theme{Config: map[string]interface{}{
 		"browser.tabs.tabClipWidth":              90,
 		"svg.context-properties.content.enabled": true,
-	})
+	}}.UserJSFileContent()
+
 	if err != nil {
 		panic(err)
 	}
-	Assert(t, sortLines(value),
+
+	assert.Equal(t,
 		`user_pref("browser.tabs.tabClipWidth", 90);
 user_pref("svg.context-properties.content.enabled", true);`,
+		sortLines(value),
 	)
 }
 

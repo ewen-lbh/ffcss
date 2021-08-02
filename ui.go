@@ -1,4 +1,4 @@
-package main
+package ffcss
 
 import (
 	"fmt"
@@ -14,6 +14,8 @@ import (
 
 const indent = "  "
 
+// BulletColorsByIndentLevel maps (the "key" is the element's index in the array) an indentation level (see LogStep, for example)
+// to a color.
 var BulletColorsByIndentLevel = []string{
 	"blue",
 	"cyan",
@@ -34,67 +36,74 @@ func init() {
 	colorizer.Reset = true
 }
 
-// Show the introduction message before installation
-func intro(theme Manifest, indentLevel uint) {
-	fmt.Print("\n")
+func printf(s string, args ...interface{}) {
+	fmt.Fprintf(out, s, args...)
+}
+
+func printfln(s string, args ...interface{}) {
+	printf(s+"\n", args...)
+}
+
+// DescribeTheme shows the introduction message before installation
+func DescribeTheme(theme Theme, indentLevel uint) {
+	printf("\n")
 	indentation := strings.Repeat(indent, int(indentLevel))
 
 	var author string
 	urlParts := strings.Split(theme.DownloadAt, "/")
-	d("urlParts is %#v", urlParts)
+	LogDebug("urlParts is %#v", urlParts)
 	if theme.Author != "" {
 		author = theme.Author
 	} else if strings.Contains(theme.DownloadAt, "github.com") && len(urlParts) == 5 {
 		author = urlParts[len(urlParts)-2]
 	}
 
-	fmt.Print(indentation)
+	printf(indentation)
 
-	fmt.Printf(
+	printf(
 		colorizer.Color("[dim]Installing ") +
 			colorizer.Color("[blue][bold]"+theme.Name()),
 	)
 
 	if regexp.MustCompile(`^v([0-9\.]+)$`).MatchString(theme.Tag) {
-		fmt.Printf(colorstring.Color(" [blue]" + theme.Tag))
+		printf(colorstring.Color(" [blue]" + theme.Tag))
 	}
 
 	if author != "" {
-		fmt.Printf(
+		printf(
 			colorizer.Color("[dim][italic] by ") +
 				colorizer.Color("[blue][italic]"+author),
 		)
 	}
 
 	if theme.Description != "" {
-		fmt.Print("\n")
+		printf("\n")
 		gutter := colorstring.Color(indentation + "[blue]│")
-		// gutter := colorstring.Color(indent + "[blue]|")
-		d("gutter is %q", gutter)
+		LogDebug("gutter is %q", gutter)
 		markdownRendered, err := glamour.Render(theme.Description, "dark")
 		if err != nil {
 			markdownRendered = theme.Description
 		}
-		fmt.Print("\n")
-		d("splitted is %#v", strings.Split(markdownRendered, "\n"))
+		printf("\n")
+		LogDebug("splitted is %#v", strings.Split(markdownRendered, "\n"))
 		for _, line := range strings.Split(markdownRendered, "\n") {
 			if strings.TrimSpace(line) == "" {
 				continue
 			}
-			fmt.Println(gutter + strings.TrimSpace(line))
+			printfln(gutter + strings.TrimSpace(line))
 		}
-		fmt.Print("\n")
+		printf("\n")
 	} else {
-		fmt.Print("\n\n")
+		printf("\n\n")
 	}
 
 }
 
-func showSource(theme Manifest) {
-	fmt.Print("\n")
-	fmt.Println(colorizer.Color("[italic][dim]" + theme.Name() + "'s manifest"))
-	chromaQuick.Highlight(os.Stdout, theme.Raw, "YAML", "terminal16m", "pygments")
-	fmt.Print("\n")
+func showManifestSource(theme Theme) {
+	printf("\n")
+	printfln(colorizer.Color("[italic][dim]" + theme.Name() + "'s manifest"))
+	chromaQuick.Highlight(os.Stdout, theme.raw, "YAML", "terminal16m", "pygments")
+	printf("\n")
 }
 
 func plural(singular string, amount int, optionalPlural ...string) string {
@@ -113,37 +122,31 @@ func plural(singular string, amount int, optionalPlural ...string) string {
 	return plural
 }
 
-// d prints a debug log line
-func d(s string, fmtArgs ...interface{}) {
+// LogDebug prints a debug log line. This one always prints to the real stdout, ignoring a possibly mocked stdout
+func LogDebug(s string, fmtArgs ...interface{}) {
 	if os.Getenv("DEBUG") != "" {
 		fmt.Printf(colorizer.Color("[dim][ DEBUG ] "+s+"\n"), fmtArgs...)
 	}
 }
 
-// warn prints a log line with "warning" styling
-func warn(s string, fmtArgs ...interface{}) {
-	if os.Getenv("DEBUG") != "" {
-		fmt.Printf(colorizer.Color("[yellow][bold][WARNING] "+s+"\n"), fmtArgs...)
-	} else {
-		fmt.Printf(colorizer.Color("[yellow][bold]"+s+"\n"), fmtArgs...)
-	}
+// LogWarning prints a log line with "warning" styling
+func LogWarning(s string, fmtArgs ...interface{}) {
+	printf(colorizer.Color("[yellow][bold]"+s+"\n"), fmtArgs...)
 }
 
-// showError is like warn but with "error" styling
-func showError(s string, fmtArgs ...interface{}) {
-	if os.Getenv("DEBUG") != "" {
-		fmt.Printf(colorizer.Color("[red][bold][ ERROR ] "+s+"\n"), fmtArgs...)
-	} else {
-		fmt.Printf(colorizer.Color("[red][bold]"+s+"\n"), fmtArgs...)
-	}
+// LogError is like warn but with "error" styling
+func LogError(s string, fmtArgs ...interface{}) {
+	printf(colorizer.Color("[red][bold]"+s+"\n"), fmtArgs...)
 }
 
-// display a list item
-func li(indentLevel uint, item string, fmtArgs ...interface{}) {
-	lic("•", indentLevel, item, fmtArgs...)
+// LogStep displays a list item
+func LogStep(indentLevel uint, item string, fmtArgs ...interface{}) {
+	LogStepC("•", indentLevel, item, fmtArgs...)
 }
 
-func lic(bulletChar string, indentLevel uint, item string, fmtArgs ...interface{}) {
+// LogStepC is like Step, but the bullet point characters is customizable
+func LogStepC(bulletChar string, indentLevel uint, item string, fmtArgs ...interface{}) {
+	indentLevel += BaseIndentLevel
 	var color string
 	if int(indentLevel) > len(BulletColorsByIndentLevel)-1 {
 		color = BulletColorsByIndentLevel[len(BulletColorsByIndentLevel)-1]
@@ -154,45 +157,137 @@ func lic(bulletChar string, indentLevel uint, item string, fmtArgs ...interface{
 	bullet := strings.Repeat(indent, int(indentLevel)) +
 		colorizer.Color("["+color+"]"+bulletChar)
 
-	if os.Getenv("DEBUG") != "" {
-		bullet = "[  LOG  ]"
-	}
-
-	fmt.Println(bullet + " " + colorizer.Color(strings.TrimSpace(fmt.Sprintf(item, fmtArgs...))))
+	printfln(bullet + " " + colorizer.Color(strings.TrimSpace(fmt.Sprintf(item, fmtArgs...))))
 }
 
-func (ffp FirefoxProfile) String() string {
+// Display is like String, but adds terminal ANSI sequences for some color.
+func (ffp FirefoxProfile) Display() string {
 	return colorizer.Color(fmt.Sprintf("[bold]%s [reset][dim](%s)", ffp.Name, ffp.ID))
 }
 
-func AskProfiles(profiles []FirefoxProfile, baseIndentation ...uint) []FirefoxProfile {
-	var baseIndent uint
-	if len(baseIndentation) == 0 {
-		baseIndent = 0
-	}
-	baseIndent = baseIndentation[0]
-
+// AskProfiles prompts the user to select one or more profiles from the given array, and returns the user's chosen profiles.
+func AskProfiles(profiles []FirefoxProfile) []FirefoxProfile {
 	var selectedProfiles []FirefoxProfile
 
 	// XXX the whole display thing should be put in survey.MultiSelect.Renderer, look into that.
 	selectedProfileDirsDisplay := make([]string, 0)
 
-	li(baseIndent+0, "Please select profiles to apply the theme on")
+	LogStep(0, "Please select profiles to apply the theme on")
 
 	profileDirsDisplay := make([]string, 0)
 	for _, profile := range profiles {
-		profileDirsDisplay = append(profileDirsDisplay, profile.String())
+		profileDirsDisplay = append(profileDirsDisplay, profile.Display())
 	}
 
 	survey.AskOne(&survey.MultiSelect{
 		Message: "Select profiles",
 		Options: profileDirsDisplay,
-		VimMode: VimModeEnabled(),
+		VimMode: vimModeEnabled(),
 	}, &selectedProfileDirsDisplay)
 
 	for _, chosenProfileDisplay := range selectedProfileDirsDisplay {
-		selectedProfiles = append(selectedProfiles, FirefoxProfileFromDisplayString(chosenProfileDisplay, profiles))
+		selectedProfiles = append(selectedProfiles, NewFirefoxProfileFromDisplay(chosenProfileDisplay, profiles))
 	}
 
 	return selectedProfiles
+}
+
+// AskToSeeManifestSource prompts the user to display the theme's manifest, and, if the user accepts, displays it.
+func (t Theme) AskToSeeManifestSource(skip bool) {
+	wantsSource := false
+	if !skip {
+		survey.AskOne(&survey.Confirm{
+			Message: "Show the manifest source?",
+		}, &wantsSource)
+	}
+	if wantsSource {
+		showManifestSource(t)
+	}
+}
+
+// ChooseVariant asks the user to choose a variant.
+// If the users interrupts the prompt (by e.g. pressing Ctrl-C), cancel is true.
+// Else, the selected variant is returned and cancel is false.
+// If no variants are available, the empty variant is returned and cancel is false (and the user does not get prompted).
+func (t Theme) ChooseVariant() (chosen Variant, cancel bool) {
+	var variantName string
+	if len(t.AvailableVariants()) > 0 {
+		LogStep(0, "Please choose the theme's variant")
+		variantPrompt := &survey.Select{
+			Message: "Install variant",
+			Options: t.AvailableVariants(),
+			VimMode: vimModeEnabled(),
+		}
+		survey.AskOne(variantPrompt, &variantName)
+		// user Ctrl-C'd
+		if variantName == "" {
+			return Variant{}, true
+		}
+		return t.Variants[variantName], false
+	}
+	return Variant{}, false
+}
+
+// ConfirmInstallAddons asks the user to confirm the installation of addons.
+func ConfirmInstallAddons(addons []string) bool {
+	acceptOpenExtensionPages := false
+	survey.AskOne(&survey.Confirm{
+		Message: fmt.Sprintf("This theme suggests installing %d %s. Open %s?",
+			len(addons),
+			plural("addon", len(addons)),
+			plural("its page", len(addons), "their pages"),
+		),
+		Default: acceptOpenExtensionPages,
+	}, &acceptOpenExtensionPages)
+	return acceptOpenExtensionPages
+}
+
+// ShowHookOutput displays the given output text with additional horizontal and vertical padding
+func ShowHookOutput(output string) {
+	fmt.Fprint(
+		out,
+		"\n",
+		prefixEachLine(
+			strings.TrimSpace(output),
+			strings.Repeat(indent, int(BaseIndentLevel)+2),
+		),
+		"\n",
+		"\n",
+	)
+}
+
+// DisplayErrorMessage displays a nested error message (split on colons)
+func DisplayErrorMessage(err error) {
+	for idx, errorFragment := range strings.Split(err.Error(), ":") {
+		LogStep(uint(idx), errorFragment)
+	}
+}
+
+// SelectProfiles returns an array of FirefoxProfile:
+//
+//    If selected is non-empty, it parses the paths into an array of FirefoxProfile
+//    Else, it returns all profiles if all is true
+//    Else, it asks the user to select one or more profiles and returns those
+func SelectProfiles(selected []string, dir string, all bool) ([]FirefoxProfile, error) {
+	var selectedProfiles []FirefoxProfile
+	if len(selected) > 0 {
+		for _, profilePath := range selected {
+			selectedProfiles = append(selectedProfiles, NewFirefoxProfileFromPath(profilePath))
+		}
+	} else {
+		LogStep(0, "Getting profiles")
+		profiles, err := Profiles(dir)
+		if err != nil {
+			return []FirefoxProfile{}, fmt.Errorf("couldn't get profile directories: %w", err)
+		}
+		// Choose profiles
+		// TODO smart default (based on {{profileDirectory}}/times.json:firstUse)
+		if all {
+			LogStep(0, "Selecting all profiles")
+			selectedProfiles = profiles
+		} else {
+			selectedProfiles = AskProfiles(profiles)
+		}
+	}
+	return selectedProfiles, nil
 }

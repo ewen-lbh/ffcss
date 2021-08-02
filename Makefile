@@ -6,7 +6,7 @@ export SHELLOPTS:=$(if $(SHELLOPTS),$(SHELLOPTS):)pipefail:errexit
 
 build:
 	go mod tidy
-	go build
+	cd cmd/ffcss && go build
 
 tests:
 # setup mocks
@@ -14,7 +14,7 @@ tests:
 # defer tearing down mocks (so that it runs even if the tests fail)
 	trap "$(MAKE) mocks-teardown" EXIT
 # run tests, with $HOME overriden to a mocked directory, and gopath re-set, otherwise the compiler freaks out.
-	GOPATH=$$(go env GOPATH) HOME=testarea/home GIT_TERMINAL_PROMPT=0 go test -race -coverprofile=coverage.txt -covermode=atomic -v
+	GOPATH=$$(go env GOPATH) HOME=testarea/home GIT_TERMINAL_PROMPT=0 go test -race -coverprofile=coverage.txt -covermode=atomic -parallel 10
 # compute code coverage
 	$(MAKE) coverage
 
@@ -32,10 +32,11 @@ install:
 # copy builtin themes
 	cp themes/*.yaml ~/.config/ffcss/themes/
 # copy binary to some standard place that's in $PATH most of the time
-	cp ffcss ~/.local/bin/ffcss
+	cp cmd/ffcss/ffcss ~/.local/bin/ffcss
 
 format:
 	gofmt -s -w **.go
+	cd cmd/ffcss; gofmt -s -w *.go
 
 mocks-setup:
 # configure git identity (for whatever reason it needs it now)
@@ -50,7 +51,7 @@ mocks-setup:
 # copy themes into mock config directory
 	cp themes/*.yaml testarea/home/.config/ffcss/themes/
 # copy static mocks from testdata/ to testarea/
-	cp -R testdata/home/ testarea/
+	cp -R testdata/{home,catalogs,manifests}/ testarea/
 # create coverage directory
 	mkdir -p coverage
 
@@ -76,7 +77,7 @@ release:
 	sd '^- #' '#' CHANGELOG.md
 # extract release notes for the new version only,
 # and bump the version in go code
-	./make_release_notes.rb $$(read -p bump=; echo $$REPLY)
+	tools/make_release_notes.rb $$(read -p bump=; echo $$REPLY)
 # recompile so that the binary shows the new version when doing ffcss version
 	$(MAKE) build
 	$(MAKE) install

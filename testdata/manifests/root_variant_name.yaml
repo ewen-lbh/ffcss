@@ -1,0 +1,6 @@
+name: super
+download: https://example.com/hypertheme
+
+variants:
+  _:
+    download: https://here.inste.ad
