@@ -30,7 +30,8 @@ func (o flagsAndArgs) bool(name string) bool {
 func (o flagsAndArgs) strings(name string) []string {
 	val, err := o.String(name)
 	if err != nil {
-		ffcss.LogDebug("while getting value of %s: %s: using %#v", name, err.Error(), strings.Split(val, ","))
+		ffcss.LogDebug("while getting value of %s: %s: using an empty arary", name, err.Error())
+		return []string{}
 	}
 	return strings.Split(val, ",")
 }
