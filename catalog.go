@@ -68,7 +68,7 @@ func LoadCatalog(storeDirectory string) (themes Catalog, err error) {
 		themeName := themeNamePattern.FindStringSubmatch(manifest.Name())[1]
 		theme, err := LoadManifest(filepath.Join(storeDirectory, manifest.Name()))
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("while loading theme %q: %w", themeName, err)
 		}
 		LogDebug("\tadding theme from manifest %q", manifest.Name())
 		themes[themeName] = theme

@@ -95,7 +95,7 @@ func Download(URL string, typ string, themeManifest ...Theme) (manifest Theme, e
 	case "bare":
 		themes, err := LoadCatalog(ConfigDir("themes"))
 		if err != nil {
-			return manifest, fmt.Errorf("while : %w", err)
+			return manifest, fmt.Errorf("while loading catalog of themes: %w", err)
 		}
 		theme, err := themes.Lookup(URL)
 		if err != nil {
