@@ -8,12 +8,16 @@ import (
 	"os/exec"
 	"path/filepath"
 	"regexp"
-	"runtime"
 
 	"github.com/evilsocket/islazy/zip"
 )
 
+// RootVariantName is the name of the default variant, when none were applied.
+// This is used when computing the location of the cached theme: a variant-less theme is downloaded to <theme name>/_.
 const RootVariantName = "_"
+// TempDownloadsDirName is the name of the directory used to download themes when the theme's name is not known.
+// See the source code of Download for more insights.
+// A theme cannot have that name.
 const TempDownloadsDirName = ".download"
 
 // ResolveURL resolves the THEME_NAME given to ffcss use to either:
@@ -64,7 +68,7 @@ func Download(URL string, typ string, themeManifest ...Theme) (manifest Theme, e
 		LogDebug("checking if theme is in cache @ %s", manifest.DownloadedTo)
 		stat, err := os.Stat(manifest.DownloadedTo)
 		if err == nil && stat.IsDir() {
-			LogDebug("skipped downloading of %s [%s#%s]", URL, manifest.Name(), manifest.CurrentVariantName)
+			LogDebug("skipped downloading of %s [%s#%s]", URL, manifest.Name(), manifest.currentVariantName)
 			return manifest, nil
 		}
 	}
@@ -104,7 +108,7 @@ func Download(URL string, typ string, themeManifest ...Theme) (manifest Theme, e
 	default:
 		panic("unexpected URL type")
 	}
-	manifest.DownloadedTo = CacheDir(manifest.Name(), manifest.CurrentVariantName)
+	manifest.DownloadedTo = CacheDir(manifest.Name(), manifest.currentVariantName)
 	return
 }
 
@@ -293,6 +297,7 @@ func (t Theme) ReDownloadIfNeeded(actionsNeeded struct {
 	return nil
 }
 
+// WarnIfIncompatibleWithOS shows a warning to the user if operatingSystem is marked as incompatible by the theme ("os" entry in the manifest).
 func (t Theme) WarnIfIncompatibleWithOS(operatingSystem string) {
 	for k, v := range t.OSNames {
 		if k == operatingSystem && v == "" {

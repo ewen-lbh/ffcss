@@ -24,6 +24,8 @@ func CurrentThemeByProfile() (map[string]string, error) {
 	return currentThemes, nil
 }
 
+// RegisterCurrentTheme writes the currently.yaml file in ffcss' configuration to update
+// what ffcss considers to be the current theme for that profile.
 func (ffp FirefoxProfile) RegisterCurrentTheme(themeName string) error {
 	currentThemes, err := CurrentThemeByProfile()
 	if err != nil {

@@ -14,6 +14,8 @@ import (
 
 const indent = "  "
 
+// BulletColorsByIndentLevel maps (the "key" is the element's index in the array) an indentation level (see LogStep, for example)
+// to a color.
 var BulletColorsByIndentLevel = []string{
 	"blue",
 	"cyan",
@@ -100,7 +102,7 @@ func DescribeTheme(theme Theme, indentLevel uint) {
 func showManifestSource(theme Theme) {
 	printf("\n")
 	printfln(colorizer.Color("[italic][dim]" + theme.Name() + "'s manifest"))
-	chromaQuick.Highlight(os.Stdout, theme.Raw, "YAML", "terminal16m", "pygments")
+	chromaQuick.Highlight(os.Stdout, theme.raw, "YAML", "terminal16m", "pygments")
 	printf("\n")
 }
 

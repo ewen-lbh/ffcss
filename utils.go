@@ -93,6 +93,8 @@ func prefixEachLine(s string, with string) string {
 	return strings.Join(prefixedLines, "\n")
 }
 
+// GOOStoOS returns user-friendly OS names from a given GOOS.
+// darwin becomes macos and plan9 becomes linux.
 func GOOStoOS(GOOS string) string {
 	switch GOOS {
 	case "darwin":
@@ -103,4 +105,3 @@ func GOOStoOS(GOOS string) string {
 		return GOOS
 	}
 }
-

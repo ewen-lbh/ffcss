@@ -10,24 +10,30 @@ import (
 	"strings"
 )
 
+// FirefoxProfile represents a Firefox Profile stored at Path. Each Firefox Profile is a separate instance of Firefox settings and other user data.
+// See https://support.mozilla.org/en-US/kb/profiles-where-firefox-stores-user-data for more information.
 type FirefoxProfile struct {
 	ID   string
 	Name string
 	Path string
 }
-type firefoxProfileWithVersion struct {
+
+type firefoxProfileWithVersion = struct {
 	Profile FirefoxProfile
 	Version FirefoxVersion
 }
 
+// FullName returns the basename of ffp.Path
 func (ffp FirefoxProfile) FullName() string {
 	return filepath.Base(ffp.Path)
 }
 
+// String returns a string representation of the profile.
 func (ffp FirefoxProfile) String() string {
 	return fmt.Sprintf("%s (%s)", ffp.Name, ffp.ID)
 }
 
+// NewFirefoxProfileFromPath returns a FirefoxProfile by parsing the path into and ID and a Name.
 func NewFirefoxProfileFromPath(path string) FirefoxProfile {
 	base := filepath.Base(path)
 	parts := strings.Split(base, ".")
@@ -38,6 +44,8 @@ func NewFirefoxProfileFromPath(path string) FirefoxProfile {
 	}
 }
 
+// NewFirefoxProfileFromDisplay returns a FirefoxProfile by matching the given displayString against profiles'.
+// See (FirefoxProfile).Display for the definition of a display string.
 func NewFirefoxProfileFromDisplay(displayString string, profiles []FirefoxProfile) FirefoxProfile {
 	for _, profile := range profiles {
 		ffp := NewFirefoxProfileFromPath(profile.Path)
@@ -111,6 +119,7 @@ func Profiles(optionalProfilesDir string) ([]FirefoxProfile, error) {
 	return profiles, nil
 }
 
+// DefaultProfilesDir returns the operating-system-dependent default location for the Firefox profiles' directories.
 func DefaultProfilesDir(operatingSystem string) (string, error) {
 	switch operatingSystem {
 	case "linux":
@@ -137,6 +146,7 @@ func DefaultProfilesDir(operatingSystem string) (string, error) {
 	return "", fmt.Errorf("unknown operating system %s", operatingSystem)
 }
 
+// IncompatibleProfiles returns the list of profiles that don't meet the Firefox version constraint specified by the theme, along with the detect Firefox version of each profile.
 func (t Theme) IncompatibleProfiles(profiles []FirefoxProfile) ([]firefoxProfileWithVersion, error) {
 	if t.FirefoxVersion != "" {
 		incompatibleProfileDirs := make([]firefoxProfileWithVersion, 0)

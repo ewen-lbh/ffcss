@@ -11,21 +11,34 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
+// ThemeCompatWarningShown controls whether the ffcss incompatibility between the installed version and the theme's declared version (ffcss entry in the manifest)
+// is warned to the user.
+// Set to VersionMajor > 0 to comply with semver: versions with the major component (X._._) set to 0 can have breaking changes at any version change.
 var ThemeCompatWarningShown = VersionMajor > 0
 
+// Config represents a configuration map in a manifest, representing a set of values for the about:config page in Firefox
 type Config map[string]interface{}
 
+// Equal returns true if the config c has all of its values equal to the other Config.
 func (c Config) Equal(other Config) bool {
+	// XXX: this is not efficient AT ALL. It sucks. Change this.
 	for k, v := range c {
 		if v != other[k] {
+			return false
+		}
+	}
+	for k, v := range other {
+		if other[k] != v {
 			return false
 		}
 	}
 	return true
 }
 
+// FileTemplate represents a string with placeholders (e.g. "{{os}}") to be replaced by {{mustache}}.
 type FileTemplate = string
 
+// Variant represents a theme's variant. Most of the properties are identical to Theme's, because they overwrite the default values.
 type Variant struct {
 	// Properties exclusive to variants
 	Name    string
@@ -49,10 +62,11 @@ type Variant struct {
 	}
 }
 
+// Theme represents a FirefoxCSS theme, read from a manifest YAML file. (See LoadManifest).
 type Theme struct {
 	// Internal, cannot be set in the YAML file
-	CurrentVariantName string `yaml:"-"` // Used to construct the directory where the theme will be cached
-	Raw                string `yaml:"-"` // Contains the raw yaml file contents
+	currentVariantName string `yaml:"-"` // Used to construct the directory where the theme will be cached
+	raw                string `yaml:"-"` // Contains the raw yaml file contents
 	DownloadedTo       string `yaml:"-"` // Stores the path to the directory where the theme is cached. Set by .Download().
 
 	// Top-level (non-variant-modifiable)
@@ -90,16 +104,14 @@ type Theme struct {
 // It is used to add blank lines in generated manifests: for example, above the 'variant' key, a blank line should be added to add grouping.
 var ManifestKeyGroupsStarts = [...]string{"name", "variants", "os", "download", "config", "run", "message"}
 
+// NewTheme creates a new Theme with vital defaults (namely the config entry to enable CSS customization of Firefox).
 func NewTheme() Theme {
 	return Theme{
 		Config: Config{
 			"toolkit.legacyUserProfileCustomizations.stylesheets": true,
 		},
-		UserChrome:  "",
-		UserContent: "",
-		UserJS:      "",
-		Variants:    map[string]Variant{},
-		Assets:      []FileTemplate{},
+		Variants: map[string]Variant{},
+		Assets:   []FileTemplate{},
 	}
 }
 
@@ -111,7 +123,7 @@ func LoadManifest(manifestPath string) (manifest Theme, err error) {
 		return
 	}
 	manifest = NewTheme()
-	manifest.Raw = string(raw)
+	manifest.raw = string(raw)
 	err = yaml.Unmarshal(raw, &manifest)
 
 	if manifest.FfcssVersion != VersionMajor && !ThemeCompatWarningShown && manifest.FfcssVersion != 0 {
@@ -133,12 +145,12 @@ func LoadManifest(manifestPath string) (manifest Theme, err error) {
 		variantWithName.Name = name
 		manifest.Variants[name] = variantWithName
 	}
-	manifest.CurrentVariantName = RootVariantName // ensure the current variant's name wasn't manipulated by the YAML unmarshaling
+	manifest.currentVariantName = RootVariantName // ensure the current variant's name wasn't manipulated by the YAML unmarshaling
 	if err != nil {
 		err = fmt.Errorf("while parsing manifest %s: %w", manifestPath, err)
 		return
 	}
-	manifest.DownloadedTo = CacheDir(manifest.Name(), manifest.CurrentVariantName)
+	manifest.DownloadedTo = CacheDir(manifest.Name(), manifest.currentVariantName)
 	if manifest.FirefoxVersion != "" {
 		manifest.FirefoxVersionConstraint, err = NewFirefoxVersionConstraint(manifest.FirefoxVersion)
 		if err != nil {
@@ -159,7 +171,7 @@ func LoadManifest(manifestPath string) (manifest Theme, err error) {
 func (t Theme) WithVariant(variant Variant) (newTheme Theme, actionsNeeded struct{ switchBranch, reDownload bool }) {
 	// TODO might clean this up with reflection, selecting fields that are both in Manifest & Variant
 	newTheme = t
-	newTheme.CurrentVariantName = variant.Name
+	newTheme.currentVariantName = variant.Name
 	if variant.UserChrome != "" {
 		newTheme.UserChrome = variant.UserChrome
 	}
@@ -199,11 +211,15 @@ func (t Theme) WithVariant(variant Variant) (newTheme Theme, actionsNeeded struc
 		newTheme.Config[key] = val
 	}
 	if actionsNeeded.reDownload || actionsNeeded.switchBranch {
-		newTheme.DownloadedTo = CacheDir(newTheme.Name(), newTheme.CurrentVariantName)
+		newTheme.DownloadedTo = CacheDir(newTheme.Name(), newTheme.currentVariantName)
 	}
 	return newTheme, actionsNeeded
 }
 
+// Name returns a theme's name. If the name was explicitly set in the manifest (i.e. if t.ExplicitName is not empty), it is returned.
+// Otherwise, the name is guessed.
+// Currently, it is only guessed if a github repository is set for t.DownloadAt.
+// If guessing is not possible, it returns the empty string.
 func (t Theme) Name() string {
 	if t.ExplicitName != "" {
 		return strings.ToLower(t.ExplicitName)
@@ -251,8 +267,8 @@ func ManifestPath(themeRoot string) string {
 // If t.Raw is set, it'll return it.
 // Otherwise, it serializes the values into YAML, following the Theme struct.
 func (t Theme) GenerateManifest() (string, error) {
-	if t.Raw != "" {
-		return t.Raw, nil
+	if t.raw != "" {
+		return t.raw, nil
 	}
 	t.ExplicitName = t.Name()
 	// Remove redundant keys

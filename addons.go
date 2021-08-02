@@ -5,6 +5,8 @@ import (
 	"os/exec"
 )
 
+// InstallAddon install the addon at addonURL on this profile.
+// Currently, it justs opens firefox with that URL so that the user can manually install it (hence the operatingSystem argument).
 func (ffp FirefoxProfile) InstallAddon(operatingSystem string, addonURL string) error {
 	LogStep(1, "Opening [blue][bold]%s", addonURL)
 	LogStep(1, "[yellow]Waiting for you to close Firefox")

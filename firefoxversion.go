@@ -15,7 +15,7 @@ type FirefoxVersion struct {
 	Minor int // -1 means "unspecified". Can be obtained by using "x" for the minor part. Useful for constraints.
 }
 
-// FirefoxVersion represents a constraint to test on a firefox version.
+// FirefoxVersionConstraint represents a constraint to test on a firefox version.
 type FirefoxVersionConstraint struct {
 	Min FirefoxVersion
 	Max FirefoxVersion
@@ -88,10 +88,10 @@ func (ffv FirefoxVersion) GreaterOrEqual(other FirefoxVersion) bool {
 	return ffv.Major > other.Major || (ffv.Major == other.Major && ffv.Minor >= other.Minor)
 }
 
-// LesserrOrEqual checks if the version is less than or equal to other.
+// LessOrEqual checks if the version is less than or equal to other.
 // If one of the two (or both) has the minor part unspecified (".x", stored as -1),
 // it only compares major parts. Otherwise, it uses a standard lexical sort.
-func (ffv FirefoxVersion) LesserOrEqual(other FirefoxVersion) bool {
+func (ffv FirefoxVersion) LessOrEqual(other FirefoxVersion) bool {
 	if other.Minor == -1 || ffv.Minor == -1 {
 		return ffv.Major <= other.Major
 	}
@@ -111,7 +111,7 @@ func (ffv FirefoxVersion) String() string {
 // FulfilledBy checks if version ∈ [constraint.min, constraint.max]
 func (constraint FirefoxVersionConstraint) FulfilledBy(version FirefoxVersion) bool {
 	LogDebug("checking if %s ∈ [%s, %s]", version, constraint.Min, constraint.Max)
-	return version.GreaterOrEqual(constraint.Min) && version.LesserOrEqual(constraint.Max)
+	return version.GreaterOrEqual(constraint.Min) && version.LessOrEqual(constraint.Max)
 }
 
 // NewFirefoxVersion turns a version string (90 or 90.0 for example) into a FirefoxVersion.
