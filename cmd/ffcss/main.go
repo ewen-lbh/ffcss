@@ -5,14 +5,13 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"strings"
 
 	"github.com/docopt/docopt-go"
 	"github.com/ewen-lbh/ffcss"
 )
 
 const (
-	Usage = `ffcss - Apply and configure FirefoxCSS themes
+	usage = `ffcss - Apply and configure FirefoxCSS themes
 
 Usage:
 	ffcss [options] use THEME_NAME [VARIANT]
