@@ -59,16 +59,16 @@ func main() {
 
 	if err := dispatchCommand(args); err != nil {
 		fmt.Fprintln(out)
-		Error("Woops! An error occurred:")
+		LogError("Woops! An error occurred:")
 		fmt.Fprintln(out)
 		for idx, errorFragment := range strings.Split(err.Error(), ": ") {
-			Step(uint(idx), errorFragment)
+			LogStep(uint(idx), errorFragment)
 		}
 	}
 }
 
 func dispatchCommand(args docopt.Opts) error {
-	D("dispatching %#v", args)
+	LogDebug("dispatching %#v", args)
 	if val, _ := args.Bool("configure"); val {
 		err := RunCommandConfigure(args)
 		return err

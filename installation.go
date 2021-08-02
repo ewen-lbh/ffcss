@@ -13,7 +13,7 @@ func (t Theme) InstallAssets(operatingSystem string, variant Variant, profileDir
 	if err != nil {
 		return fmt.Errorf("while gathering assets: %w", err)
 	}
-	D("gathered %d asset(s)", len(files))
+	LogDebug("gathered %d asset(s)", len(files))
 
 	for _, file := range files {
 		stat, err := os.Stat(file)
@@ -45,7 +45,7 @@ func (t Theme) InstallAssets(operatingSystem string, variant Variant, profileDir
 		if err != nil {
 			return fmt.Errorf("while writing to %s: %w", destPath, err)
 		}
-		D("wrote %s", destPath)
+		LogDebug("wrote %s", destPath)
 
 	}
 	return nil
@@ -53,7 +53,7 @@ func (t Theme) InstallAssets(operatingSystem string, variant Variant, profileDir
 
 // InstallUserJS installs the content of user.js and the config entries to {{profileDir}}/user.js
 func (t Theme) InstallUserJS(operatingSystem string, variant Variant, profileDir string) error {
-	err := RenameIfExists(filepath.Join(profileDir, "user.js"), filepath.Join(profileDir, "user.js.bak"))
+	err := renameIfExists(filepath.Join(profileDir, "user.js"), filepath.Join(profileDir, "user.js.bak"))
 	if err != nil {
 		return fmt.Errorf("while creating backup of %s: %w", filepath.Join(profileDir, "user.js"), err)
 	}
@@ -61,7 +61,7 @@ func (t Theme) InstallUserJS(operatingSystem string, variant Variant, profileDir
 	var content []byte
 
 	if t.UserJS != "" {
-		file := filepath.Join(t.DownloadedTo, RenderFileTemplate(t.UserJS, operatingSystem, variant, t.OSNames))
+		file := filepath.Join(t.DownloadedTo, renderFileTemplate(t.UserJS, operatingSystem, variant, t.OSNames))
 		content, err = ioutil.ReadFile(file)
 		if err != nil {
 			return fmt.Errorf("while reading %s: %w", file, err)
@@ -78,7 +78,7 @@ func (t Theme) InstallUserJS(operatingSystem string, variant Variant, profileDir
 
 	if additionalContent != "" {
 		content = []byte(string(content) + "\n" + additionalContent)
-		D("generated additional user.js content from config entries: %q", additionalContent)
+		LogDebug("generated additional user.js content from config entries: %q", additionalContent)
 	}
 
 	if string(content) == "" {
@@ -90,7 +90,7 @@ func (t Theme) InstallUserJS(operatingSystem string, variant Variant, profileDir
 		return fmt.Errorf("while writing: %w", err)
 	}
 
-	D("installed user.js @ %s", filepath.Join(profileDir, "user.js"))
+	LogDebug("installed user.js @ %s", filepath.Join(profileDir, "user.js"))
 
 	return nil
 }
@@ -100,7 +100,7 @@ func (t Theme) InstallUserChrome(os string, variant Variant, profileDir string) 
 	if t.UserChrome == "" {
 		return nil
 	}
-	file := filepath.Join(t.DownloadedTo, RenderFileTemplate(t.UserChrome, os, variant, t.OSNames))
+	file := filepath.Join(t.DownloadedTo, renderFileTemplate(t.UserChrome, os, variant, t.OSNames))
 	content, err := ioutil.ReadFile(file)
 	if err != nil {
 		return fmt.Errorf("while reading %s: %w", file, err)
@@ -111,7 +111,7 @@ func (t Theme) InstallUserChrome(os string, variant Variant, profileDir string) 
 		return fmt.Errorf("while writing: %w", err)
 	}
 
-	D("installed userChrome.css @ %s", filepath.Join(profileDir, "chrome", "userChrome.css"))
+	LogDebug("installed userChrome.css @ %s", filepath.Join(profileDir, "chrome", "userChrome.css"))
 
 	return nil
 }
@@ -121,7 +121,7 @@ func (t Theme) InstallUserContent(os string, variant Variant, profileDir string)
 	if t.UserContent == "" {
 		return nil
 	}
-	file := filepath.Join(t.DownloadedTo, RenderFileTemplate(t.UserContent, os, variant, t.OSNames))
+	file := filepath.Join(t.DownloadedTo, renderFileTemplate(t.UserContent, os, variant, t.OSNames))
 	content, err := ioutil.ReadFile(file)
 	if err != nil {
 		return fmt.Errorf("while reading %s: %w", file, err)
@@ -132,7 +132,7 @@ func (t Theme) InstallUserContent(os string, variant Variant, profileDir string)
 		return fmt.Errorf("while writing: %w", err)
 	}
 
-	D("installed userContent.css @ %s", filepath.Join(profileDir, "chrome", "userContent.css"))
+	LogDebug("installed userContent.css @ %s", filepath.Join(profileDir, "chrome", "userContent.css"))
 
 	return nil
 }

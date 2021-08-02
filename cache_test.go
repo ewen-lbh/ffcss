@@ -11,7 +11,7 @@ import (
 
 func fillCache() {
 	exec.Command("cp", "-r", "testdata/home/.cache", "testarea/home")
-	D("filled mock cache")
+	LogDebug("filled mock cache")
 }
 
 func TestCleanDownloadArea(t *testing.T) {

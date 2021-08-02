@@ -115,7 +115,7 @@ func LoadManifest(manifestPath string) (manifest Theme, err error) {
 	err = yaml.Unmarshal(raw, &manifest)
 
 	if manifest.FfcssVersion != VersionMajor && !ThemeCompatWarningShown && manifest.FfcssVersion != 0 {
-		Warn("ffcss %s is installed, but you are using a theme made for ffcss %d.X.X. Some things may not work.\n", VersionString, manifest.FfcssVersion)
+		LogWarning("ffcss %s is installed, but you are using a theme made for ffcss %d.X.X. Some things may not work.\n", VersionString, manifest.FfcssVersion)
 		ThemeCompatWarningShown = true
 	}
 
@@ -242,8 +242,8 @@ func (t Theme) ShowMessage() error {
 	return nil
 }
 
-// GetManifestPath returns the path of a theme's manifest file
-func GetManifestPath(themeRoot string) string {
+// ManifestPath returns the path of a theme's manifest file
+func ManifestPath(themeRoot string) string {
 	return filepath.Join(themeRoot, "ffcss.yaml")
 }
 
@@ -299,7 +299,7 @@ func (t Theme) WriteManifest(inDirectory string) error {
 func InitializeTheme(workingDir string) (Theme, error) {
 	theme := NewTheme()
 
-	theme.DownloadAt = strings.TrimSuffix(getCurrentRepoRemote(), ".git")
+	theme.DownloadAt = strings.TrimSuffix(currentRepoRemote(), ".git")
 	if theme.DownloadAt == "" {
 		theme.DownloadAt = "TODO"
 	}

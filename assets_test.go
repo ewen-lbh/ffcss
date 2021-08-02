@@ -8,35 +8,35 @@ import (
 )
 
 func TestRenderFileTemplate(t *testing.T) {
-	assert.Equal(t, "userChrome.css", RenderFileTemplate(
+	assert.Equal(t, "userChrome.css", renderFileTemplate(
 		"userChrome.css",
 		"linux",
 		Variant{},
 		map[string]string{},
 	))
 
-	assert.Equal(t, "linux.css", RenderFileTemplate(
+	assert.Equal(t, "linux.css", renderFileTemplate(
 		"linux.css",
 		"linux",
 		Variant{},
 		map[string]string{"linux": "Linux"},
 	))
 
-	assert.Equal(t, "GNU/Linux.css", RenderFileTemplate(
+	assert.Equal(t, "GNU/Linux.css", renderFileTemplate(
 		"{{os}}.css",
 		"linux",
 		Variant{},
 		map[string]string{"linux": "GNU/Linux"},
 	))
 
-	assert.Equal(t, "linux.css", RenderFileTemplate(
+	assert.Equal(t, "linux.css", renderFileTemplate(
 		"linux.css",
 		"windows",
 		Variant{},
 		map[string]string{},
 	))
 
-	assert.Equal(t, "./macos/rainbow.css", RenderFileTemplate(
+	assert.Equal(t, "./macos/rainbow.css", renderFileTemplate(
 		"./{{ os }}/{{variant}}.css",
 		"macos",
 		Variant{Name: "rainbow"},

@@ -8,8 +8,6 @@ import (
 	"regexp"
 	"runtime"
 	"strings"
-
-	"gopkg.in/yaml.v2"
 )
 
 type FirefoxProfile struct {
@@ -20,25 +18,6 @@ type FirefoxProfile struct {
 type firefoxProfileWithVersion struct {
 	Profile FirefoxProfile
 	Version FirefoxVersion
-}
-
-func (ffp FirefoxProfile) RegisterCurrentTheme(themeName string) error {
-	currentThemes, err := CurrentThemeByProfile()
-	if err != nil {
-		return err
-	}
-	currentThemes[ffp.FullName()] = themeName
-	currentThemesNewContents, err := yaml.Marshal(currentThemes)
-	if err != nil {
-		return fmt.Errorf("while marshaling into YAML: %w", err)
-	}
-
-	err = os.WriteFile(ConfigDir("currently.yaml"), currentThemesNewContents, 0777)
-	if err != nil {
-		return fmt.Errorf("while writing new contents: %w", err)
-	}
-
-	return nil
 }
 
 func (ffp FirefoxProfile) FullName() string {
@@ -66,7 +45,7 @@ func NewFirefoxProfileFromDisplay(displayString string, profiles []FirefoxProfil
 			return ffp
 		}
 	}
-	D("while searching for %s in %v", displayString, profiles)
+	LogDebug("while searching for %s in %v", displayString, profiles)
 	panic("internal error: can't get profile from display string")
 }
 
@@ -164,7 +143,7 @@ func (t Theme) IncompatibleProfiles(profiles []FirefoxProfile) ([]firefoxProfile
 		for _, profile := range profiles {
 			profileVersion, err := profile.FirefoxVersion()
 			if err != nil {
-				Warn("Couldn't get firefox version for profile %s", profile)
+				LogWarning("Couldn't get firefox version for profile %s", profile)
 			}
 			fulfillsConstraint := t.FirefoxVersionConstraint.FulfilledBy(profileVersion)
 			if !fulfillsConstraint {
@@ -178,5 +157,5 @@ func (t Theme) IncompatibleProfiles(profiles []FirefoxProfile) ([]firefoxProfile
 
 // BackupChrome moves the chrome/ folder to chrome.bak/
 func (ffp FirefoxProfile) BackupChrome() error {
-	return RenameIfExists(filepath.Join(ffp.Path, "chrome"), filepath.Join(ffp.Path, "chrome.bak"))
+	return renameIfExists(filepath.Join(ffp.Path, "chrome"), filepath.Join(ffp.Path, "chrome.bak"))
 }

@@ -40,14 +40,14 @@ func NewFirefoxVersionConstraint(constraint string) (FirefoxVersionConstraint, e
 	var sentence string
 	var err error
 	if strings.HasSuffix(constraint, "+") {
-		D("constraint type is minimum")
+		LogDebug("constraint type is minimum")
 		min, err = NewFirefoxVersion(strings.TrimSuffix(constraint, "+"))
 		if err != nil {
 			return FirefoxVersionConstraint{}, fmt.Errorf("while parsing minimum constraint %q: %w", constraint, err)
 		}
 		sentence = fmt.Sprintf("version %s or higher", min)
 	} else if strings.Count(constraint, "-") == 1 {
-		D("constraint type is range")
+		LogDebug("constraint type is range")
 		minmaxStrings := strings.SplitN(constraint, "-", 2)
 		min, err = NewFirefoxVersion(minmaxStrings[0])
 		if err != nil {
@@ -59,14 +59,14 @@ func NewFirefoxVersionConstraint(constraint string) (FirefoxVersionConstraint, e
 		}
 		sentence = min.String() + "–" + max.String()
 	} else if strings.HasPrefix(constraint, "up to ") {
-		D("constraint type is upto")
+		LogDebug("constraint type is upto")
 		max, err = NewFirefoxVersion(strings.TrimPrefix(constraint, "up to "))
 		if err != nil {
 			return FirefoxVersionConstraint{}, fmt.Errorf("while parsing maximum constraint %q: %w", constraint, err)
 		}
 		sentence = fmt.Sprintf("version %s or lower", max)
 	} else {
-		D("constraint type is exact match")
+		LogDebug("constraint type is exact match")
 		exact, err := NewFirefoxVersion(constraint)
 		if err != nil {
 			return FirefoxVersionConstraint{}, fmt.Errorf("while parsing exact match constraint %q: %w", constraint, err)
@@ -95,7 +95,7 @@ func (ffv FirefoxVersion) LesserOrEqual(other FirefoxVersion) bool {
 	if other.Minor == -1 || ffv.Minor == -1 {
 		return ffv.Major <= other.Major
 	}
-	D("check that %d <= %d or %d = %d and %d <= %d", ffv.Major, other.Major, ffv.Major, other.Major, ffv.Minor, other.Minor)
+	LogDebug("check that %d <= %d or %d = %d and %d <= %d", ffv.Major, other.Major, ffv.Major, other.Major, ffv.Minor, other.Minor)
 	return ffv.Major < other.Major || (ffv.Major == other.Major && ffv.Minor <= other.Minor)
 }
 
@@ -110,7 +110,7 @@ func (ffv FirefoxVersion) String() string {
 
 // FulfilledBy checks if version ∈ [constraint.min, constraint.max]
 func (constraint FirefoxVersionConstraint) FulfilledBy(version FirefoxVersion) bool {
-	D("checking if %s ∈ [%s, %s]", version, constraint.Min, constraint.Max)
+	LogDebug("checking if %s ∈ [%s, %s]", version, constraint.Min, constraint.Max)
 	return version.GreaterOrEqual(constraint.Min) && version.LesserOrEqual(constraint.Max)
 }
 
@@ -124,7 +124,7 @@ func NewFirefoxVersion(stringRepr string, defaultMinor ...string) (FirefoxVersio
 	if len(fragments) == 1 {
 		fragments = append(fragments, defaultMinor...)
 	}
-	D("parsing version %s: fragments is %#v", stringRepr, fragments)
+	LogDebug("parsing version %s: fragments is %#v", stringRepr, fragments)
 	major, err := strconv.ParseInt(fragments[0], 10, 64)
 	if err != nil {
 		return FirefoxVersion{}, fmt.Errorf("while converting major segment: %w", err)

@@ -9,7 +9,6 @@ import (
 	"github.com/AlecAivazis/survey/v2"
 	chromaQuick "github.com/alecthomas/chroma/quick"
 	"github.com/charmbracelet/glamour"
-	"github.com/docopt/docopt-go"
 	"github.com/mitchellh/colorstring"
 )
 
@@ -50,7 +49,7 @@ func DescribeTheme(theme Theme, indentLevel uint) {
 
 	var author string
 	urlParts := strings.Split(theme.DownloadAt, "/")
-	D("urlParts is %#v", urlParts)
+	LogDebug("urlParts is %#v", urlParts)
 	if theme.Author != "" {
 		author = theme.Author
 	} else if strings.Contains(theme.DownloadAt, "github.com") && len(urlParts) == 5 {
@@ -78,13 +77,13 @@ func DescribeTheme(theme Theme, indentLevel uint) {
 	if theme.Description != "" {
 		printf("\n")
 		gutter := colorstring.Color(indentation + "[blue]│")
-		D("gutter is %q", gutter)
+		LogDebug("gutter is %q", gutter)
 		markdownRendered, err := glamour.Render(theme.Description, "dark")
 		if err != nil {
 			markdownRendered = theme.Description
 		}
 		printf("\n")
-		D("splitted is %#v", strings.Split(markdownRendered, "\n"))
+		LogDebug("splitted is %#v", strings.Split(markdownRendered, "\n"))
 		for _, line := range strings.Split(markdownRendered, "\n") {
 			if strings.TrimSpace(line) == "" {
 				continue
@@ -121,30 +120,30 @@ func plural(singular string, amount int, optionalPlural ...string) string {
 	return plural
 }
 
-// D prints a debug log line. This one always prints to the real stdout, ignoring a possibly mocked stdout
-func D(s string, fmtArgs ...interface{}) {
+// LogDebug prints a debug log line. This one always prints to the real stdout, ignoring a possibly mocked stdout
+func LogDebug(s string, fmtArgs ...interface{}) {
 	if os.Getenv("DEBUG") != "" {
 		fmt.Printf(colorizer.Color("[dim][ DEBUG ] "+s+"\n"), fmtArgs...)
 	}
 }
 
-// Warn prints a log line with "warning" styling
-func Warn(s string, fmtArgs ...interface{}) {
+// LogWarning prints a log line with "warning" styling
+func LogWarning(s string, fmtArgs ...interface{}) {
 	printf(colorizer.Color("[yellow][bold]"+s+"\n"), fmtArgs...)
 }
 
-// Error is like warn but with "error" styling
-func Error(s string, fmtArgs ...interface{}) {
+// LogError is like warn but with "error" styling
+func LogError(s string, fmtArgs ...interface{}) {
 	printf(colorizer.Color("[red][bold]"+s+"\n"), fmtArgs...)
 }
 
-// Step displays a list item
-func Step(indentLevel uint, item string, fmtArgs ...interface{}) {
-	StepC("•", indentLevel, item, fmtArgs...)
+// LogStep displays a list item
+func LogStep(indentLevel uint, item string, fmtArgs ...interface{}) {
+	LogStepC("•", indentLevel, item, fmtArgs...)
 }
 
-// StepC is like Step, but the bullet point characters is customizable
-func StepC(bulletChar string, indentLevel uint, item string, fmtArgs ...interface{}) {
+// LogStepC is like Step, but the bullet point characters is customizable
+func LogStepC(bulletChar string, indentLevel uint, item string, fmtArgs ...interface{}) {
 	indentLevel += BaseIndentLevel
 	var color string
 	if int(indentLevel) > len(BulletColorsByIndentLevel)-1 {
@@ -159,17 +158,19 @@ func StepC(bulletChar string, indentLevel uint, item string, fmtArgs ...interfac
 	printfln(bullet + " " + colorizer.Color(strings.TrimSpace(fmt.Sprintf(item, fmtArgs...))))
 }
 
+// Display is like String, but adds terminal ANSI sequences for some color.
 func (ffp FirefoxProfile) Display() string {
 	return colorizer.Color(fmt.Sprintf("[bold]%s [reset][dim](%s)", ffp.Name, ffp.ID))
 }
 
+// AskProfiles prompts the user to select one or more profiles from the given array, and returns the user's chosen profiles.
 func AskProfiles(profiles []FirefoxProfile) []FirefoxProfile {
 	var selectedProfiles []FirefoxProfile
 
 	// XXX the whole display thing should be put in survey.MultiSelect.Renderer, look into that.
 	selectedProfileDirsDisplay := make([]string, 0)
 
-	Step(0, "Please select profiles to apply the theme on")
+	LogStep(0, "Please select profiles to apply the theme on")
 
 	profileDirsDisplay := make([]string, 0)
 	for _, profile := range profiles {
@@ -179,7 +180,7 @@ func AskProfiles(profiles []FirefoxProfile) []FirefoxProfile {
 	survey.AskOne(&survey.MultiSelect{
 		Message: "Select profiles",
 		Options: profileDirsDisplay,
-		VimMode: VimModeEnabled(),
+		VimMode: vimModeEnabled(),
 	}, &selectedProfileDirsDisplay)
 
 	for _, chosenProfileDisplay := range selectedProfileDirsDisplay {
@@ -189,6 +190,7 @@ func AskProfiles(profiles []FirefoxProfile) []FirefoxProfile {
 	return selectedProfiles
 }
 
+// AskToSeeManifestSource prompts the user to display the theme's manifest, and, if the user accepts, displays it.
 func (t Theme) AskToSeeManifestSource(skip bool) {
 	wantsSource := false
 	if !skip {
@@ -212,7 +214,7 @@ func (t Theme) ChooseVariant() (chosen Variant, cancel bool) {
 		variantPrompt := &survey.Select{
 			Message: "Install variant",
 			Options: t.AvailableVariants(),
-			VimMode: VimModeEnabled(),
+			VimMode: vimModeEnabled(),
 		}
 		survey.AskOne(variantPrompt, &variantName)
 		// user Ctrl-C'd
@@ -224,6 +226,7 @@ func (t Theme) ChooseVariant() (chosen Variant, cancel bool) {
 	return Variant{}, false
 }
 
+// ConfirmInstallAddons asks the user to confirm the installation of addons.
 func ConfirmInstallAddons(addons []string) bool {
 	acceptOpenExtensionPages := false
 	survey.AskOne(&survey.Confirm{
@@ -237,6 +240,7 @@ func ConfirmInstallAddons(addons []string) bool {
 	return acceptOpenExtensionPages
 }
 
+// ShowHookOutput displays the given output text with additional horizontal and vertical padding
 func ShowHookOutput(output string) {
 	fmt.Fprint(
 		out,

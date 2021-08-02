@@ -1,6 +1,7 @@
 package ffcss
 
 import (
+	"fmt"
 	"net/url"
 	"os"
 	"path/filepath"
@@ -22,38 +23,44 @@ func isValidURL(toTest string) bool {
 	return true
 }
 
-// GetConfigDir returns the absolute path of ffcss's configuration directory
-func GetConfigDir() string {
-	homedir, _ := os.UserHomeDir()
+// getConfigDir returns the absolute path of ffcss's configuration directory
+func getConfigDir() string {
+	homedir, err := os.UserHomeDir()
+	if err != nil {
+		panic(fmt.Errorf("couldn't get your home directory: %w", err))
+	}
 	return filepath.Join(homedir, ".config", "ffcss")
 }
 
-// GetCacheDir returns the temporary path for cloned repos and other stuff
-func GetCacheDir() string {
-	homedir, _ := os.UserHomeDir()
+// getCacheDir returns the temporary path for cloned repos and other stuff
+func getCacheDir() string {
+	homedir, err := os.UserHomeDir()
+	if err != nil {
+		panic(fmt.Errorf("couldn't get your home directory: %w", err))
+	}
 	return filepath.Join(homedir, ".cache", "ffcss")
 }
 
 // CacheDir joins the cache directory with the given path segments
 func CacheDir(pathSegments ...string) string {
-	return filepath.Join(GetCacheDir(), filepath.Join(pathSegments...))
+	return filepath.Join(getCacheDir(), filepath.Join(pathSegments...))
 }
 
 // ConfigDir joins the config directory with the given path segments
 func ConfigDir(pathSegments ...string) string {
-	return filepath.Join(GetConfigDir(), filepath.Join(pathSegments...))
+	return filepath.Join(getConfigDir(), filepath.Join(pathSegments...))
 }
 
 func cwd() string {
 	wd, err := os.Getwd()
 	if err != nil {
-		panic(err)
+		panic(fmt.Errorf("couldn't get the current working directory: %w", err))
 	}
 	return wd
 }
 
-// RenameIfExists renames from to to if from exists. If it doesn't, don't attempt renaming.
-func RenameIfExists(from string, to string) error {
+// renameIfExists renames from to to if from exists. If it doesn't, don't attempt renaming.
+func renameIfExists(from string, to string) error {
 	if _, err := os.Stat(from); os.IsNotExist(err) {
 		return nil
 	}
@@ -67,8 +74,8 @@ func RenameIfExists(from string, to string) error {
 	return os.Rename(from, to)
 }
 
-// VimModeEnabled returns true if the user has explicitly set vim mode, or if the $EDITOR is vim/neovim
-func VimModeEnabled() bool {
+// vimModeEnabled returns true if the user has explicitly set vim mode, or if the $EDITOR is vim/neovim
+func vimModeEnabled() bool {
 	if os.Getenv("VIM_MODE") == "1" || os.Getenv("VIM_STYLE") == "1" {
 		return true
 	}
@@ -96,3 +103,4 @@ func GOOStoOS(GOOS string) string {
 		return GOOS
 	}
 }
+

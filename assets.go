@@ -9,9 +9,9 @@ import (
 	"github.com/hoisie/mustache"
 )
 
-func RenderFileTemplate(f FileTemplate, operatingSystem string, variant Variant, osRenameMap map[string]string) string {
+func renderFileTemplate(f FileTemplate, operatingSystem string, variant Variant, osRenameMap map[string]string) string {
 	if strings.Contains(strings.Trim(f, " "), "{{variant}}") && variant.Name == "" {
-		Warn("%q uses {{variant}} which is empty\n", f)
+		LogWarning("%q uses {{variant}} which is empty\n", f)
 	}
 	var osName string
 	if osRenameMap[operatingSystem] == "" {
@@ -32,7 +32,7 @@ func (t Theme) DestinationPathOfAsset(assetPath string, profileDir string, opera
 		return "", fmt.Errorf("asset %q is outside of the theme's root %q", assetPath, t.DownloadedTo)
 	}
 
-	relativeTo := filepath.Clean(filepath.Join(t.DownloadedTo, filepath.Clean(RenderFileTemplate(t.CopyFrom, operatingSystem, variant, t.OSNames))))
+	relativeTo := filepath.Clean(filepath.Join(t.DownloadedTo, filepath.Clean(renderFileTemplate(t.CopyFrom, operatingSystem, variant, t.OSNames))))
 	if !strings.HasPrefix(relativeTo, t.DownloadedTo) {
 		return "", fmt.Errorf("copy from %q is outside of the theme's root %q", relativeTo, t.DownloadedTo)
 	}
@@ -49,8 +49,8 @@ func (t Theme) DestinationPathOfAsset(assetPath string, profileDir string, opera
 func (t Theme) AssetsPaths(os string, variant Variant) ([]string, error) {
 	resolvedFiles := make([]string, 0)
 	for _, template := range t.Assets {
-		glob := RenderFileTemplate(template, os, variant, t.OSNames)
-		D("looking for assets: globbing %q", filepath.Join(t.DownloadedTo, glob))
+		glob := renderFileTemplate(template, os, variant, t.OSNames)
+		LogDebug("looking for assets: globbing %q", filepath.Join(t.DownloadedTo, glob))
 		glob = filepath.Clean(filepath.Join(t.DownloadedTo, glob))
 		files, err := doublestar.Glob(glob)
 		if err != nil {

@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"strings"
 
 	"github.com/docopt/docopt-go"
 	. "github.com/ewen-lbh/ffcss"
@@ -19,13 +20,13 @@ func RunCommandUse(args docopt.Opts) error {
 		return err
 	}
 
-	Step(0, "Resolving the theme's name")
+	LogStep(0, "Resolving the theme's name")
 	uri, typ, err := ResolveURL(themeName)
 	if err != nil {
 		return fmt.Errorf("while resolving name %s: %w", themeName, err)
 	}
 
-	Step(0, "Downloading the theme")
+	LogStep(0, "Downloading the theme")
 	manifest, err := Download(uri, typ)
 	if err != nil {
 		return err
@@ -55,9 +56,9 @@ func RunCommandUse(args docopt.Opts) error {
 	}
 
 	if len(incompatibleProfiles) != 0 {
-		Step(1, "[yellow]This theme ensures compatibility with firefox [bold]%s[reset][yellow]. The following themes could be incompatible:", manifest.FirefoxVersionConstraint.Sentence)
+		LogStep(1, "[yellow]This theme ensures compatibility with firefox [bold]%s[reset][yellow]. The following themes could be incompatible:", manifest.FirefoxVersionConstraint.Sentence)
 		for _, profile := range incompatibleProfiles {
-			Step(2, "%s [dim]([reset]version [blue][bold]%s[reset][dim])", profile.Profile, profile.Version)
+			LogStep(2, "%s [dim]([reset]version [blue][bold]%s[reset][dim])", profile.Profile, profile.Version)
 		}
 	}
 
@@ -91,10 +92,10 @@ func RunCommandUse(args docopt.Opts) error {
 	}
 	for _, profile := range selectedProfiles {
 		if !singleProfile {
-			Step(0, "With profile "+filepath.Base(profile.Path))
+			LogStep(0, "With profile "+filepath.Base(profile.Path))
 		}
 
-		Step(1, "Backing up the chrome/ folder")
+		LogStep(1, "Backing up the chrome/ folder")
 		err = profile.BackupChrome()
 		if err != nil {
 			return fmt.Errorf("while backing up chrome directory: %w", err)
@@ -102,7 +103,7 @@ func RunCommandUse(args docopt.Opts) error {
 
 		// Run pre-install script
 		if manifest.Run.Before != "" {
-			Step(1, "Running pre-install script")
+			LogStep(1, "Running pre-install script")
 			// TODO for this to be useful, print commandline _with mustaches replaced_:  Step(baseIndent+2, "[dim]$ bash -c [reset][bold]%s", manifest.Run.Before)
 			output, err := manifest.RunPreInstallHook(profile)
 			if err != nil {
@@ -117,7 +118,7 @@ func RunCommandUse(args docopt.Opts) error {
 		}
 
 		// Install stuff
-		Step(1, "Installing the theme")
+		LogStep(1, "Installing the theme")
 		err = manifest.InstallUserChrome(operatingSystem, variant, profile.Path)
 		if err != nil {
 			return fmt.Errorf("couldn't install userChrome.css: %w", err)
@@ -140,7 +141,7 @@ func RunCommandUse(args docopt.Opts) error {
 
 		// Run post-install script
 		if manifest.Run.After != "" {
-			Step(1, "Running post-install script")
+			LogStep(1, "Running post-install script")
 			// TODO for this to be useful, print commandline _with mustaches replaced_:  Step(baseIndent+2, "[dim]$ bash -c [reset][bold]%s", manifest.Run.After)
 			output, err := manifest.RunPostInstallHook(profile)
 			if err != nil {
@@ -163,7 +164,7 @@ func RunCommandUse(args docopt.Opts) error {
 	if len(manifest.Addons) > 0 {
 		if ConfirmInstallAddons(manifest.Addons) {
 			for _, profile := range selectedProfiles {
-				Step(0, "With profile "+filepath.Base(profile.Path))
+				LogStep(0, "With profile "+filepath.Base(profile.Path))
 				for _, addonURL := range manifest.Addons {
 					profile.InstallAddon(operatingSystem, addonURL)
 				}

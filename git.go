@@ -6,22 +6,22 @@ import (
 	"os/exec"
 )
 
-// getCurrentRepoRemote returns the git repo's origin remote URL
+// currentRepoRemote returns the git repo's origin remote URL
 // if any error occurred while getting the URL, the empty string is returned.
-func getCurrentRepoRemote() string {
+func currentRepoRemote() string {
 	var out bytes.Buffer
 	command := exec.Command("git", "config", "--get", "remote.origin.url")
 	command.Stdout = &out
 
 	err := command.Run()
 	if err != nil {
-		Warn("Could not get the current git remote origin's URL. Leaving repository entry blank.\n")
+		LogWarning("Could not get the current git remote origin's URL. Leaving repository entry blank.\n")
 		return ""
 	}
 	return out.String()
 }
 
-func SwitchGitBranch(newBranch, clonedTo string) error {
+func switchGitBranch(newBranch, clonedTo string) error {
 	process := exec.Command("git", "switch", newBranch)
 	process.Dir = clonedTo
 	output, err := process.CombinedOutput()
@@ -31,7 +31,7 @@ func SwitchGitBranch(newBranch, clonedTo string) error {
 	return nil
 }
 
-func SwitchGitCommit(commitSHA, clonedTo string) error {
+func switchGitCommit(commitSHA, clonedTo string) error {
 	process := exec.Command("git", "checkout", commitSHA)
 	process.Dir = clonedTo
 	output, err := process.CombinedOutput()
@@ -41,7 +41,7 @@ func SwitchGitCommit(commitSHA, clonedTo string) error {
 	return nil
 }
 
-func SwitchGitTag(tagName, clonedTo string) error {
+func switchGitTag(tagName, clonedTo string) error {
 	process := exec.Command("git", "fetch", "--all", "--tags")
 	process.Dir = clonedTo
 	output, err := process.CombinedOutput()

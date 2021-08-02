@@ -2,6 +2,7 @@ package ffcss
 
 import (
 	"path/filepath"
+	"sort"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -65,5 +66,6 @@ func TestLoadCatalog(t *testing.T) {
 	for name := range actual {
 		actualNames = append(actualNames, name)
 	}
+	sort.Strings(actualNames)
 	assert.Equal(t, []string{"alpenblue", "flyingfox", "montereyfox", "sometheme"}, actualNames)
 }

@@ -16,18 +16,18 @@ func RunCommandGet(args docopt.Opts) error {
 		return err
 	}
 
-	Step(0, "Resolving the theme's name")
+	LogStep(0, "Resolving the theme's name")
 	uri, typ, err := ResolveURL(themeName)
 	if err != nil {
 		return fmt.Errorf("while resolving name %s: %w", themeName, err)
 	}
 
-	Step(0, "Downloading the theme")
+	LogStep(0, "Downloading the theme")
 	manifest, err := Download(uri, typ)
 	if err != nil {
 		return err
 	}
 
-	StepC("✓", 0, "Downloaded [blue][bold]%s[reset] [dim](to %s)", manifest.Name(), manifest.DownloadedTo)
+	LogStepC("✓", 0, "Downloaded [blue][bold]%s[reset] [dim](to %s)", manifest.Name(), manifest.DownloadedTo)
 	return nil
 }

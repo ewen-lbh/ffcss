@@ -6,8 +6,8 @@ import (
 )
 
 func (ffp FirefoxProfile) InstallAddon(operatingSystem string, addonURL string) error {
-	Step(1, "Opening [blue][bold]%s", addonURL)
-	Step(1, "[yellow]Waiting for you to close Firefox")
+	LogStep(1, "Opening [blue][bold]%s", addonURL)
+	LogStep(1, "[yellow]Waiting for you to close Firefox")
 	var command *exec.Cmd
 	switch operatingSystem {
 	case "linux":
@@ -17,7 +17,7 @@ func (ffp FirefoxProfile) InstallAddon(operatingSystem string, addonURL string) 
 	case "windows":
 		command = exec.Command("start", "firefox", "-profile", ffp.Path, addonURL)
 	default:
-		Warn("unrecognized OS %s, cannot open firefox automatically. Open %s in firefox using profile %s", operatingSystem, addonURL, ffp)
+		LogWarning("unrecognized OS %s, cannot open firefox automatically. Open %s in firefox using profile %s", operatingSystem, addonURL, ffp)
 		return nil
 	}
 	err := command.Run()
