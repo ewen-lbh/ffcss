@@ -45,7 +45,7 @@ var (
 )
 
 func main() {
-	args, _ := docopt.ParseDoc(Usage)
+	args, _ := docopt.ParseDoc(usage)
 
 	err := os.MkdirAll(ffcss.CacheDir(), 0700)
 	if err != nil {
@@ -57,7 +57,7 @@ func main() {
 		panic(err)
 	}
 
-	if err := dispatchCommand(args); err != nil {
+	if err := dispatchCommand(flagsAndArgs{args}); err != nil {
 		fmt.Fprintln(out)
 		ffcss.LogError("Woops! An error occurred:")
 		fmt.Fprintln(out)
@@ -65,7 +65,7 @@ func main() {
 	}
 }
 
-func dispatchCommand(args docopt.Opts) error {
+func dispatchCommand(args flagsAndArgs) error {
 	ffcss.LogDebug("dispatching %#v", args)
 	if val, _ := args.Bool("configure"); val {
 		return fmt.Errorf("not implemented")

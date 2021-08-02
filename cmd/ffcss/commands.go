@@ -12,18 +12,16 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-func runCommandUse(args docopt.Opts) error {
-	themeName, _ := args.String("THEME_NAME")
-
+func runCommandUse(args flagsAndArgs) error {
 	err := ffcss.CreateDataDirectories()
 	if err != nil {
 		return err
 	}
 
 	ffcss.LogStep(0, "Resolving the theme's name")
-	uri, typ, err := ffcss.ResolveURL(themeName)
+	uri, typ, err := ffcss.ResolveURL(args.string("THEME_NAME"))
 	if err != nil {
-		return fmt.Errorf("while resolving name %s: %w", themeName, err)
+		return fmt.Errorf("while resolving name %s: %w", args.string("THEME_NAME"), err)
 	}
 
 	ffcss.LogStep(0, "Downloading the theme")
@@ -34,13 +32,16 @@ func runCommandUse(args docopt.Opts) error {
 
 	ffcss.DescribeTheme(manifest, ffcss.BaseIndentLevel)
 
-	skipSource, _ := args.Bool("--skip-manifest-source")
-	manifest.AskToSeeManifestSource(skipSource)
+	manifest.AskToSeeManifestSource(args.bool("--skip-manifest-source"))
 
 	// Detect OS
 	operatingSystem := ffcss.GOOStoOS(runtime.GOOS)
 
-	selectedProfiles, err := SelectProfiles(args)
+	selectedProfiles, err := ffcss.SelectProfiles(
+		args.strings("--profiles"),
+		args.string("--profiles-dir"),
+		args.bool("--all-profiles"),
+	)
 	if err != nil {
 		return err
 	}
@@ -150,7 +151,7 @@ func runCommandUse(args docopt.Opts) error {
 			ffcss.ShowHookOutput(output)
 		}
 
-		err = profile.RegisterCurrentTheme(themeName)
+		err = profile.RegisterCurrentTheme(args.string("THEME_NAME"))
 		if err != nil {
 			return fmt.Errorf("while registering current theme for profile %q: %w", profile.FullName(), err)
 		}
@@ -180,7 +181,7 @@ func runCommandUse(args docopt.Opts) error {
 	return nil
 }
 
-func runCommandGet(args docopt.Opts) error {
+func runCommandGet(args flagsAndArgs) error {
 	themeName, _ := args.String("THEME_NAME")
 	// variant, _ := args.String("VARIANT")
 
@@ -205,7 +206,7 @@ func runCommandGet(args docopt.Opts) error {
 	return nil
 }
 
-func runCommandReapply(args docopt.Opts) error {
+func runCommandReapply(args flagsAndArgs) error {
 	operatingSystem := ffcss.GOOStoOS(runtime.GOOS)
 	profilesDir, _ := args.String("--profiles-dir")
 	var profilesPaths []string
@@ -235,9 +236,9 @@ func runCommandReapply(args docopt.Opts) error {
 		}
 		ffcss.LogStep(0, "Apply theme [blue][bold]%s[reset] to profile %s", themeName, ffcss.NewFirefoxProfileFromPath(profilePath).Display())
 
-		useArgs, _ := docopt.ParseArgs(Usage, []string{"use", string(themeName), "--profiles", profilePath, "--skip-manifest-source"}, ffcss.VersionString)
-		ffcss.BaseIndentLevel += 1
-		err = runCommandUse(useArgs)
+		useArgs, _ := docopt.ParseArgs(usage, []string{"use", string(themeName), "--profiles", profilePath, "--skip-manifest-source"}, ffcss.VersionString)
+		ffcss.BaseIndentLevel++
+		err = runCommandUse(flagsAndArgs{useArgs})
 		if err != nil {
 			return err
 		}
@@ -245,7 +246,7 @@ func runCommandReapply(args docopt.Opts) error {
 	return nil
 }
 
-func runCommandInit(args docopt.Opts) error {
+func runCommandInit(args flagsAndArgs) error {
 	// TODO: set user{Chrome,Content,.js} by finding their path
 	// TODO: only set assets if chrome/ actually exists
 	workingDir, err := os.Getwd()
