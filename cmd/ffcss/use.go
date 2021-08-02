@@ -62,12 +62,25 @@ func RunCommandUse(args docopt.Opts) error {
 	}
 
 	// Choose variant
-	variant, cancel := manifest.ChooseVariant(args)
-	if cancel {
-		return nil
+	variant := Variant{}
+	if len(manifest.AvailableVariants()) > 0 {
+		variantName, _ := args.String("VARIANT")
+		if variantName == "" {
+			var cancel bool
+			variant, cancel = manifest.ChooseVariant()
+			if cancel {
+				return nil
+			}
+		} else {
+			var found bool
+			variant, found = manifest.Variants[variantName]
+			if !found {
+				return fmt.Errorf("variant %q does not exist on this theme. Available variants are %s", variantName, strings.Join(manifest.AvailableVariants(), ", "))
+			}
+		}
+		manifest, actionsNeeded := manifest.WithVariant(variant)
+		manifest.ReDownloadIfNeeded(actionsNeeded)
 	}
-	manifest, actionsNeeded := manifest.WithVariant(variant)
-	manifest.ReDownloadIfNeeded(actionsNeeded)
 
 	// Check for OS compatibility
 	manifest.WarnIfIncompatibleWithOS()

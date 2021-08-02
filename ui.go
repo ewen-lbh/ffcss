@@ -201,37 +201,14 @@ func (t Theme) AskToSeeManifestSource(skip bool) {
 	}
 }
 
-func SelectProfiles(args docopt.Opts) ([]FirefoxProfile, error) {
-	selectedProfilesString, _ := args.String("--profiles")
-	var selectedProfiles []FirefoxProfile
-	if selectedProfilesString != "" {
-		for _, profilePath := range strings.Split(selectedProfilesString, ",") {
-			selectedProfiles = append(selectedProfiles, NewFirefoxProfileFromPath(profilePath))
-		}
-	} else {
-		Step(0, "Getting profiles")
-		profilesDir, _ := args.String("--profiles-dir")
-		profiles, err := Profiles(profilesDir)
-		if err != nil {
-			return []FirefoxProfile{}, fmt.Errorf("couldn't get profile directories: %w", err)
-		}
-		// Choose profiles
-		// TODO smart default (based on {{profileDirectory}}/times.json:firstUse)
-		selectAllProfilePaths, _ := args.Bool("--all-profiles")
-		if selectAllProfilePaths {
-			Step(0, "Selecting all profiles")
-			selectedProfiles = profiles
-		} else {
-			selectedProfiles = AskProfiles(profiles)
-		}
-	}
-	return selectedProfiles, nil
-}
-
-func (t Theme) ChooseVariant(args docopt.Opts) (chosen Variant, cancel bool) {
-	variantName, _ := args.String("VARIANT")
-	if len(t.AvailableVariants()) > 0 && variantName == "" {
-		Step(0, "Please choose the theme's variant")
+// ChooseVariant asks the user to choose a variant.
+// If the users interrupts the prompt (by e.g. pressing Ctrl-C), cancel is true.
+// Else, the selected variant is returned and cancel is false.
+// If no variants are available, the empty variant is returned and cancel is false (and the user does not get prompted).
+func (t Theme) ChooseVariant() (chosen Variant, cancel bool) {
+	var variantName string
+	if len(t.AvailableVariants()) > 0 {
+		LogStep(0, "Please choose the theme's variant")
 		variantPrompt := &survey.Select{
 			Message: "Install variant",
 			Options: t.AvailableVariants(),
@@ -242,8 +219,9 @@ func (t Theme) ChooseVariant(args docopt.Opts) (chosen Variant, cancel bool) {
 		if variantName == "" {
 			return Variant{}, true
 		}
+		return t.Variants[variantName], false
 	}
-	return t.Variants[variantName], false
+	return Variant{}, false
 }
 
 func ConfirmInstallAddons(addons []string) bool {

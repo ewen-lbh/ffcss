@@ -126,3 +126,30 @@ func RunCommandInit(args docopt.Opts) error {
 
 	return theme.WriteManifest(workingDir)
 }
+
+func SelectProfiles(args docopt.Opts) ([]FirefoxProfile, error) {
+	selectedProfilesString, _ := args.String("--profiles")
+	var selectedProfiles []FirefoxProfile
+	if selectedProfilesString != "" {
+		for _, profilePath := range strings.Split(selectedProfilesString, ",") {
+			selectedProfiles = append(selectedProfiles, NewFirefoxProfileFromPath(profilePath))
+		}
+	} else {
+		LogStep(0, "Getting profiles")
+		profilesDir, _ := args.String("--profiles-dir")
+		profiles, err := Profiles(profilesDir)
+		if err != nil {
+			return []FirefoxProfile{}, fmt.Errorf("couldn't get profile directories: %w", err)
+		}
+		// Choose profiles
+		// TODO smart default (based on {{profileDirectory}}/times.json:firstUse)
+		selectAllProfilePaths, _ := args.Bool("--all-profiles")
+		if selectAllProfilePaths {
+			LogStep(0, "Selecting all profiles")
+			selectedProfiles = profiles
+		} else {
+			selectedProfiles = AskProfiles(profiles)
+		}
+	}
+	return selectedProfiles, nil
+}
