@@ -7,8 +7,8 @@ import (
 	"runtime"
 
 	"github.com/docopt/docopt-go"
-	"gopkg.in/yaml.v2"
 	. "github.com/ewen-lbh/ffcss"
+	"gopkg.in/yaml.v2"
 )
 
 // RunCommandReapply runs the command "reapply"
