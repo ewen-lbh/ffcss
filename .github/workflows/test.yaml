@@ -9,7 +9,7 @@ jobs:
         go: [1.16.x]
         os:
           - ubuntu-latest
-          - macos-latest
+          # - macos-latest
           # - windows-latest
     steps:
       - name: Skip if commit type is skippable
