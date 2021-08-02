@@ -262,3 +262,32 @@ func DisplayErrorMessage(err error) {
 		LogStep(uint(idx), errorFragment)
 	}
 }
+
+// SelectProfiles returns an array of FirefoxProfile:
+//
+//    If selected is non-empty, it parses the paths into an array of FirefoxProfile
+//    Else, it returns all profiles if all is true
+//    Else, it asks the user to select one or more profiles and returns those
+func SelectProfiles(selected []string, dir string, all bool) ([]FirefoxProfile, error) {
+	var selectedProfiles []FirefoxProfile
+	if len(selected) > 0 {
+		for _, profilePath := range selected {
+			selectedProfiles = append(selectedProfiles, NewFirefoxProfileFromPath(profilePath))
+		}
+	} else {
+		LogStep(0, "Getting profiles")
+		profiles, err := Profiles(dir)
+		if err != nil {
+			return []FirefoxProfile{}, fmt.Errorf("couldn't get profile directories: %w", err)
+		}
+		// Choose profiles
+		// TODO smart default (based on {{profileDirectory}}/times.json:firstUse)
+		if all {
+			LogStep(0, "Selecting all profiles")
+			selectedProfiles = profiles
+		} else {
+			selectedProfiles = AskProfiles(profiles)
+		}
+	}
+	return selectedProfiles, nil
+}

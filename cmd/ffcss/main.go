@@ -106,30 +106,3 @@ func dispatchCommand(args docopt.Opts) error {
 	}
 	return nil
 }
-
-func SelectProfiles(args docopt.Opts) ([]ffcss.FirefoxProfile, error) {
-	selectedProfilesString, _ := args.String("--profiles")
-	var selectedProfiles []ffcss.FirefoxProfile
-	if selectedProfilesString != "" {
-		for _, profilePath := range strings.Split(selectedProfilesString, ",") {
-			selectedProfiles = append(selectedProfiles, ffcss.NewFirefoxProfileFromPath(profilePath))
-		}
-	} else {
-		ffcss.LogStep(0, "Getting profiles")
-		profilesDir, _ := args.String("--profiles-dir")
-		profiles, err := ffcss.Profiles(profilesDir)
-		if err != nil {
-			return []ffcss.FirefoxProfile{}, fmt.Errorf("couldn't get profile directories: %w", err)
-		}
-		// Choose profiles
-		// TODO smart default (based on {{profileDirectory}}/times.json:firstUse)
-		selectAllProfilePaths, _ := args.Bool("--all-profiles")
-		if selectAllProfilePaths {
-			ffcss.LogStep(0, "Selecting all profiles")
-			selectedProfiles = profiles
-		} else {
-			selectedProfiles = ffcss.AskProfiles(profiles)
-		}
-	}
-	return selectedProfiles, nil
-}
