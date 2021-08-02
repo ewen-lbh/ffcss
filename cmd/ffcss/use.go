@@ -84,7 +84,7 @@ func RunCommandUse(args docopt.Opts) error {
 	}
 
 	// Check for OS compatibility
-	manifest.WarnIfIncompatibleWithOS()
+	manifest.WarnIfIncompatibleWithOS(operatingSystem)
 
 	// For each profile directory...
 	if singleProfile {

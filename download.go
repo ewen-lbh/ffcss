@@ -293,8 +293,7 @@ func (t Theme) ReDownloadIfNeeded(actionsNeeded struct {
 	return nil
 }
 
-func (t Theme) WarnIfIncompatibleWithOS() {
-	operatingSystem := GOOStoOS(runtime.GOOS)
+func (t Theme) WarnIfIncompatibleWithOS(operatingSystem string) {
 	for k, v := range t.OSNames {
 		if k == operatingSystem && v == "" {
 			LogWarning("This theme is marked as incompatible with %s. Things might not work.", operatingSystem)
