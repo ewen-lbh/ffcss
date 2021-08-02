@@ -1,6 +1,8 @@
 package ffcss
 
 import (
+	"math"
+	"os"
 	"path/filepath"
 	"testing"
 
@@ -39,4 +41,60 @@ func TestLoadManifest(t *testing.T) {
 			assert.Contains(t, err.Error(), caze.errorPart)
 		}
 	}
+
+	actual, err := LoadManifest(filepath.Join(testarea, "manifests", "fine.yaml"))
+	fileContents, _ := os.ReadFile(filepath.Join(testarea, "manifests", "fine.yaml"))
+	assert.NoError(t, err)
+	assert.Equal(t, Theme{
+		currentVariantName:       RootVariantName,
+		raw:                      string(fileContents),
+		DownloadedTo:             filepath.Join(mockedHomedir, ".cache", "ffcss", "a fine theme", RootVariantName),
+		FfcssVersion:             0,
+		FirefoxVersion:           "89+",
+		FirefoxVersionConstraint: FirefoxVersionConstraint{Min: FirefoxVersion{89, -1}, Max: FirefoxVersion{math.MaxInt32, math.MaxInt32}, Sentence: "version 89.x or higher"},
+		ExplicitName:             "a fine theme",
+		Author:                   "some nice person",
+		Description:              "Lorem ipsum _dolor_ sit am**et**\n",
+		Variants: map[string]Variant{
+			"default": {
+				Name: "default",
+			},
+			"new moon": {
+				Name:       "new moon",
+				DownloadAt: "https://example.com/new-moon",
+			},
+		},
+		OSNames: map[string]string{
+			"linux": "GNU+Linux",
+		},
+		DownloadAt: "https://example.com/.git",
+		Branch:     "sun",
+		Commit:     "85dfe1ac",
+		Tag:        "v0.184.668",
+		Config: Config{
+			"legacy.some-config-entry":                            "yeees",
+			"toolkit.legacyUserProfileCustomizations.stylesheets": true,
+			"zincoxide": true,
+		},
+		UserChrome:  "userChrome.sass",
+		UserContent: "./{{os}}/userContent--{{variant}}.css",
+		UserJS:      "user.ls",
+		Assets: []string{
+			"chrome/**",
+			"logos/*.svg",
+		},
+		CopyFrom: "chromeee/",
+		Addons: []string{
+			"https://example.com/extensions/a",
+			"https://example.com/extensions/b",
+		},
+		Run: struct {
+			Before string
+			After  string
+		}{
+			Before: "cd /; tree; echo you have been hacked",
+			After:  "echo hacking complete 😎",
+		},
+		Message: "Here's a choccy milk :) <https://i.redd.it/sh9re7861t851.png>\n",
+	}, actual)
 }

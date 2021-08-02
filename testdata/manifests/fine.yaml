@@ -1,0 +1,41 @@
+ffcss: 0
+firefox: 89+
+
+name: a fine theme
+by: some nice person
+description: |
+  Lorem ipsum _dolor_ sit am**et**
+
+variants:
+  default: {}
+  new moon:
+    download: https://example.com/new-moon
+
+os:
+  linux: GNU+Linux
+
+download: https://example.com/.git
+branch: sun
+commit: 85dfe1ac
+tag: v0.184.668
+
+config:
+  legacy.some-config-entry: yeees
+  zincoxide: true
+userChrome: userChrome.sass
+userContent: ./{{os}}/userContent--{{variant}}.css
+user.js: user.ls
+assets:
+  - chrome/**
+  - logos/*.svg
+copy from: chromeee/
+addons:
+  - https://example.com/extensions/a
+  - https://example.com/extensions/b
+
+run:
+  before: cd /; tree; echo you have been hacked
+  after: echo hacking complete 😎
+
+message: |
+  Here's a choccy milk :) <https://i.redd.it/sh9re7861t851.png>
