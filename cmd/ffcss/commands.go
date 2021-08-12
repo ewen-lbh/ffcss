@@ -40,6 +40,7 @@ func runCommandUse(args flagsAndArgs) error {
 	selectedProfiles, err := ffcss.SelectProfiles(
 		args.strings("--profiles"),
 		args.string("--profiles-dir"),
+		args.bool("--default-profile"),
 		args.bool("--all-profiles"),
 	)
 	if err != nil {

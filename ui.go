@@ -268,7 +268,7 @@ func DisplayErrorMessage(err error) {
 //    If selected is non-empty, it parses the paths into an array of FirefoxProfile
 //    Else, it returns all profiles if all is true
 //    Else, it asks the user to select one or more profiles and returns those
-func SelectProfiles(selected []string, dir string, all bool) ([]FirefoxProfile, error) {
+func SelectProfiles(selected []string, dir string, useDefault bool, all bool) ([]FirefoxProfile, error) {
 	var selectedProfiles []FirefoxProfile
 	if len(selected) > 0 {
 		for _, profilePath := range selected {
@@ -279,6 +279,13 @@ func SelectProfiles(selected []string, dir string, all bool) ([]FirefoxProfile, 
 		profiles, err := Profiles(dir)
 		if err != nil {
 			return []FirefoxProfile{}, fmt.Errorf("couldn't get profile directories: %w", err)
+		}
+		if useDefault {
+			for _, profile := range profiles {
+				if profile.Name == "default-release" {
+					return []FirefoxProfile{profile}, nil
+				}
+			}
 		}
 		// Choose profiles
 		// TODO smart default (based on {{profileDirectory}}/times.json:firstUse)

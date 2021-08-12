@@ -26,7 +26,7 @@ Where:
 	COMPONENT   is either major, minor or patch (to get a single digit)
 
 Options:
-	-a --all-profiles           Apply the theme to all profiles
+	-a --all-profiles        Apply the theme to all profiles
 	-p --profiles=PATHS      Select which profiles to apply the theme to.
 	                         Can be absolute or relative to --profiles-dir.
 							 Comma-separated.
@@ -35,6 +35,7 @@ Options:
 	                         - $HOME/.mozilla/firefox                                on Linux
 	                         - $HOME/Library/Application Support/Firefox/Profiles    on MacOS
 	                         - %appdata%/Roaming/Mozilla/Firefox/Profiles            on Windows
+	-d --default-profile     Apply the themes to the default profile (ending with default-release)
 	--skip-manifest-source   Don't ask to show the manifest source
 	`
 )
