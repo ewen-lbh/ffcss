@@ -251,6 +251,28 @@ func runCommandReapply(args flagsAndArgs) error {
 	return nil
 }
 
+func runCommandReset(args flagsAndArgs) error {
+	profiles, err := ffcss.SelectProfiles(args.strings("--profiles"), args.string("--profiles-dir"), args.bool("--default-profile"), args.bool("--all-profiles"))
+	if err != nil {
+		return err
+	}
+	for _, profile := range profiles {
+		ffcss.LogStep(0, "With profile %s", profile.Display())
+		ffcss.LogStep(1, "Removing the current theme")
+		ffcss.LogStep(2, "Moving chrome/ to chrome.bak/")
+		err = profile.BackupChrome()
+		if err != nil {
+			return fmt.Errorf("couldn't back up the chrome folder: %w", err)
+		}
+		ffcss.LogStep(2, "Moving user.js to user.js.bak")
+		err = profile.BackupUserJS()
+		if err != nil {
+			return fmt.Errorf("couldn't back up user.js: %w", err)
+		}
+	}
+	return nil
+}
+
 func runCommandInit(args flagsAndArgs) error {
 	// TODO: set user{Chrome,Content,.js} by finding their path
 	// TODO: only set assets if chrome/ actually exists

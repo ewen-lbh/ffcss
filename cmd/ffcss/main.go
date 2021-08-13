@@ -19,6 +19,7 @@ Usage:
 	ffcss [options] cache clear
 	ffcss [options] init
 	ffcss [options] reapply
+	ffcss [options] reset
 	ffcss [options] version [COMPONENT]
 
 Where:
@@ -90,6 +91,9 @@ func dispatchCommand(args flagsAndArgs) error {
 		if val, _ := args.Bool("clear"); val {
 			return ffcss.ClearWholeCache()
 		}
+	}
+	if val, _ := args.Bool("reset"); val {
+		return runCommandReset(args)
 	}
 	if val, _ := args.Bool("version"); val {
 		component, _ := args.String("COMPONENT")
