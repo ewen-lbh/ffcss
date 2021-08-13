@@ -19,7 +19,7 @@ Usage:
 	ffcss [options] cache clear
 	ffcss [options] init
 	ffcss [options] reapply
-	ffcss version [COMPONENT]
+	ffcss [options] version [COMPONENT]
 
 Where:
 	THEME_NAME  a theme name or URL (see README.md)
