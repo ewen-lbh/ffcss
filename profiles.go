@@ -169,3 +169,8 @@ func (t Theme) IncompatibleProfiles(profiles []FirefoxProfile) ([]firefoxProfile
 func (ffp FirefoxProfile) BackupChrome() error {
 	return renameIfExists(filepath.Join(ffp.Path, "chrome"), filepath.Join(ffp.Path, "chrome.bak"))
 }
+
+// BackupUserJS moves user.js to user.js.bak if user.js exists
+func (ffp FirefoxProfile) BackupUserJS() error {
+	return renameIfExists(filepath.Join(ffp.Path, "user.js"), filepath.Join(ffp.Path, "user.js.bak"))
+}

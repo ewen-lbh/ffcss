@@ -53,12 +53,8 @@ func (t Theme) InstallAssets(operatingSystem string, variant Variant, profileDir
 
 // InstallUserJS installs the content of user.js and the config entries to {{profileDir}}/user.js
 func (t Theme) InstallUserJS(operatingSystem string, variant Variant, profileDir string) error {
-	err := renameIfExists(filepath.Join(profileDir, "user.js"), filepath.Join(profileDir, "user.js.bak"))
-	if err != nil {
-		return fmt.Errorf("while creating backup of %s: %w", filepath.Join(profileDir, "user.js"), err)
-	}
-
 	var content []byte
+	var err error
 
 	if t.UserJS != "" {
 		file := filepath.Join(t.DownloadedTo, renderFileTemplate(t.UserJS, operatingSystem, variant, t.OSNames))
