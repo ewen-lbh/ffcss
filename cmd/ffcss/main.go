@@ -5,45 +5,16 @@ import (
 	"fmt"
 	"io"
 	"os"
+	_ "embed"
 
 	"github.com/docopt/docopt-go"
 	"github.com/ewen-lbh/ffcss"
 )
 
-const (
-	usage = `ffcss - Apply and configure FirefoxCSS themes
+//go:embed USAGE
+var usage string
 
-Usage:
-	ffcss [options] use THEME_NAME [VARIANT]
-	ffcss [options] get THEME_NAME
-	ffcss [options] cache clear
-	ffcss [options] init
-	ffcss [options] reapply
-	ffcss [options] reset
-	ffcss [options] version [COMPONENT]
-
-Where:
-	THEME_NAME  a theme name or URL (see README.md)
-	COMPONENT   is either major, minor or patch (to get a single digit)
-
-Options:
-	-a --all-profiles        Apply the theme to all profiles
-	-p --profiles=PATHS      Select which profiles to apply the theme to.
-	                         Can be absolute or relative to --profiles-dir.
-							 Comma-separated.
-	--profiles-dir=PATH      Directory that contains profile directories.
-	                         Default value is platform-specific:
-	                         - $HOME/.mozilla/firefox                                on Linux
-	                         - $HOME/Library/Application Support/Firefox/Profiles    on MacOS
-	                         - %appdata%/Roaming/Mozilla/Firefox/Profiles            on Windows
-	-d --default-profile     Apply the themes to the default profile (ending with default-release)
-	--skip-manifest-source   Don't ask to show the manifest source
-	`
-)
-
-var (
-	out io.Writer = os.Stdout
-)
+var out io.Writer = os.Stdout
 
 func main() {
 	args, _ := docopt.ParseDoc(usage)
