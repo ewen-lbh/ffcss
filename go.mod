@@ -1,6 +1,6 @@
 module github.com/ewen-lbh/ffcss
 
-go 1.14
+go 1.16
 
 require (
 	github.com/AlecAivazis/survey/v2 v2.2.15
