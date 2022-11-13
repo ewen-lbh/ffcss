@@ -1,0 +1,18 @@
+ffcss: 0
+
+name: materialfox-plus
+download: https://github.com/typeling1578/MaterialFox-Plus
+
+config:
+  svg.context-properties.content.enabled: true
+  browser.tabs.tabClipWidth: 83
+  materialFox.reduceTabOverflow: true
+  security.insecure_connection_text.enabled: true
+
+userChrome: chrome/userChrome.css
+userContent: null
+user.js: null
+assets:
+  - chrome/**
+
+copy from: chrome/
