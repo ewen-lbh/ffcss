@@ -17,9 +17,6 @@ require (
 	github.com/mitchellh/colorstring v0.0.0-20190213212951-d06e56a500db
 	github.com/muesli/termenv v0.11.0 // indirect
 	github.com/stretchr/testify v1.7.0
-	github.com/yuin/goldmark v1.4.10 // indirect
-	golang.org/x/net v0.0.0-20220225172249-27dd8689420f // indirect
-	golang.org/x/sys v0.0.0-20220315194320-039c03cc5b86 // indirect
-	golang.org/x/text v0.3.7
+	golang.org/x/text v0.3.8
 	gopkg.in/yaml.v2 v2.4.0
 )
